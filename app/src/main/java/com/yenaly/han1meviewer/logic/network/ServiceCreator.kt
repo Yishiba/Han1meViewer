@@ -79,6 +79,7 @@ object ServiceCreator {
     fun rebuildOkHttpClient() {
         hClient = buildHClient()
         getchuClient = buildGetchuClient()
+        downloadClient = buildDownloadClient()
     }
 
     private fun buildGetchuClient(): OkHttpClient {
@@ -94,10 +95,13 @@ object ServiceCreator {
 
     private fun buildDownloadClient(): OkHttpClient {
         return OkHttpClient.Builder()
-            .connectTimeout(5, TimeUnit.SECONDS)
+            .connectTimeout(15, TimeUnit.SECONDS)
+            // 跨境链路常有十几秒的断流，默认 10s 读超时会让整个任务进入重试
+            .readTimeout(30, TimeUnit.SECONDS)
             .protocols(listOf(Protocol.HTTP_1_1))
             .addInterceptor(UserAgentInterceptor)
             .addInterceptor(downloadSpeedLimitInterceptor)
+            .proxySelector(HProxySelector())
             .dns(dns)
             .build()
     }

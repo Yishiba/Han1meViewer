@@ -374,6 +374,7 @@ Recommendations are as follows:\n
     <string name="download_error_storage">Unable to write the downloaded file. Check storage space, folder permission, or choose the download folder again.</string>
     <string name="download_error_range_not_supported">The server cannot resume from the saved position. Delete this task and download it again.</string>
     <string name="download_error_file_info">Unable to get file size or download information. Try again later.</string>
+    <string name="download_error_link_expired">The download link has expired and could not be refreshed. Delete this task and download it again.</string>
     <string name="custom">Custom</string>
     <string name="show_bottom_progress">Show Bottom Progress Bar</string>
     <string name="default_playback_speed">Default Playback Speed</string>
