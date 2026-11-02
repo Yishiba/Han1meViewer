@@ -1,29 +1,21 @@
 package com.yenaly.han1meviewer.logic.network.interceptor
 
-import com.yenaly.yenaly_libs.utils.unsafeLazy
 import okhttp3.ResponseBody
 import okio.Throttler
 import okio.buffer
 
 class SpeedLimitResponseBody(
     private val responseBody: ResponseBody,
-    /**
-     * 0 means no limit
-     */
-    private val maxSpeed: Long
+    private val throttler: Throttler,
 ) : ResponseBody() {
 
-    private val throttler by unsafeLazy {
-        Throttler().apply { bytesPerSecond(maxSpeed) }
-    }
+    private val source by lazy { throttler.source(responseBody.source()).buffer() }
 
     override fun contentLength(): Long = responseBody.contentLength()
 
     override fun contentType() = responseBody.contentType()
 
-    override fun source() = if (maxSpeed > 0) {
-        throttler.source(responseBody.source()).buffer()
-    } else {
-        responseBody.source()
-    }
+    override fun source() = source
+
+    override fun close() = responseBody.close()
 }

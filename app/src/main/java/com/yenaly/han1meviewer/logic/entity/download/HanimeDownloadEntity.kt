@@ -86,6 +86,12 @@ data class HanimeDownloadEntity(
      */
     val state: DownloadState = DownloadState.Unknown,
 
+    /**
+     * 多连接分段下载的各段进度，格式见 [com.yenaly.han1meviewer.worker.SegmentedDownloader]。
+     * 为 null 时 [downloadedLength] 是从文件开头算起的连续长度
+     */
+    val segments: String? = null,
+
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
 ) {

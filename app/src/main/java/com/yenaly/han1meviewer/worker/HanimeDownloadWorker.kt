@@ -51,7 +51,6 @@ import okhttp3.Request
 import okhttp3.Response
 import okhttp3.ResponseBody
 import okhttp3.internal.closeQuietly
-import java.io.EOFException
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
@@ -61,13 +60,11 @@ import java.io.RandomAccessFile
 import java.nio.ByteBuffer
 import java.nio.channels.FileChannel
 import java.net.ConnectException
-import java.net.ProtocolException
 import java.net.SocketTimeoutException
 import java.net.UnknownHostException
 import java.net.SocketException
 import java.util.concurrent.CancellationException
 import java.util.concurrent.TimeUnit
-import javax.net.ssl.SSLException
 import kotlin.random.Random
 
 /**
@@ -388,7 +385,6 @@ class HanimeDownloadWorker(
             }
 
             var downloadedLength = entity.downloadedLength
-            val needRange = downloadedLength > 0
             var raf: RandomAccessFile? = null
             var safPfd: ParcelFileDescriptor? = null
             var safChannel: FileChannel? = null
@@ -402,108 +398,141 @@ class HanimeDownloadWorker(
             var shouldRetry = false
 
             try {
-                if (safUri != null) {
+                val channel: FileChannel = if (safUri != null) {
                     safPfd = context.contentResolver.openFileDescriptor(safUri, "rw")
-                    safChannel = safPfd?.fileDescriptor?.let { FileOutputStream(it).channel }
-                        ?: throw IOException("Open SAF file failed")
-                    if (downloadedLength > safChannel.size()) {
-                        downloadedLength = safChannel.size()
-                    }
-                    safChannel.position(downloadedLength)
+                    (safPfd?.fileDescriptor?.let { FileOutputStream(it).channel }
+                        ?: throw IOException("Open SAF file failed")).also { safChannel = it }
                 } else {
-                    raf = RandomAccessFile(file, "rwd")
-                    if (needRange) raf.seek(downloadedLength)
+                    // 不再用 rwd 每写一块就同步落盘，改为每次保存进度前 force 一次
+                    RandomAccessFile(file, "rw").also { raf = it }.channel
                 }
-                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
-                var delayTime = 0L
-                // 连续多少次续传没有拿到任何新数据，有进展就清零
-                var retryCount = 0
-                var urlRefreshed = false
+                if (safChannel != null && entity.segments == null && downloadedLength > channel.size()) {
+                    downloadedLength = channel.size()
+                }
 
-                while (downloadedLength < entity.length) {
-                    val requestNeedRange = downloadedLength > 0
-                    val lengthBeforeRequest = downloadedLength
-                    try {
-                        val requestBuilder = Request.Builder().url(downloadUrl).get()
-                        if (requestNeedRange) requestBuilder.header("Range", "bytes=$downloadedLength-")
-                        val request = requestBuilder.build()
-                        val currentResponse = ServiceCreator.downloadClient.newCall(request).await()
-                        response = currentResponse
-                        val canWrite = (requestNeedRange && currentResponse.code == 206) ||
-                                (!requestNeedRange && currentResponse.isSuccessful)
-                        if (!canWrite) {
-                            if (!urlRefreshed && currentResponse.code in LINK_EXPIRED_CODES) {
-                                urlRefreshed = true
-                                currentResponse.closeQuietly()
-                                response = null
-                                val newUrl = refreshDownloadUrl()
-                                if (newUrl != null) {
-                                    entity = entity.copy(videoUrl = newUrl)
-                                    DatabaseRepo.HanimeDownload.update(
-                                        entity.copy(downloadedLength = downloadedLength)
-                                    )
-                                    continue
+                var singleStream = false
+                try {
+                    downloadedLength = SegmentedDownloader(
+                        client = { ServiceCreator.downloadClient },
+                        initialUrl = downloadUrl,
+                        totalLength = entity.length,
+                        channel = channel,
+                        connectionCount = SegmentedDownloader.DEFAULT_CONNECTION_COUNT,
+                        refreshUrl = { refreshDownloadUrl() },
+                        onSave = { length, segments ->
+                            downloadedLength = length
+                            entity = entity.copy(
+                                videoUrl = downloadUrl,
+                                downloadedLength = length,
+                                segments = segments,
+                                state = DownloadState.Downloading,
+                            )
+                            val progress = (length * 100 / entity.length).coerceAtMost(100).toInt()
+                            setProgress(workDataOf(PROGRESS to progress))
+                            updateDownloadNotification(progress)
+                            DatabaseRepo.HanimeDownload.update(entity)
+                        },
+                    ).download(savedSegments = entity.segments, prefixLength = downloadedLength)
+                } catch (e: SegmentedDownloader.RangeNotSupportedException) {
+                    // 服务器不支持 Range，只能单连接从头下
+                    Log.w(TAG, "range not supported, fall back to single stream: $videoCode")
+                    singleStream = true
+                    downloadedLength = 0
+                    entity = entity.copy(downloadedLength = 0, segments = null)
+                    DatabaseRepo.HanimeDownload.update(entity)
+                }
+
+                if (singleStream) {
+                    channel.position(0)
+                    val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                    var delayTime = 0L
+                    // 连续多少次续传没有拿到任何新数据，有进展就清零
+                    var retryCount = 0
+                    var urlRefreshed = false
+
+                    while (downloadedLength < entity.length) {
+                        val requestNeedRange = downloadedLength > 0
+                        val lengthBeforeRequest = downloadedLength
+                        try {
+                            val requestBuilder = Request.Builder().url(downloadUrl).get()
+                            if (requestNeedRange) requestBuilder.header("Range", "bytes=$downloadedLength-")
+                            val request = requestBuilder.build()
+                            val currentResponse = ServiceCreator.downloadClient.newCall(request).await()
+                            response = currentResponse
+                            val canWrite = (requestNeedRange && currentResponse.code == 206) ||
+                                    (!requestNeedRange && currentResponse.isSuccessful)
+                            if (!canWrite) {
+                                if (!urlRefreshed && currentResponse.code in LINK_EXPIRED_CODES) {
+                                    urlRefreshed = true
+                                    currentResponse.closeQuietly()
+                                    response = null
+                                    val newUrl = refreshDownloadUrl()
+                                    if (newUrl != null) {
+                                        entity = entity.copy(videoUrl = newUrl)
+                                        DatabaseRepo.HanimeDownload.update(
+                                            entity.copy(downloadedLength = downloadedLength)
+                                        )
+                                        continue
+                                    }
                                 }
+                                val reason = currentResponse.toDownloadErrorMessage(requestNeedRange)
+                                Log.w(TAG, "download rejected: $videoCode HTTP ${currentResponse.code}, range=$requestNeedRange")
+                                showFailureNotification(reason)
+                                mainScope.launch {
+                                    showShortToast(context.getString(R.string.download_task_failed_s_reason_s, hanimeName, reason))
+                                }
+                                result = Result.failure(workDataOf(DownloadState.STATE to DownloadState.Failed.mask))
+                                return@withContext result
                             }
-                            val reason = currentResponse.toDownloadErrorMessage(requestNeedRange)
-                            Log.w(TAG, "download rejected: $videoCode HTTP ${currentResponse.code}, range=$requestNeedRange")
-                            showFailureNotification(reason)
-                            mainScope.launch {
-                                showShortToast(context.getString(R.string.download_task_failed_s_reason_s, hanimeName, reason))
-                            }
-                            result = Result.failure(workDataOf(DownloadState.STATE to DownloadState.Failed.mask))
-                            return@withContext result
-                        }
 
-                        val responseBody = currentResponse.body
-                        body = responseBody
-                        val stream = responseBody.byteStream()
-                        bodyStream = stream
-                        var len: Int = stream.read(buffer)
+                            val responseBody = currentResponse.body
+                            body = responseBody
+                            val stream = responseBody.byteStream()
+                            bodyStream = stream
+                            var len: Int = stream.read(buffer)
 
-                        while (len != -1) {
-                            if (raf != null) {
-                                raf.write(buffer, 0, len)
-                            } else if (safChannel != null) {
-                                safChannel.writeFully(buffer, len)
-                            }
-                            downloadedLength += len
+                            while (len != -1) {
+                                channel.writeFully(buffer, len)
+                                downloadedLength += len
 
-                            if (System.currentTimeMillis() - delayTime > RESPONSE_INTERVAL) {
-                                val progress = (downloadedLength * 100 / entity.length).coerceAtMost(100)
-                                setProgress(workDataOf(PROGRESS to progress.toInt()))
-                                updateDownloadNotification(progress.toInt())
-                                DatabaseRepo.HanimeDownload.update(
-                                    entity.copy(downloadedLength = downloadedLength,
-                                        state = DownloadState.Downloading
+                                if (System.currentTimeMillis() - delayTime > RESPONSE_INTERVAL) {
+                                    val progress = (downloadedLength * 100 / entity.length).coerceAtMost(100)
+                                    setProgress(workDataOf(PROGRESS to progress.toInt()))
+                                    updateDownloadNotification(progress.toInt())
+                                    // 先落盘再记进度
+                                    channel.force(false)
+                                    DatabaseRepo.HanimeDownload.update(
+                                        entity.copy(downloadedLength = downloadedLength,
+                                            state = DownloadState.Downloading
+                                        )
                                     )
-                                )
-                                delayTime = System.currentTimeMillis()
+                                    delayTime = System.currentTimeMillis()
+                                }
+                                len = stream.read(buffer)
                             }
-                            len = stream.read(buffer)
+                        } catch (e: IOException) {
+                            // 断流就地从当前位置续传，不必退回 WorkManager 排队重试
+                            if (isStopped || !e.isTransientNetworkError()) throw e
+                            if (downloadedLength > lengthBeforeRequest) retryCount = 0
+                            if (retryCount >= MAX_STREAM_RETRY_COUNT) throw e
+                            retryCount++
+                            Log.w(
+                                TAG,
+                                "stream interrupted at $downloadedLength/${entity.length}, " +
+                                        "resume #$retryCount: $e"
+                            )
+                            response?.closeQuietly()
+                            body?.closeQuietly()
+                            bodyStream?.closeQuietly()
+                            response = null
+                            body = null
+                            bodyStream = null
+                            delay(STREAM_RETRY_DELAY * retryCount)
+                            continue
                         }
-                    } catch (e: IOException) {
-                        // 断流就地从当前位置续传，不必退回 WorkManager 排队重试
-                        if (isStopped || !e.isTransientNetworkError()) throw e
-                        if (downloadedLength > lengthBeforeRequest) retryCount = 0
-                        if (retryCount >= MAX_STREAM_RETRY_COUNT) throw e
-                        retryCount++
-                        Log.w(
-                            TAG,
-                            "stream interrupted at $downloadedLength/${entity.length}, " +
-                                    "resume #$retryCount: $e"
-                        )
-                        response?.closeQuietly()
-                        body?.closeQuietly()
-                        bodyStream?.closeQuietly()
-                        response = null
-                        body = null
-                        bodyStream = null
-                        delay(STREAM_RETRY_DELAY * retryCount)
-                        continue
-                    }
 
-                    break
+                        break
+                    }
                 }
 
                 if (downloadedLength < entity.length) {
@@ -548,7 +577,8 @@ class HanimeDownloadWorker(
                 DatabaseRepo.HanimeDownload.update(
                     entity.copy(
                         state = if (shouldRetry) DownloadState.Queued else state,
-                        downloadedLength = downloadedLength
+                        downloadedLength = downloadedLength,
+                        segments = if (state == DownloadState.Finished) null else entity.segments,
                     )
                 )
                 raf?.closeQuietly()
@@ -560,22 +590,6 @@ class HanimeDownloadWorker(
             }
             return@withContext result
         }
-    }
-
-    /**
-     * 连接或读流过程中的网络抖动，可以从当前位置续传；
-     * 写文件失败、主动取消等不在此列
-     */
-    private fun IOException.isTransientNetworkError(): Boolean {
-        val rawMessage = message.orEmpty()
-        return this is SocketTimeoutException ||
-                this is SocketException ||
-                this is UnknownHostException ||
-                this is SSLException ||
-                this is ProtocolException ||
-                this is EOFException ||
-                rawMessage.contains("stream was reset", ignoreCase = true) ||
-                rawMessage.contains("unexpected end of stream", ignoreCase = true)
     }
 
     private fun Exception.isStoppedCancellation(): Boolean {
@@ -596,6 +610,9 @@ class HanimeDownloadWorker(
             is SocketTimeoutException -> context.getString(R.string.download_error_timeout)
             is ConnectException -> context.getString(R.string.download_error_connect)
             is SocketException -> context.getString(R.string.download_error_network)
+            is SegmentedDownloader.LinkExpiredException -> {
+                context.getString(R.string.download_error_link_expired)
+            }
             is IOException -> {
                 val rawMessage = message.orEmpty()
                 when {

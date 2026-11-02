@@ -21,7 +21,7 @@ import com.yenaly.yenaly_libs.utils.applicationContext
  */
 @Database(
     entities = [HanimeDownloadEntity::class, DownloadCategoryEntity::class, HanimeCategoryCrossRef::class, DownloadGroupEntity::class],
-    version = 5, exportSchema = false
+    version = 6, exportSchema = false
 )
 abstract class DownloadDatabase : RoomDatabase() {
 
@@ -35,7 +35,9 @@ abstract class DownloadDatabase : RoomDatabase() {
                 applicationContext,
                 DownloadDatabase::class.java,
                 "download.db"
-            ).addMigrations(Migration1To2, Migration2To3, Migration3To4, Migration4To5).build()
+            ).addMigrations(
+                Migration1To2, Migration2To3, Migration3To4, Migration4To5, Migration5To6
+            ).build()
         }
     }
 
@@ -192,6 +194,15 @@ abstract class DownloadDatabase : RoomDatabase() {
 
             db.execSQL("DROP TABLE `HanimeDownloadEntity`")
             db.execSQL("ALTER TABLE `HanimeDownloadEntity_new` RENAME TO `HanimeDownloadEntity`")
+        }
+    }
+
+    /**
+     * 多连接分段下载的进度
+     */
+    object Migration5To6 : Migration(5, 6) {
+        override fun migrate(db: SupportSQLiteDatabase) {
+            db.execSQL("ALTER TABLE `HanimeDownloadEntity` ADD COLUMN `segments` TEXT")
         }
     }
 

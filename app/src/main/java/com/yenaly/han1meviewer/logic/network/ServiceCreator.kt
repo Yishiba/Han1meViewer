@@ -14,6 +14,7 @@ import com.yenaly.yenaly_libs.utils.applicationContext
 import com.yenaly.yenaly_libs.utils.unsafeLazy
 import okhttp3.Cache
 import okhttp3.CookieJar
+import okhttp3.Dispatcher
 import okhttp3.MediaType.Companion.toMediaType
 import okhttp3.OkHttpClient
 import okhttp3.Protocol
@@ -34,7 +35,7 @@ object ServiceCreator {
     )
 
     private val downloadSpeedLimitInterceptor by unsafeLazy {
-        SpeedLimitInterceptor(maxSpeed = Preferences.downloadSpeedLimit)
+        SpeedLimitInterceptor(maxSpeed = { Preferences.downloadSpeedLimit })
     }
 
     private val dns = HDns()
@@ -99,6 +100,11 @@ object ServiceCreator {
             // 跨境链路常有十几秒的断流，默认 10s 读超时会让整个任务进入重试
             .readTimeout(30, TimeUnit.SECONDS)
             .protocols(listOf(Protocol.HTTP_1_1))
+            // 每个任务多条连接、多个任务并行，默认同一主机最多 5 个请求不够用
+            .dispatcher(Dispatcher().apply {
+                maxRequests = 64
+                maxRequestsPerHost = 32
+            })
             .addInterceptor(UserAgentInterceptor)
             .addInterceptor(downloadSpeedLimitInterceptor)
             .proxySelector(HProxySelector())
