@@ -40,6 +40,12 @@ class HDns : Dns {
 
         private const val GETCHU_HOSTNAME = "www.getchu.com"
 
+        private const val TAG = "HDns"
+
+        private const val FALLBACK_DOH_URL = "https://doh.pub/dns-query"
+        private val FALLBACK_DOH_BOOTSTRAP = listOf("1.12.12.12", "120.53.53.53")
+        private const val FALLBACK_DOH_TIMEOUT = 5L
+
         /**
          * 添加DNS
          */
@@ -108,6 +114,13 @@ class HDns : Dns {
             }
         }
 
+        val primary = runCatching { lookupRegular(hostname) }
+        if (!HANIME_HOSTNAME.contains(hostname)) return primary.getOrThrow()
+        // 国内 DNS 会把 hanime 域名解析到假 IP，默认配置直连时必须校验一遍
+        return poisonedDnsGuard.resolve(hostname, primary)
+    }
+
+    private fun lookupRegular(hostname: String): List<InetAddress> {
         val dohUrl = DohConfig.resolveUrl()
         if (!dohUrl.isNullOrBlank()) {
             return runCatching { lookupByDoH(dohUrl, hostname) }
@@ -118,6 +131,31 @@ class HDns : Dns {
         }
 
         return Dns.SYSTEM.lookup(hostname)
+    }
+
+    /**
+     * 兜底用国内可直连的 DNSPod；阿里 DoH 对这几个域名同样返回假 IP，不能用
+     */
+    private val poisonedDnsGuard by lazy {
+        val fallbackDns = DnsOverHttps.Builder()
+            .client(
+                OkHttpClient.Builder()
+                    .connectTimeout(FALLBACK_DOH_TIMEOUT, TimeUnit.SECONDS)
+                    .readTimeout(FALLBACK_DOH_TIMEOUT, TimeUnit.SECONDS)
+                    .build()
+            )
+            .url(FALLBACK_DOH_URL.toHttpUrl())
+            .bootstrapDnsHosts(FALLBACK_DOH_BOOTSTRAP.map { InetAddress.getByName(it) })
+            .includeIPv6(true)
+            .post(false)
+            .build()
+        PoisonedDnsGuard(
+            fallbackDns = fallbackDns,
+            builtInIps = { host ->
+                cloudFlareIps.map { InetAddress.getByAddress(host, InetAddress.getByName(it).address) }
+            },
+            log = { Log.w(TAG, it) },
+        )
     }
 
     private fun lookupByDoH(dohUrl: String, hostname: String): List<InetAddress> {
