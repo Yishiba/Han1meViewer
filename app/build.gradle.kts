@@ -88,6 +88,7 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
             applicationIdSuffix = ".debug"
+            ndk { abiFilters += "arm64-v8a" }
             manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher_debug"
         }
     }
