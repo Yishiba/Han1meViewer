@@ -1,0 +1,41 @@
+{
+  "rules": {
+    ".read": false,
+    ".write": false,
+    "announcements": {
+      ".read": "(auth != null && auth.token.announcementAdmin === true) || (query.orderByChild === 'isActive' && query.equalTo === true)",
+      ".write": "auth != null && auth.token.announcementAdmin === true",
+      ".indexOn": ["isActive"],
+      "$announcementId": {
+        ".validate": "newData.hasChildren(['title', 'content', 'priority', 'timestamp', 'isActive'])",
+        "title": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 120"
+        },
+        "content": {
+          ".validate": "newData.isString() && newData.val().length > 0 && newData.val().length <= 5000"
+        },
+        "imageUrl": {
+          ".validate": "newData.isString() && (newData.val() === '' || (newData.val().beginsWith('https://') && newData.val().length <= 2048))"
+        },
+        "positiveText": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "negativeText": {
+          ".validate": "newData.isString() && newData.val().length <= 40"
+        },
+        "priority": {
+          ".validate": "newData.isNumber() && newData.val() >= 0 && newData.val() <= 10"
+        },
+        "timestamp": {
+          ".validate": "newData.isNumber() && newData.val() > 0"
+        },
+        "isActive": {
+          ".validate": "newData.isBoolean()"
+        },
+        "$other": {
+          ".validate": false
+        }
+      }
+    }
+  }
+}

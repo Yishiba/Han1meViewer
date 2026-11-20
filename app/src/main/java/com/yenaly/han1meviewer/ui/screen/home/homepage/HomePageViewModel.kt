@@ -118,7 +118,10 @@ class HomePageViewModel: ViewModel() {
                 return@suspendCancellableCoroutine
             }
 
-            announcementDatabase.getReference("announcements").get()
+            announcementDatabase.getReference("announcements")
+                .orderByChild("isActive")
+                .equalTo(true)
+                .get()
                 .addOnSuccessListener { snapshot ->
                     val list = mutableListOf<Announcement>()
                     if (snapshot.exists()) {

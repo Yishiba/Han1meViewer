@@ -1,0 +1,75 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Han1meClient 公告管理</title>
+  <link rel="stylesheet" href="styles.css">
+  <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-app.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-auth.js"></script>
+  <script defer src="https://www.gstatic.com/firebasejs/8.10.1/firebase-database.js"></script>
+  <script defer src="app.js"></script>
+</head>
+<body>
+  <main class="container">
+    <header>
+      <h1>Han1meClient 公告管理</h1>
+      <p>公告会显示在 Android 客户端首页。新增公告默认停用，确认内容后再发布。</p>
+    </header>
+    <p id="status" role="status" aria-live="polite"></p>
+
+    <section id="loginView" aria-labelledby="loginTitle">
+      <h2 id="loginTitle">管理员登录</h2>
+      <form id="loginForm">
+        <label>邮箱<input id="email" type="email" autocomplete="username" required></label>
+        <label>密码<input id="password" type="password" autocomplete="current-password" required></label>
+        <button id="loginButton" type="submit">登录</button>
+      </form>
+    </section>
+
+    <section id="deniedView" hidden aria-labelledby="deniedTitle">
+      <h2 id="deniedTitle">当前账号没有公告管理权限</h2>
+      <p>请先为这个 Firebase Auth 账号授予 <code>announcementAdmin</code> 声明，再刷新权限。</p>
+      <button id="refreshClaim" type="button">刷新权限</button>
+      <button id="deniedLogout" type="button" class="secondary">退出登录</button>
+    </section>
+
+    <div id="adminView" hidden>
+      <div class="toolbar">
+        <p id="currentUser"></p>
+        <button id="logout" type="button" class="secondary">退出登录</button>
+      </div>
+      <section aria-labelledby="editTitle">
+        <h2 id="editTitle">新增公告</h2>
+        <form id="announcementForm">
+          <label>标题<input id="title" maxlength="120" required></label>
+          <label>正文<textarea id="content" maxlength="5000" rows="7" required></textarea></label>
+          <label>图片 HTTPS 地址（可选）<input id="imageUrl" type="url" maxlength="2048" placeholder="https://"></label>
+          <div class="row">
+            <label>确认按钮文字<input id="positiveText" maxlength="40"></label>
+            <label>取消按钮文字<input id="negativeText" maxlength="40"></label>
+            <label>优先级 0–10<input id="priority" type="number" min="0" max="10" step="1" value="2" required></label>
+          </div>
+          <div class="actions">
+            <button id="saveButton" type="submit">保存为停用公告</button>
+            <button id="cancelEdit" type="button" class="secondary" hidden>取消编辑</button>
+          </div>
+        </form>
+      </section>
+      <section aria-labelledby="listTitle">
+        <div class="toolbar">
+          <h2 id="listTitle">公告列表</h2>
+          <button id="reload" type="button" class="secondary">刷新</button>
+        </div>
+        <div class="tableWrap">
+          <table>
+            <thead><tr><th>标题</th><th>正文</th><th>优先级</th><th>状态</th><th>时间</th><th>操作</th></tr></thead>
+            <tbody id="announcementList"></tbody>
+          </table>
+        </div>
+      </section>
+    </div>
+  </main>
+</body>
+</html>

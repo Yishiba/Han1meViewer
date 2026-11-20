@@ -45,6 +45,9 @@ Thumbs.db
 # 开发环境文件
 .env
 .secrets/
+.firebase/
+**/serviceAccountKey.json
+**/__pycache__/
 *.jks
 *.keystore
 *.lineage
