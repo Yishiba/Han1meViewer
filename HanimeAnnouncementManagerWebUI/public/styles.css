@@ -1,0 +1,25 @@
+:root { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif; color: #203047; background: #f4f6fa; }
+body { margin: 0; }
+.container { max-width: 1060px; margin: 28px auto; padding: 28px; background: white; border-radius: 16px; box-shadow: 0 8px 30px #20304712; }
+h1 { margin: 0 0 8px; }
+h2 { margin-top: 28px; }
+header p { color: #536579; }
+#status { min-height: 1.5em; color: #9d251f; }
+form { display: grid; gap: 14px; }
+label { display: grid; gap: 6px; font-weight: 600; }
+input, textarea { box-sizing: border-box; width: 100%; padding: 10px 12px; border: 1px solid #bac6d4; border-radius: 8px; font: inherit; font-weight: 400; }
+button { width: fit-content; padding: 10px 16px; border: 0; border-radius: 8px; color: white; background: #265fc0; font: inherit; cursor: pointer; }
+button:disabled { opacity: .55; cursor: wait; }
+button.secondary { color: #265fc0; background: #e9f0fb; }
+button.danger { color: #a52823; background: #fce9e8; }
+button:focus-visible, input:focus-visible, textarea:focus-visible { outline: 3px solid #75a6fa; outline-offset: 2px; }
+.toolbar, .actions { display: flex; align-items: center; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+.row { display: grid; grid-template-columns: 1fr 1fr 130px; gap: 12px; }
+.tableWrap { overflow-x: auto; }
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 12px 10px; border-bottom: 1px solid #e2e8f0; text-align: left; vertical-align: top; }
+td.actionsCell { min-width: 190px; }
+td.actionsCell button { margin: 2px; padding: 6px 9px; }
+.excerpt { max-width: 360px; white-space: pre-wrap; overflow-wrap: anywhere; }
+.muted { color: #65768a; }
+@media (max-width: 700px) { .container { margin: 0; padding: 18px; border-radius: 0; } .row { grid-template-columns: 1fr; } }

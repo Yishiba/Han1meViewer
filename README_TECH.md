@@ -408,12 +408,14 @@ Room 主要用于：
 - `ui/screen/home/homepage/component/AnnouncementDialog.kt`
 - `ui/screen/home/homepage/HomePageScreen.kt`
 - `logic/model/Announcement.kt`
-- `HanimeAnnouncementManagerWebUI/HanimeAnnouncementManager.html`
+- `HanimeAnnouncementManagerWebUI/public/index.html`
+- `HanimeAnnouncementManagerWebUI/public/app.js`
+- `database.rules.json`
 - `HanimeAnnouncementManagerWebUI/PermitAdmin.py`
 
 应用侧链路：
 
-- 配置自有数据库后，`HomePageViewModel.fetchAnnouncementsFromFirebase()` 从 Firebase Realtime Database 的 `announcements` 节点读取公告；当前地址为空，返回空列表。
+- `HomePageViewModel.fetchAnnouncementsFromFirebase()` 从自有 Firebase Realtime Database 的 `announcements` 节点读取公告。
 - 只有 `isActive = true` 的公告会参与展示。
 - 首页通过公告卡片展示公告列表。
 - 点击公告后进入 `AnnouncementDialog`，可查看标题、正文、时间、图片和按钮文案。
@@ -421,18 +423,15 @@ Room 主要用于：
 
 管理端链路：
 
-- `HanimeAnnouncementManager.html` 是基于 Firebase Web SDK 的管理页面。
-- 页面通过 `firebaseConfig` 连接到项目对应的 Realtime Database。
-- 页面使用 `ADMIN_EMAIL` 和 `ADMIN_PASSWORD` 登录 Firebase Auth。
+- `HanimeAnnouncementManagerWebUI/public/` 是基于 Firebase Web SDK 的管理页面，部署在自有 Firebase Hosting。
+- 页面使用登录表单接收 Firebase Auth 邮箱和密码，源码不包含管理员凭据。
 - 登录成功后读取 `announcements` 节点并渲染为表格。
 - 页面支持新增、编辑、启用、停用和删除公告。
 
 管理员权限：
 
-- `PermitAdmin.py` 使用 Firebase Admin SDK 给指定 UID 写入 `isAdmin: true` 自定义声明。
-- 该脚本依赖本地 `serviceAccountKey.json`。
-- 运行前需要安装 `firebase-admin`，并填写目标用户 UID。
-- 该自定义声明用于管理端权限校验。
+- `database.rules.json` 只允许带 `announcementAdmin: true` 自定义声明的 Firebase Auth 账号读取全部公告并写入；匿名客户端只有按 `isActive = true` 查询时才能读取。其他路径不可读写。
+- `PermitAdmin.py` 可使用仓库外的服务账号凭据给指定 UID 授权，保留其他自定义声明；日常管理不需要服务账号凭据。
 
 公告字段约定：
 

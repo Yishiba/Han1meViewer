@@ -95,7 +95,7 @@ Han1meClient 是用于浏览、搜索、播放和整理 Hanime1 网站内容的�
 - 🌐 网络辅助：支持 Cloudflare 处理、备用域名、代理相关设置、CDN/网络检测和更新检查。
 - 📅 健康打卡：内置冲了么打卡页面和桌面小组件。
 - 🎯 共享关键 H 帧：支持内置关键帧数据读取、设置和共享数据展示。
-- 🗞️ 公告系统：保留首页公告展示和管理界面；自有 Firebase Realtime Database 尚未开通，因此当前版本不拉取或展示公告。
+- 🗞️ 公告系统：从自有 Firebase Realtime Database 读取公告，并通过独立管理员网页维护；新增公告默认停用。
 
 ### 搜索词翻译
 
@@ -169,42 +169,31 @@ Han1meClient 是用于浏览、搜索、播放和整理 Hanime1 网站内容的�
 
 ## 🗞️ 公告系统使用须知
 
-公告系统分为两部分：
-
-- 用户侧：配置自有数据库后，`HomePageViewModel` 从 Firebase Realtime Database 读取 `announcements` 节点，首页展示有效公告。目前 `FIREBASE_REALTIME_DATABASE` 为空，公告停用，避免展示 fork 前项目的更新公告。
-- 维护侧：`HanimeAnnouncementManagerWebUI` 用于维护公告数据，负责向同一个 `announcements` 节点写入、更新或下线公告。
+公告使用自有 Firebase 项目 `han1meviewer-chuishui` 的新加坡 Realtime Database。`HomePageViewModel` 读取 `announcements`，只展示 `isActive = true` 的公告。管理页部署在 [Han1meClient 公告管理](https://han1meviewer-chuishui.web.app/)；其 Firebase Web 配置是公开标识，写入权限由数据库规则中的 `announcementAdmin` 声明控制。不要把密码、服务账号密钥或用户数据写入公开仓库。
 
 应用 APK 更新检查独立使用自有仓库 `Yishiba/Han1meViewer` 的 GitHub Release；草稿 Release 不会向用户展示。
 
-`HanimeAnnouncementManagerWebUI` 目录包含两个文件：
+相关文件：
 
-- `HanimeAnnouncementManager.html`：公告管理网页，用于增删改查公告、切换启用状态。
-- `PermitAdmin.py`：给 Firebase Auth 用户写入 `isAdmin` 自定义声明，用于控制谁能访问管理端。
-
-前置条件：
-
-- 应用必须能够正常访问网络。
-- 先在自有 Firebase 项目开通 Realtime Database，再将 `FIREBASE_REALTIME_DATABASE` 配置为该实例地址；不要使用上游项目数据库。
-- `announcements` 节点下的公告数据结构需要和 `Announcement` 模型一致，至少包含 `title`、`content`、`isActive` 等字段。
-- 公告内容会按 `priority` 排序，只有 `isActive = true` 的公告才会显示。
-- 管理端需要启用 Firebase Authentication 和 Realtime Database。
-- 管理端需要准备 Firebase Web 配置参数和可登录的管理员邮箱、密码。
-- 若使用 `PermitAdmin.py`，还需要 Firebase Admin SDK 的 `serviceAccountKey.json`。
+- `HanimeAnnouncementManagerWebUI/public/`：公告管理网页，包含登录、增删改查和发布／停用操作。
+- `database.rules.json`：匿名客户端只有按 `isActive = true` 查询时才能读取公告；只有带 `announcementAdmin = true` 声明的 Firebase Auth 用户可读取全部和写入，字段受到校验。
+- `firebase.json` 和 `.firebaserc`：项目与部署配置。
+- `HanimeAnnouncementManagerWebUI/PermitAdmin.py`：需要新增管理员时，可用仓库外的服务账号凭据为指定 UID 授权；不会覆盖该用户已有声明。
 
 使用规则：
 
-- 仅在配置自有公告数据库后，首页才会展示有效公告列表。
+- 管理员使用 Firebase Auth 邮箱密码在管理页登录。账号密码在网页输入，不写入源码；换设备或忘记密码可在登录页发送重置邮件。无管理员声明的账号无法操作公告。
+- 新公告先保存为停用，核对后显式发布；按 `priority` 从小到大排序。
+- 匿名客户端必须按 `isActive = true` 查询，停用记录不会返回；公告库仍不用于保存密码等秘密。
 - 用户关闭公告后，会记录 `last_dismiss_time`，24 小时内不会再次自动弹出。
-- 公告详情支持标题、内容、发布时间、图片和按钮文案。
+- 公告详情支持标题、内容、发布时间、HTTPS 图片和按钮文案。
 - 若公告配置了链接，内容中可直接展示可点击的 URL。
 
-管理端使用步骤：
+部署与新增管理员：
 
-1. 在 `HanimeAnnouncementManager.html` 中填写 `firebaseConfig`。
-2. 在 `ADMIN_EMAIL` 和 `ADMIN_PASSWORD` 中填入可登录 Firebase Auth 的管理员账号。
-3. 确保 Realtime Database 规则允许该管理员账号读写 `announcements` 节点。
-4. 如需批量授权管理员，先安装 `firebase-admin`，准备 `serviceAccountKey.json`，再运行 `PermitAdmin.py` 并填写目标用户 UID。
-5. 打开管理页后即可新增、编辑、启用、停用或删除公告。
+1. 确认 Firebase CLI 当前项目为 `han1meviewer-chuishui`，运行 `firebase deploy --only database,auth,hosting --project han1meviewer-chuishui`。
+2. 在 Firebase Authentication 创建邮箱密码用户；使用受信任的管理工具给该 UID 设置自定义声明 `announcementAdmin = true`。若使用本地脚本，运行 `python3 HanimeAnnouncementManagerWebUI/PermitAdmin.py <UID> --service-account <仓库外的凭据路径>`。
+3. 在管理页登录。新增后先检查内容，再点击“发布”；停用和删除可在列表中操作。
 
 公告字段说明：
 
@@ -219,9 +208,9 @@ Han1meClient 是用于浏览、搜索、播放和整理 Hanime1 网站内容的�
 
 维护建议：
 
-- 新公告建议先在 WebUI 中预览，再切换为 `isActive = true`。
+- 新公告默认 `isActive = false`，检查后再发布。
 - 过期或不再需要显示的公告应直接下线，而不是删除，以便回溯。
-- 重要公告优先级数值应更高或更低需与 WebUI 约定保持一致，避免排序混乱。
+- 优先级数值越小越靠前。
 
 ## 📷 截图预览
 
@@ -251,7 +240,7 @@ Han1meClient 是用于浏览、搜索、播放和整理 Hanime1 网站内容的�
 - `logic.network`：Retrofit Service、OkHttp 拦截器、DNS、CookieJar、更新服务和网络入口。
 - `logic.model`：页面和网络解析后的领域模型，如 `HanimeVideo`、`HanimeInfo`、`HomePage`、`Playlists` 等。
 - `logic.dao` / `logic.entity`：Room 数据库、DAO 和实体，用于历史、下载、搜索历史、关键帧、打卡等本地数据。
-- `announcement` 链路：自有数据库配置后，首页由 `HomePageViewModel` 读取 Firebase Realtime Database 的 `announcements` 节点并展示，管理端使用 `HanimeAnnouncementManagerWebUI` 维护公告内容；当前未配置自有数据库，首页公告停用。
+- `announcement` 链路：首页由 `HomePageViewModel` 读取自有 Firebase Realtime Database 的 `announcements` 节点并展示已发布公告，管理员网页负责维护数据。
 - `worker`：WorkManager 下载任务和更新任务。
 - `util`：主题、网络、文件、权限、Cookie、Toast、视频和通用工具方法。
 
