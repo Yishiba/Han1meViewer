@@ -51,6 +51,14 @@ byId("loginForm").addEventListener("submit", async event => {
   } catch (error) { report(error); }
   finally { button.disabled = false; }
 });
+byId("resetPassword").addEventListener("click", async () => {
+  const email = byId("email").value.trim();
+  if (!email) { status("请先填写管理员邮箱。"); return; }
+  try {
+    await auth.sendPasswordResetEmail(email);
+    status("密码重置邮件已发送，请检查邮箱。重置后可在新设备登录。");
+  } catch (error) { report(error); }
+});
 byId("refreshClaim").addEventListener("click", () => checkAdmin(auth.currentUser));
 for (const id of ["logout", "deniedLogout"]) {
   byId(id).addEventListener("click", () => auth.signOut().catch(report));
