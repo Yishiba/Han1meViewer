@@ -133,6 +133,7 @@ fun RenderVideoIntroductionContent(
 @Composable
 fun RenderVideoCommentContent(
     viewModel: CommentViewModel,
+    commentCount: Int?,
     reportMessages: MutableSharedFlow<CommentMessage>,
     getMessageText: (CommentViewModel.Message) -> String,
     pageHost: VideoPageHost? = null,
@@ -150,17 +151,19 @@ fun RenderVideoCommentContent(
         ),
     )
     val scope = rememberCoroutineScope()
+    val canLoadMoreComments by viewModel.hasMoreCommentsFlow.collectAsStateWithLifecycle()
+    val loadMoreFailed by viewModel.loadMoreFailedFlow.collectAsStateWithLifecycle()
 
     HanimeTheme {
         LaunchedEffect(viewModel.code) {
             viewModel.getComment(VIDEO_COMMENT_PREFIX, viewModel.code)
         }
 
-        LaunchedEffect(Unit) {
+        LaunchedEffect(viewModel.code, commentCount) {
             viewModel.videoCommentStateFlow.collect { state ->
                 if (state is WebsiteState.Success) {
                     viewModel.currentUserId = state.info.currentUserId
-                    pageHost?.showCommentBadge(state.info.videoComment.size)
+                    pageHost?.showCommentBadge(commentCount ?: state.info.videoComment.size)
                 }
             }
         }
@@ -243,6 +246,9 @@ fun RenderVideoCommentContent(
         CommentScreen(
             commentsFlow = viewModel.videoCommentFlow,
             commentStateFlow = viewModel.videoCommentStateFlow,
+            canLoadMore = canLoadMoreComments,
+            loadMoreFailed = loadMoreFailed,
+            onLoadMore = viewModel::loadMoreComments,
             reportMessageFlow = sharedReportFlow,
             currentSortType = viewModel.currentSortType,
             reportReasons = viewModel.reportReason,

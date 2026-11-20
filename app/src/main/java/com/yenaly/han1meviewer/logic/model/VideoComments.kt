@@ -9,6 +9,8 @@ data class VideoComments(
     val videoComment: MutableList<VideoComment>,
     val currentUserId: String? = null,
     val csrfToken: String? = null,
+    val hasMoreComments: Boolean = false,
+    val nextCommentOffset: Int? = null,
 ) {
     data class VideoComment(
         // 頭像

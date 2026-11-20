@@ -73,6 +73,7 @@ import com.yenaly.han1meviewer.util.safeSortedBy
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
 
@@ -95,6 +96,9 @@ fun CommentScreen(
     onViewMoreReplies: (VideoComments.VideoComment) -> Unit,
     onSortChange: (CommentSortType) -> Unit,
     onComposeComment: (String) -> Unit,
+    canLoadMore: Boolean = false,
+    loadMoreFailed: Boolean = false,
+    onLoadMore: () -> Unit = {},
     initialFirstVisibleItemIndex: Int = 0,
     initialFirstVisibleItemScrollOffset: Int = 0,
     onCommentScrollChange: (Int, Int) -> Unit = { _, _ -> },
@@ -136,6 +140,20 @@ fun CommentScreen(
         sortComments(comments, sortType)
     }
     val showCommentFab by rememberCommentFabVisibility(listState)
+
+    LaunchedEffect(canLoadMore, loadMoreFailed, listState) {
+        if (!canLoadMore || loadMoreFailed) return@LaunchedEffect
+        snapshotFlow {
+            val layout = listState.layoutInfo
+            NearEndState(
+                nearEnd = layout.totalItemsCount > 0 &&
+                        (layout.visibleItemsInfo.lastOrNull()?.index ?: -1) >= layout.totalItemsCount - 4,
+                totalItemsCount = layout.totalItemsCount,
+            )
+        }.distinctUntilChanged().collect { position ->
+            if (position.nearEnd) onLoadMore()
+        }
+    }
 
     LaunchedEffect(listState) {
         snapshotFlow {
@@ -351,6 +369,13 @@ fun CommentScreen(
                                     },
                                 )
                             }
+                            if (loadMoreFailed) {
+                                item {
+                                    FilledTonalButton(onClick = onLoadMore, modifier = Modifier.fillMaxWidth()) {
+                                        Text(stringResource(R.string.load_failed_retry))
+                                    }
+                                }
+                            }
                         }
                     }
                 }
@@ -504,3 +529,8 @@ private fun CommentScreenEmptyPreview() {
         onComposeComment = {},
     )
 }
+
+private data class NearEndState(
+    val nearEnd: Boolean,
+    val totalItemsCount: Int,
+)

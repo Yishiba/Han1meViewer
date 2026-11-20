@@ -48,6 +48,7 @@ fun VideoRouteContent(
     pageHost: VideoPageHost,
 ) {
     val hostUiState by videoViewModel.videoHostUiStateFlow.collectAsStateWithLifecycle()
+    val video by videoViewModel.hanimeVideoFlow.collectAsStateWithLifecycle()
     val disableComments = remember {
         PreferenceManager.getDefaultSharedPreferences(application)
             .getBoolean("disable_comments", false)
@@ -101,6 +102,7 @@ fun VideoRouteContent(
             } else {
                 RenderVideoCommentContent(
                     viewModel = commentViewModel,
+                    commentCount = video?.commentCount,
                     reportMessages = remember { kotlinx.coroutines.flow.MutableSharedFlow() },
                     getMessageText = { message ->
                         if (message.args.isNotEmpty()) {

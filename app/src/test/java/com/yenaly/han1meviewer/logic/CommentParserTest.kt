@@ -1,7 +1,8 @@
 package com.yenaly.han1meviewer.logic
 
-import com.yenaly.han1meviewer.logic.state.WebsiteState
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertFalse
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class CommentParserTest {
@@ -14,10 +15,25 @@ class CommentParserTest {
               ${commentBlock("103", "Third")}
               ${commentBlock("104", "Fourth")}
             </div>
-        """) as WebsiteState.Success
+        """)
 
-        assertEquals(listOf("101", "102", "103", "104"), comments.info.videoComment.map { it.id })
-        assertEquals(listOf("First", "Second", "Third", "Fourth"), comments.info.videoComment.map { it.content })
+        assertEquals(listOf("101", "102", "103", "104"), comments.videoComment.map { it.id })
+        assertEquals(listOf("First", "Second", "Third", "Fourth"), comments.videoComment.map { it.content })
+        assertFalse(comments.hasMoreComments)
+    }
+
+    @Test
+    fun parsesPaginationMetadataAndNextBatch() {
+        val first = Parser.parseCommentsHtml("""
+            <div id="comment-start">${commentBlock("101", "First")}</div>
+            <div id="comment-scroll-sentinel" data-has-more="1" data-next-offset="100"></div>
+        """)
+        assertTrue(first.hasMoreComments)
+        assertEquals(100, first.nextCommentOffset)
+
+        val next = Parser.parseCommentsPageHtml(commentBlock("102", "Second"), false, null)
+        assertEquals(listOf("102"), next.videoComment.map { it.id })
+        assertFalse(next.hasMoreComments)
     }
 
     private fun commentBlock(id: String, content: String) = """
