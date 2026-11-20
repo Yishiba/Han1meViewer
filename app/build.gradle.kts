@@ -139,7 +139,7 @@ androidComponents {
         variant.outputs.forEach { output ->
 
             //  val apkName = "你的应用名_V${output.versionName.get()}_Build${output.versionCode.get()}_${variant.buildType}.apk"
-            val apkName = "YoruShelf-v${output.versionName.get()}.apk"
+            val apkName = "Han1meShelf-v${output.versionName.get()}.apk"
             (output as VariantOutputImpl).outputFileName = apkName
         }
     }

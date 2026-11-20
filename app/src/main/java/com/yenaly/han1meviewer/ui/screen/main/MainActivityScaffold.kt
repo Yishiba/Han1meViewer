@@ -224,7 +224,7 @@ private fun MainActivityScaffoldPreview() {
             drawerEnabled = true,
             selectedDestination = MainDrawerDestination.Home,
             avatarUrl = null,
-            username = "YoruShelf",
+            username = "Han1me Shelf",
             isLoggedIn = true,
             isLoading = false,
             currentSite = "https://hanime1.me/",
