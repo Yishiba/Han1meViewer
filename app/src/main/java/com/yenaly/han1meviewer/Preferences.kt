@@ -23,6 +23,7 @@ import kotlin.time.ExperimentalTime
 
 object Preferences {
     private const val USAGE_NOTICE_ACCEPTED = "usage_notice_accepted"
+    private const val USAGE_NOTICE_REVISION_ACCEPTED = "usage_notice_2026_11_20_accepted"
     private const val ONBOARDING_COMPLETED = "onboarding_completed"
     private const val ONBOARDING_PENDING = "onboarding_pending"
 
@@ -51,6 +52,10 @@ object Preferences {
     var usageNoticeAccepted: Boolean
         get() = preferenceSp.getBoolean(USAGE_NOTICE_ACCEPTED, false)
         set(value) = preferenceSp.edit { putBoolean(USAGE_NOTICE_ACCEPTED, value) }
+
+    var usageNoticeRevisionAccepted: Boolean
+        get() = preferenceSp.getBoolean(USAGE_NOTICE_REVISION_ACCEPTED, false)
+        set(value) = preferenceSp.edit { putBoolean(USAGE_NOTICE_REVISION_ACCEPTED, value) }
 
     var onboardingCompleted: Boolean
         get() = preferenceSp.getBoolean(ONBOARDING_COMPLETED, false)

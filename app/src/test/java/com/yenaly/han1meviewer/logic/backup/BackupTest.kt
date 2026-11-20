@@ -36,7 +36,8 @@ class BackupTest {
             "c" to PreferenceValue.IntValue(2), "d" to PreferenceValue.LongValue(3),
             "e" to PreferenceValue.StringValue("中文 English 日本語"), "f" to PreferenceValue.StringSetValue(setOf("a", "b")),
             "cookie" to PreferenceValue.StringValue("secret"), "cf_cookie" to PreferenceValue.StringValue("secret"),
-            "already_login" to PreferenceValue.BooleanValue(true), "saved_user_id" to PreferenceValue.StringValue("secret")))
+            "already_login" to PreferenceValue.BooleanValue(true), "saved_user_id" to PreferenceValue.StringValue("secret"),
+            "usage_notice_2026_11_20_accepted" to PreferenceValue.BooleanValue(true)))
         val bytes = BackupCodec.encode(source)
         val restored = BackupCodec.decode(bytes)
         assertEquals(setOf("a", "b", "c", "d", "e", "f"), restored.settings!!.keys)
