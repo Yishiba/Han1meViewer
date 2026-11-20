@@ -59,7 +59,7 @@ fun rememberBackupTransfers(onRestored: () -> Unit): BackupTransfers {
             selection = null
             perform {
                 pendingBytes = service.prepareExport(selected.id, password)
-                output.launch("Han1meShelf-${System.currentTimeMillis()}." + if (password == null) "json" else "hvbenc")
+                output.launch("Han1meClient-${System.currentTimeMillis()}." + if (password == null) "json" else "hvbenc")
             }
         }) }
     importUri?.let { uri -> AlertDialog(onDismissRequest = { importUri = null },

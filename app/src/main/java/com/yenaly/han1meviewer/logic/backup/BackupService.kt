@@ -180,7 +180,7 @@ class BackupService private constructor(private val context: Context) {
         val raw = repository.export(version.id)
         val encrypted = store.read().encryptedMirror
         val bytes = if (encrypted) EncryptedBackupCodec.encrypt(raw, passwords.read()) else raw
-        val name = "Han1meShelf-${version.createdAt}-${version.id}." + if (encrypted) "hvbenc" else "json"
+        val name = "Han1meClient-${version.createdAt}-${version.id}." + if (encrypted) "hvbenc" else "json"
         val document = root.createFile("application/octet-stream", "$name.partial") ?: error("Cannot create copy")
         try {
             context.contentResolver.openOutputStream(document.uri, "wt")?.use { it.write(bytes) }
