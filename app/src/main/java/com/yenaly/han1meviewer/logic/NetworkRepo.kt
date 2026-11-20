@@ -150,14 +150,12 @@ object NetworkRepo {
         userId: String,
         csrfToken: String?,
         name: String,
-        email: String,
     ) = websiteIOFlow(
         request = {
             HanimeNetwork.myListService.updateUserAccountProfile(
                 userId = userId,
                 csrfToken = csrfToken,
                 name = name,
-                email = email,
             )
         },
         permittedSuccessCode = intArrayOf(302),
@@ -446,7 +444,6 @@ object NetworkRepo {
         commentPlace: CommentPlace,
         foreignId: String?,
         isPositive: Boolean, // 你選擇的是讚還是踩，1是讚，0是踩
-        likeUserId: String?,
         commentLikesCount: Int,
         commentLikesSum: Int,
         likeCommentStatus: Boolean, // 你之前有沒有點過讚，1是0否
@@ -457,7 +454,7 @@ object NetworkRepo {
             HanimeNetwork.commentService.likeComment(
                 csrfToken, commentPlace.value, foreignId,
                 if (isPositive) 1 else 0,
-                likeUserId, commentLikesCount, commentLikesSum,
+                commentLikesCount, commentLikesSum,
                 if (likeCommentStatus) 1 else 0,
                 if (unlikeCommentStatus) 1 else 0
             )

@@ -41,6 +41,7 @@ import com.yenaly.yenaly_libs.utils.saveTo
 import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
@@ -529,16 +530,18 @@ class HanimeDownloadWorker(
                     result.outputData.getInt(DownloadState.STATE, DownloadState.Unknown.mask)
                 )
                 try {
-                    raf?.fd?.sync()
-                    if (state == DownloadState.Finished && !shouldRetry) {
-                        DownloadAutoOrganizer(DownloadDatabase.instance, Preferences.preferenceSp)
-                            .complete(entity.id, downloadedLength)
-                    } else DatabaseRepo.HanimeDownload.update(
-                        entity.copy(
-                            state = if (shouldRetry) DownloadState.Queued else state,
-                            downloadedLength = downloadedLength
+                    withContext(NonCancellable) {
+                        raf?.fd?.sync()
+                        if (state == DownloadState.Finished && !shouldRetry) {
+                            DownloadAutoOrganizer(DownloadDatabase.instance, Preferences.preferenceSp)
+                                .complete(entity.id, downloadedLength)
+                        } else DatabaseRepo.HanimeDownload.update(
+                            entity.copy(
+                                state = if (shouldRetry) DownloadState.Queued else state,
+                                downloadedLength = downloadedLength
+                            )
                         )
-                    )
+                    }
                 } finally {
                     raf?.closeQuietly()
                     safChannel?.closeQuietly()

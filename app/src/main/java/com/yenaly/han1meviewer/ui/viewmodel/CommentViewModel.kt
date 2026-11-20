@@ -200,7 +200,6 @@ class CommentViewModel(application: Application) : YenalyViewModel(application) 
                 commentPlace,
                 comment.post.foreignId,
                 isPositive,
-                comment.post.likeUserId,
                 comment.post.commentLikesCount ?: 0,
                 comment.post.commentLikesSum ?: 0,
                 likeCommentStatus,

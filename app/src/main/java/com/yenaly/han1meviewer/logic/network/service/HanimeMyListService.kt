@@ -67,7 +67,6 @@ interface HanimeMyListService {
         @Field("_method") method: String = "patch",
         @Field("type") type: String = "profile",
         @Field("name") name: String,
-        @Field("email") email: String,
         @Header("X-CSRF-TOKEN") csrfToken_1: String? = csrfToken,
     ): Response<ResponseBody>
 

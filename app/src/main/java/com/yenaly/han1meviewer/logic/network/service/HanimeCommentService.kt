@@ -50,7 +50,6 @@ interface HanimeCommentService {
         @Field("foreign_type") foreignType: String,
         @Field("foreign_id") foreignId: String?,
         @Field("is_positive") isPositive: Int, // 你選擇的是讚還是踩，1是讚，0是踩
-        @Field("comment-like-user-id") likeUserId: String?,
         @Field("comment-likes-count") commentLikesCount: Int,
         @Field("comment-likes-sum") commentLikesSum: Int,
         @Field("like-comment-status") likeCommentStatus: Int, // 你之前有沒有點過讚，1是0否
