@@ -95,7 +95,7 @@ Han1meClient 是用于浏览、搜索、播放和整理 Hanime1 网站内容的�
 - 🌐 网络辅助：支持 Cloudflare 处理、备用域名、代理相关设置、CDN/网络检测和更新检查。
 - 📅 健康打卡：内置冲了么打卡页面和桌面小组件。
 - 🎯 共享关键 H 帧：支持内置关键帧数据读取、设置和共享数据展示。
-- 🗞️ 公告系统：支持首页公告展示、公告详情弹窗，并配套 `HanimeAnnouncementManagerWebUI` 维护 Firebase Realtime Database 中的 `announcements` 节点。
+- 🗞️ 公告系统：保留首页公告展示和管理界面；自有 Firebase Realtime Database 尚未开通，因此当前版本不拉取或展示公告。
 
 ### 搜索词翻译
 
@@ -171,8 +171,10 @@ Han1meClient 是用于浏览、搜索、播放和整理 Hanime1 网站内容的�
 
 公告系统分为两部分：
 
-- 用户侧：应用启动后由 `MainViewModel.loadAnnouncements()` 从 Firebase Realtime Database 读取 `announcements` 节点，首页会展示有效公告，并可点开公告详情弹窗。
+- 用户侧：配置自有数据库后，`HomePageViewModel` 从 Firebase Realtime Database 读取 `announcements` 节点，首页展示有效公告。目前 `FIREBASE_REALTIME_DATABASE` 为空，公告停用，避免展示 fork 前项目的更新公告。
 - 维护侧：`HanimeAnnouncementManagerWebUI` 用于维护公告数据，负责向同一个 `announcements` 节点写入、更新或下线公告。
+
+应用 APK 更新检查独立使用自有仓库 `Yishiba/Han1meViewer` 的 GitHub Release；草稿 Release 不会向用户展示。
 
 `HanimeAnnouncementManagerWebUI` 目录包含两个文件：
 
@@ -182,7 +184,7 @@ Han1meClient 是用于浏览、搜索、播放和整理 Hanime1 网站内容的�
 前置条件：
 
 - 应用必须能够正常访问网络。
-- 项目中配置的 Firebase Realtime Database 地址必须可用。
+- 先在自有 Firebase 项目开通 Realtime Database，再将 `FIREBASE_REALTIME_DATABASE` 配置为该实例地址；不要使用上游项目数据库。
 - `announcements` 节点下的公告数据结构需要和 `Announcement` 模型一致，至少包含 `title`、`content`、`isActive` 等字段。
 - 公告内容会按 `priority` 排序，只有 `isActive = true` 的公告才会显示。
 - 管理端需要启用 Firebase Authentication 和 Realtime Database。
@@ -191,7 +193,7 @@ Han1meClient 是用于浏览、搜索、播放和整理 Hanime1 网站内容的�
 
 使用规则：
 
-- 首页公告默认会展示为有效公告列表。
+- 仅在配置自有公告数据库后，首页才会展示有效公告列表。
 - 用户关闭公告后，会记录 `last_dismiss_time`，24 小时内不会再次自动弹出。
 - 公告详情支持标题、内容、发布时间、图片和按钮文案。
 - 若公告配置了链接，内容中可直接展示可点击的 URL。
@@ -249,7 +251,7 @@ Han1meClient 是用于浏览、搜索、播放和整理 Hanime1 网站内容的�
 - `logic.network`：Retrofit Service、OkHttp 拦截器、DNS、CookieJar、更新服务和网络入口。
 - `logic.model`：页面和网络解析后的领域模型，如 `HanimeVideo`、`HanimeInfo`、`HomePage`、`Playlists` 等。
 - `logic.dao` / `logic.entity`：Room 数据库、DAO 和实体，用于历史、下载、搜索历史、关键帧、打卡等本地数据。
-- `announcement` 链路：公告数据从 Firebase Realtime Database 的 `announcements` 节点读取，首页通过 `MainViewModel.loadAnnouncements()` 拉取并展示，管理端使用 `HanimeAnnouncementManagerWebUI` 维护公告内容。
+- `announcement` 链路：自有数据库配置后，首页由 `HomePageViewModel` 读取 Firebase Realtime Database 的 `announcements` 节点并展示，管理端使用 `HanimeAnnouncementManagerWebUI` 维护公告内容；当前未配置自有数据库，首页公告停用。
 - `worker`：WorkManager 下载任务和更新任务。
 - `util`：主题、网络、文件、权限、Cookie、Toast、视频和通用工具方法。
 

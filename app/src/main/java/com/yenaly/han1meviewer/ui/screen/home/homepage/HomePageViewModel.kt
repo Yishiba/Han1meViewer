@@ -46,7 +46,9 @@ class HomePageViewModel: ViewModel() {
     private val _homePageFlow = MutableStateFlow<PageState<HomeData>>(PageState.Loading)
     val homePageFlow = _homePageFlow.asStateFlow()
 
-    private val database = FirebaseDatabase.getInstance(FIREBASE_REALTIME_DATABASE)
+    private val database by lazy {
+        FIREBASE_REALTIME_DATABASE.takeIf(String::isNotBlank)?.let(FirebaseDatabase::getInstance)
+    }
 
     private val _sessionExpiredMessage = MutableSharedFlow<SessionExpiredMessage>()
     val sessionExpiredMessage = _sessionExpiredMessage
@@ -106,8 +108,9 @@ class HomePageViewModel: ViewModel() {
             }
         }
     }
-    private suspend fun fetchAnnouncementsFromFirebase(): List<Announcement> =
-        suspendCancellableCoroutine { continuation ->
+    private suspend fun fetchAnnouncementsFromFirebase(): List<Announcement> {
+        val announcementDatabase = database ?: return emptyList()
+        return suspendCancellableCoroutine { continuation ->
             val lastDismissTime = getSpValue("last_dismiss_time", 0L, "setting_pref")
             val shouldShowAnno = System.currentTimeMillis() - lastDismissTime > 24 * 60 * 60 * 1000L
             if (!shouldShowAnno) {
@@ -115,7 +118,7 @@ class HomePageViewModel: ViewModel() {
                 return@suspendCancellableCoroutine
             }
 
-            database.getReference("announcements").get()
+            announcementDatabase.getReference("announcements").get()
                 .addOnSuccessListener { snapshot ->
                     val list = mutableListOf<Announcement>()
                     if (snapshot.exists()) {
@@ -140,6 +143,7 @@ class HomePageViewModel: ViewModel() {
                     }
                 }
         }
+    }
 
     private companion object {
         const val ANNOUNCEMENTS_TIMEOUT_MILLIS = 5_000L
