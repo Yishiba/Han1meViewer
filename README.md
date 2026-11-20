@@ -8,6 +8,8 @@
 
 Han1meClient 是用于浏览、搜索、播放和整理 Hanime1 网站内容的非官方 Android 客户端，与网站运营方无隶属关系。桌面名称体现站点关联，默认图标采用项目维护者提供的角色插画；仓库名及旧数据目录仍保留 Han1meViewer，以兼容既有文件和迁移资料。项目使用 Kotlin、Jetpack Compose、Navigation Compose、ViewModel、StateFlow、Retrofit、Jsoup、Room、WorkManager 与 Media3/JZVD/MPV，支持视频浏览、搜索、播放、下载管理、翻译、备份和同步。
 
+本分支由 GitHub 用户 Yishiba 维护；维护者的[爱发电主页](https://afdian.com/a/chuishui)已公开，欢迎关注项目进展。本仓库可用于核对该主页的创作者身份。目前 App 尚无付款入口，Pro 权益也未启用。
+
 ![Han1meClient 图标](docs/brand/han1me-client-icon.jpg)
 
 ![搜索与翻译功能示意](docs/release-preview.svg)
