@@ -419,7 +419,7 @@ Room 主要用于：
 - 只有 `isActive = true` 的公告会参与展示。
 - 首页通过公告卡片展示公告列表。
 - 点击公告后进入 `AnnouncementDialog`，可查看标题、正文、时间、图片和按钮文案。
-- 用户关闭公告后，会记录 `last_dismiss_time`，24 小时内不会再次自动弹出。
+- 用户关闭公告后，会记录自有公告专用的 `last_dismiss_time_chuishui`，24 小时内不会再次自动弹出。
 
 管理端链路：
 

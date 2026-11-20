@@ -111,7 +111,7 @@ class HomePageViewModel: ViewModel() {
     private suspend fun fetchAnnouncementsFromFirebase(): List<Announcement> {
         val announcementDatabase = database ?: return emptyList()
         return suspendCancellableCoroutine { continuation ->
-            val lastDismissTime = getSpValue("last_dismiss_time", 0L, "setting_pref")
+            val lastDismissTime = getSpValue(ANNOUNCEMENT_DISMISS_TIME_KEY, 0L, "setting_pref")
             val shouldShowAnno = System.currentTimeMillis() - lastDismissTime > 24 * 60 * 60 * 1000L
             if (!shouldShowAnno) {
                 continuation.resume(emptyList())
@@ -150,10 +150,11 @@ class HomePageViewModel: ViewModel() {
 
     private companion object {
         const val ANNOUNCEMENTS_TIMEOUT_MILLIS = 5_000L
+        const val ANNOUNCEMENT_DISMISS_TIME_KEY = "last_dismiss_time_chuishui"
     }
 
     fun dismissAnnouncements(){
-        putSpValue("last_dismiss_time", System.currentTimeMillis(), "setting_pref")
+        putSpValue(ANNOUNCEMENT_DISMISS_TIME_KEY, System.currentTimeMillis(), "setting_pref")
         val current = _homePageFlow.value
         if (current is PageState.Success) {
             _homePageFlow.value = current.copy(info = current.info.copy(announcements = emptyList()))
