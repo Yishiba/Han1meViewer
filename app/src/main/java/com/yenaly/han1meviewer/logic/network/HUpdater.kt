@@ -32,7 +32,7 @@ object HUpdater {
             }
             if (checkNeedUpdate(ver.tagName)) {
                 val asset = ver.assets.singleOrNull {
-                    it.name.startsWith("YoruShelf-v") && it.name.endsWith(".apk") &&
+                    it.name.startsWith("Han1meClient-v") && it.name.endsWith(".apk") &&
                         it.state == "uploaded"
                 } ?: return null
                 val digest = asset.digest?.removePrefix("sha256:") ?: return null

@@ -584,7 +584,7 @@ private fun HomeSettingsScreenPreview() {
                 useDynamicColor = true,
                 useAnalytics = true,
                 useLockScreen = false,
-                fakeLauncherIconName = "YoruShelf",
+                fakeLauncherIconName = "Han1meClient",
                 updateSummary = "已經是最新版本！",
                 cacheSummary = "目前佔用了 12MB 的儲存空間",
                 versionSummary = "當前版本：v1.0.0",

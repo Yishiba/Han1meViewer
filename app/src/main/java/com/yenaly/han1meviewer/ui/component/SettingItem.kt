@@ -307,7 +307,7 @@ private fun SettingInfoItemPreview() {
     ComponentPreview {
         SettingInfoItem(
             title = "当前版本",
-            summary = "YoruShelf",
+            summary = "Han1meClient",
             valueText = "v1.0.0",
         )
     }

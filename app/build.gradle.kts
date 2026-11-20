@@ -90,8 +90,8 @@ android {
                 "proguard-rules.pro"
             )
             signingConfig = signingConfigs.getByName("release")
-            manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher_yoru"
-            manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_yoru_round"
+            manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher_han1me_client"
+            manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_han1me_client_round"
 
         }
 
@@ -101,8 +101,8 @@ android {
                 getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro"
             )
             applicationIdSuffix = ".debug"
-            manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher_yoru_debug"
-            manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_yoru_debug_round"
+            manifestPlaceholders["appIcon"] = "@mipmap/ic_launcher_han1me_client_debug"
+            manifestPlaceholders["appRoundIcon"] = "@mipmap/ic_launcher_han1me_client_debug_round"
         }
     }
     buildFeatures {
@@ -139,7 +139,7 @@ androidComponents {
         variant.outputs.forEach { output ->
 
             //  val apkName = "你的应用名_V${output.versionName.get()}_Build${output.versionCode.get()}_${variant.buildType}.apk"
-            val apkName = "YoruShelf-v${output.versionName.get()}.apk"
+            val apkName = "Han1meClient-v${output.versionName.get()}.apk"
             (output as VariantOutputImpl).outputFileName = apkName
         }
     }

@@ -159,7 +159,7 @@ class HUpdateWorker(
 
     private fun createNotification(progress: Int = 0, fileSizeMB: String = "0", downloadedSizeMB: String = "0", isPending: Boolean = true): Notification {
         return NotificationCompat.Builder(context, UPDATE_NOTIFICATION_CHANNEL)
-            .setSmallIcon(R.drawable.ic_yoru_monochrome)
+            .setSmallIcon(R.drawable.ic_han1me_notification)
             .setOngoing(true)
             .setContentTitle(
                 context.getString(
@@ -233,12 +233,12 @@ class HUpdateWorker(
         val notification = NotificationCompat.Builder(context, UPDATE_NOTIFICATION_CHANNEL)
             .setContentTitle(context.getString(R.string.download_complete))
             .setContentText(context.getString(R.string.click_to_install_update))
-            .setSmallIcon(R.drawable.ic_yoru_monochrome)
+            .setSmallIcon(R.drawable.ic_han1me_notification)
             .setAutoCancel(true)
             .setContentIntent(pendingIntent)
             .addAction(
                 NotificationCompat.Action.Builder(
-                    R.drawable.ic_yoru_monochrome,
+                    R.drawable.ic_han1me_notification,
                     context.getString(R.string.install),
                     pendingIntent
                 ).build()
@@ -255,7 +255,7 @@ class HUpdateWorker(
                 errMsg?.takeIf { it.isNotBlank() }
                     ?: context.getString(R.string.update_download_failed_unknown)
             )
-            .setSmallIcon(R.drawable.ic_yoru_monochrome)
+            .setSmallIcon(R.drawable.ic_han1me_notification)
             .setAutoCancel(true)
             .setPriority(NotificationCompat.PRIORITY_HIGH)
             .build()
