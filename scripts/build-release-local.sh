@@ -8,6 +8,8 @@ if [ -n "$(git status --porcelain)" ]; then
   exit 1
 fi
 
+bash scripts/check-owned-services.sh
+
 release_keystore="$HOME/.android/han1meviewer-release.jks"
 if [ ! -f "$release_keystore" ]; then
   echo "找不到自有正式签名密钥：$release_keystore" >&2

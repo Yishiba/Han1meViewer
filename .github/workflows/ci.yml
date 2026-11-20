@@ -35,5 +35,8 @@ jobs:
       - name: Grant execute permission for gradlew
         run: chmod +x gradlew
 
+      - name: Check owned service configuration
+        run: bash scripts/check-owned-services.sh
+
       - name: Test and build debug APK
         run: ./gradlew :app:testDebugUnitTest :app:assembleDebug

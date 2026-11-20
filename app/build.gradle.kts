@@ -214,7 +214,6 @@ dependencies {
     implementation(libs.expandable.textview)
     implementation(libs.spannable.x)
     implementation(libs.about)
-    implementation(libs.circular.reveal.switch)
     implementation(libs.drawerlayout)
 
     // firebase
