@@ -18,6 +18,13 @@ for root in source_roots:
         if any(old in source for old in (
             'github.com/yenalyliew/han1meviewer',
             'api.github.com/repos/yenalyliew/han1meviewer',
+            'github.com/mlr111/han1meviewer',
+            'api.github.com/repos/mlr111/han1meviewer',
+            'github.com/misaka10032w/han1meviewer',
+            'api.github.com/repos/misaka10032w/han1meviewer',
+            'raw.githubusercontent.com/yenalyliew/han1meviewer',
+            'raw.githubusercontent.com/mlr111/han1meviewer',
+            'raw.githubusercontent.com/misaka10032w/han1meviewer',
             'han1meviewer-86e5f',
         )):
             raise SystemExit(f'运行时源码仍引用原项目服务地址：{path}')
