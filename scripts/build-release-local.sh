@@ -29,7 +29,7 @@ export KEYSTORE_PASSWORD
 trap 'unset KEYSTORE_PASSWORD' EXIT
 
 jdk_path='/Applications/Android Studio.app/Contents/jbr/Contents/Home'
-export JAVA_HOME="${JAVA_HOME:-$jdk_path}"
+export JAVA_HOME="${RELEASE_JAVA_HOME:-$jdk_path}"
 if [ ! -x "$JAVA_HOME/bin/keytool" ]; then
   echo "需要 JDK 21；请设置 JAVA_HOME。" >&2
   exit 1
