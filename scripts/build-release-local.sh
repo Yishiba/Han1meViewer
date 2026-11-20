@@ -10,6 +10,14 @@ fi
 
 bash scripts/check-owned-services.sh
 
+# Highest private APK already installed by testers. Raise this when distributing a newer APK.
+latest_distributed_code=26112010
+candidate_code="${HA1_VERSION_CODE:-$(date -u +%y%m%d%H)}"
+if ! [[ "$candidate_code" =~ ^[0-9]+$ ]] || (( candidate_code <= latest_distributed_code )); then
+  echo "版本号 ${candidate_code} 无法升级已发出的 ${latest_distributed_code}；请设置更高的 HA1_VERSION_CODE。" >&2
+  exit 1
+fi
+
 release_keystore="$HOME/.android/han1meviewer-release.jks"
 if [ ! -f "$release_keystore" ]; then
   echo "找不到自有正式签名密钥：$release_keystore" >&2
