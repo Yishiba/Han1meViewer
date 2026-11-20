@@ -14,6 +14,7 @@ interface HanimeCommentService {
     suspend fun getComments(
         @Query("type") type: String, // 類似 "video", "preview"
         @Query("id") code: String,
+        @Query("offset") offset: Int? = null,
     ): Response<ResponseBody>
 
     @GET("loadReplies")
@@ -30,7 +31,6 @@ interface HanimeCommentService {
         @Field("comment-foreign-id") targetUserId: String,
         @Field("comment-text") text: String,
         @Field("comment-count") count: Int = 1, // 感觉没什么用，仅前端用
-        @Field("comment-is-political") isPolitical: Int = 0, // 感觉没什么用，仅前端用
         @Header("X-CSRF-TOKEN") csrfToken_1: String? = csrfToken,
     ): Response<ResponseBody>
 

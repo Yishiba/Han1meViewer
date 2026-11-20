@@ -588,6 +588,8 @@ object Parser {
             )
         } else null
         val originalComic = parseBody.selectFirst("a.video-comic-btn")?.attr("href")
+        val commentCount = parseBody.selectFirst("#tab-comments-count")
+            ?.text()?.filter(Char::isDigit)?.toIntOrNull()
 
         return VideoLoadingState.Success(
             HanimeVideo(
@@ -614,7 +616,8 @@ object Parser {
                 isUnlike = unlikeStatus == "1",
                 csrfToken = csrfToken,
                 currentUserId = currentUserId,
-                originalComic = originalComic
+                originalComic = originalComic,
+                commentCount = commentCount,
             )
         )
     }
@@ -898,11 +901,11 @@ object Parser {
     fun comments(body: String): WebsiteState<VideoComments> {
         val jsonObject = JSONObject(body)
         val commentBody = jsonObject.get("comments").toString()
-        return parseCommentsHtml(commentBody)
+        return WebsiteState.Success(parseCommentsHtml(commentBody))
     }
 
     @SuppressLint("BuildListAdds")
-    internal fun parseCommentsHtml(commentBody: String): WebsiteState<VideoComments> {
+    internal fun parseCommentsHtml(commentBody: String): VideoComments {
         val parseBody = Jsoup.parse(commentBody).body()
         val csrfToken = parseBody.selectFirst("input[name=_token]")?.attr("value")
         val currentUserId = parseBody.selectFirst("input[name=comment-user-id]")?.attr("value")
@@ -979,14 +982,35 @@ object Parser {
                 )
             )
         }
+        val sentinel = parseBody.getElementById("comment-scroll-sentinel")
+        return VideoComments(
+            commentList,
+            currentUserId,
+            csrfToken,
+            hasMoreComments = sentinel?.attr("data-has-more") == "1",
+            nextCommentOffset = sentinel?.attr("data-next-offset")?.toIntOrNull(),
+        )
+    }
+
+    fun commentsPage(body: String): WebsiteState<VideoComments> {
+        val jsonObject = JSONObject(body)
         return WebsiteState.Success(
-            VideoComments(
-                commentList,
-                currentUserId,
-                csrfToken
+            parseCommentsPageHtml(
+                jsonObject.optString("items_html"),
+                jsonObject.optBoolean("has_more", false),
+                jsonObject.optInt("next_offset", -1).takeIf { it >= 0 },
             )
         )
     }
+
+    internal fun parseCommentsPageHtml(
+        itemsHtml: String,
+        hasMore: Boolean,
+        nextOffset: Int?,
+    ): VideoComments = parseCommentsHtml("<div id='comment-start'>$itemsHtml</div>").copy(
+        hasMoreComments = hasMore,
+        nextCommentOffset = nextOffset,
+    )
 
     fun commentReply(body: String): WebsiteState<VideoComments> {
         val jsonObject = JSONObject(body)

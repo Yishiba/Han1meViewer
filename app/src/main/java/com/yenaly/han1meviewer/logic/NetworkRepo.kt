@@ -396,9 +396,9 @@ object NetworkRepo {
 
     //<editor-fold desc="Comment">
 
-    fun getComments(type: String, code: String) = websiteIOFlow(
-        request = { HanimeNetwork.commentService.getComments(type, code) },
-        action = Parser::comments
+    fun getComments(type: String, code: String, offset: Int? = null) = websiteIOFlow(
+        request = { HanimeNetwork.commentService.getComments(type, code, offset) },
+        action = if (offset == null) Parser::comments else Parser::commentsPage,
     )
 
     fun getCommentReply(commentId: String) = websiteIOFlow(

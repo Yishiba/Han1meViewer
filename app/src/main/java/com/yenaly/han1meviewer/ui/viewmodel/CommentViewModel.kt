@@ -22,6 +22,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.launch
 
 /**
@@ -60,6 +61,15 @@ class CommentViewModel(application: Application) : YenalyViewModel(application) 
 
     private val _videoCommentFlow = MutableStateFlow(emptyList<VideoComments.VideoComment>())
     val videoCommentFlow = _videoCommentFlow.asStateFlow()
+
+    private val _hasMoreComments = MutableStateFlow(false)
+    val hasMoreCommentsFlow = _hasMoreComments.asStateFlow()
+    private val _loadMoreFailed = MutableStateFlow(false)
+    val loadMoreFailedFlow = _loadMoreFailed.asStateFlow()
+    private var currentCommentTarget: Pair<String, String>? = null
+    private var nextCommentOffset: Int? = null
+    private var commentRequestJob: Job? = null
+    private var loadMoreJob: Job? = null
 
     private val _videoReplyFlow = MutableStateFlow(emptyList<VideoComments.VideoComment>())
     val videoReplyFlow = _videoReplyFlow.asStateFlow()
@@ -107,19 +117,57 @@ class CommentViewModel(application: Application) : YenalyViewModel(application) 
     }
 
     fun clearCommentData(){
+        commentRequestJob?.cancel()
+        loadMoreJob?.cancel()
+        currentCommentTarget = null
+        nextCommentOffset = null
+        _hasMoreComments.value = false
+        _loadMoreFailed.value = false
         _videoCommentFlow.value = emptyList()
     }
     fun getComment(type: String, code: String) {
-        viewModelScope.launch {
+        commentRequestJob?.cancel()
+        loadMoreJob?.cancel()
+        currentCommentTarget = type to code
+        nextCommentOffset = null
+        _hasMoreComments.value = false
+        _loadMoreFailed.value = false
+        commentRequestJob = viewModelScope.launch {
             _videoCommentStateFlow.value = WebsiteState.Loading
             NetworkRepo.getComments(type, code).collect { state ->
                 _videoCommentStateFlow.value = state
+                if (state is WebsiteState.Success) {
+                    nextCommentOffset = state.info.nextCommentOffset
+                    _hasMoreComments.value = state.info.hasMoreComments && nextCommentOffset != null
+                }
                 _videoCommentFlow.update { prevList ->
                     when (state) {
                         is WebsiteState.Success -> state.info.videoComment
                         is WebsiteState.Loading -> emptyList()
                         else -> prevList
                     }
+                }
+            }
+        }
+    }
+
+    fun loadMoreComments() {
+        val (type, code) = currentCommentTarget ?: return
+        val offset = nextCommentOffset ?: return
+        if (!_hasMoreComments.value || loadMoreJob?.isActive == true) return
+        _loadMoreFailed.value = false
+        loadMoreJob = viewModelScope.launch {
+            NetworkRepo.getComments(type, code, offset).collect { state ->
+                if (state is WebsiteState.Success && currentCommentTarget == (type to code)) {
+                    _videoCommentFlow.update { existing ->
+                        val ids = existing.mapNotNull { it.id }.toHashSet()
+                        existing + state.info.videoComment.filter { it.id == null || ids.add(it.id) }
+                    }
+                    nextCommentOffset = state.info.nextCommentOffset
+                    _hasMoreComments.value = state.info.hasMoreComments &&
+                            nextCommentOffset != null && nextCommentOffset != offset
+                } else if (state is WebsiteState.Error && currentCommentTarget == (type to code)) {
+                    _loadMoreFailed.value = true
                 }
             }
         }

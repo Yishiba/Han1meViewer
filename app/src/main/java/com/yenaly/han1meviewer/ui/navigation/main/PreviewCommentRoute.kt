@@ -50,6 +50,8 @@ fun PreviewCommentRouteScreen(
     val viewModel: CommentViewModel = viewModel(viewModelStoreOwner = activity)
     val comments = viewModel.videoCommentFlow
     val commentState = viewModel.videoCommentStateFlow
+    val canLoadMoreComments by viewModel.hasMoreCommentsFlow.collectAsStateWithLifecycle()
+    val loadMoreFailed by viewModel.loadMoreFailedFlow.collectAsStateWithLifecycle()
     val commentUiState = remember(route.dateCode) {
         viewModel.getCommentUiState(route.dateCode)
     }
@@ -215,6 +217,9 @@ fun PreviewCommentRouteScreen(
         CommentScreen(
             commentsFlow = comments,
             commentStateFlow = commentState,
+            canLoadMore = canLoadMoreComments,
+            loadMoreFailed = loadMoreFailed,
+            onLoadMore = viewModel::loadMoreComments,
             reportMessageFlow = reportMessages,
             currentSortType = viewModel.currentSortType,
             reportReasons = viewModel.reportReason,
