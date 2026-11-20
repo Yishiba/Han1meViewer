@@ -7,12 +7,12 @@
 - 应用内 Release API、仓库链接和反馈入口指向 `Yishiba/Han1meViewer`；客户端不再携带 GitHub Token，CI 构建产物不再作为更新通道。
 - 该 fork 暂无 Release。GitHub Issues / Discussions 已启用；README 有无露骨内容的功能示意和三步试用说明。
 - CI 仓库目前没有签名或 Firebase 配置 Secrets，不能产出当前手机可覆盖安装的公开 APK。当前手机安装版本 `0.26.0-release+26111903`，`versionCode=26111903`；手机和本地旧包的证书 SHA-256 均为 `25ffea57792a71ac2a8fcbb5d338df44cabdd4a62d2896a5e885e3157d1b0d64`，证书标识为 `Android Debug`。新包若要保留现有数据，须使用同一签名证书、同一包名和更高的 `versionCode`。调试证书不适合作为长期商业发行凭据，正式换钥须单独设计数据迁移与已有用户过渡。
-- 本地有 `~/.android/keystore.jks`，但当前执行环境没有 `KEYSTORE_PASSWORD` 和 `KEY_ALIAS`；不要在聊天、仓库或 APK 中提供这些值。
+- 后续确认：现有手机与 `~/.android/debug.keystore` 的证书完全一致，该调试密钥的标准别名/密码是 `androiddebugkey` / `android`；另一份 `~/.android/keystore.jks` 的密码未知，无需用它生成本次候选包。调试密钥仅供当前小规模试用的覆盖升级，长期商业发布应设计换签名与数据迁移。
 
 ## 首个 Release 的准备与验收
 
 1. 核对本地工作区的大量未提交功能变更，审查无私人数据、Token 或测试凭据后，提交到要发布的分支。GitHub Release 的 tag 必须指向与 APK 同一份代码。
-2. 在本机终端运行 `bash scripts/build-release-local.sh`，按提示输入原 keystore 密码和别名，不要发到聊天。脚本用 JDK 21 构建，并检查版本号与签名证书；也可事先在终端环境中设置 `KEYSTORE_PASSWORD`、`KEY_ALIAS`。当前 CI Secrets 为零，故先走本机签名更可控；不要把密钥放进 Gradle BuildConfig。
+2. 运行 `bash scripts/build-release-local.sh`。默认选用与当前手机匹配的 `~/.android/debug.keystore`，脚本用 JDK 21 构建并检查版本号与证书；如改用其他签名文件，可设置 `RELEASE_KEYSTORE_PATH`，并在本机输入其密码和别名，不要发到聊天或放进 Gradle BuildConfig。
 3. 生成 Release APK；用 `apksigner verify --print-certs` 确认证书与现有手机相同；核对 `versionCode` 大于 `26111903`，并在现有手机覆盖安装，确认本地下载、备份与设置仍在。
 4. 创建与 `versionName` 对应的 Git tag 和 GitHub Release，只上传 APK、校验值与下方发布说明；从 Release API 验证 `digest=sha256:...`、资产名匹配 `Han1meViewer-v*.apk`，再用已安装旧版检查应用内更新。
 5. 若使用新签名，先停止覆盖安装流程并制定迁移方案；不能让已有用户通过卸载重装来“完成升级”。

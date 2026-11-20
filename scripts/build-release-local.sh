@@ -8,11 +8,18 @@ if [ -n "$(git status --porcelain)" ]; then
   exit 1
 fi
 
-keystore_path="$HOME/.android/keystore.jks"
+default_debug_keystore="$HOME/.android/debug.keystore"
+keystore_path="${RELEASE_KEYSTORE_PATH:-$default_debug_keystore}"
 if [ ! -f "$keystore_path" ]; then
   echo "找不到现有签名文件：$keystore_path" >&2
   exit 1
 fi
+
+if [ "$keystore_path" = "$default_debug_keystore" ]; then
+  KEYSTORE_PASSWORD="${KEYSTORE_PASSWORD:-android}"
+  KEY_ALIAS="${KEY_ALIAS:-androiddebugkey}"
+fi
+export RELEASE_KEYSTORE_PATH="$keystore_path"
 
 if [ -z "${KEYSTORE_PASSWORD:-}" ]; then
   read -rs -p '请输入现有 keystore 密码（不会显示）：' KEYSTORE_PASSWORD
