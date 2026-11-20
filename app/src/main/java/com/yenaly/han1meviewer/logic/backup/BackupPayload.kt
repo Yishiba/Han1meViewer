@@ -67,7 +67,7 @@ object BackupCodec {
     // Preserve this discriminator for v1 files produced by the original private nested class.
     private val legacyType = "com.yenaly.han1meviewer.logic.BackupManager.PreferenceValue."
     private val newType = "com.yenaly.han1meviewer.logic.backup.PreferenceValue."
-    private val excluded = setOf("cookie", "cf_cookie", "already_login", "saved_user_id", "usage_notice_accepted")
+    private val excluded = setOf("cookie", "cf_cookie", "already_login", "saved_user_id", "usage_notice_accepted", "onboarding_completed", "onboarding_pending")
     fun restorableKey(key: String) = key !in excluded && key != "auto_translate_mobile_models"
     fun digest(bytes: ByteArray) = MessageDigest.getInstance("SHA-256").digest(bytes)
         .joinToString("") { "%02x".format(it.toInt() and 0xff) }

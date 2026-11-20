@@ -83,6 +83,7 @@ fun HomeSettingsScreen(
     onOpenRemoteLibrary: () -> Unit = {},
     onOpenAutoTranslation: () -> Unit = {},
     onOpenTrialResearch: () -> Unit = {},
+    onOpenOnboarding: () -> Unit = {},
     membershipAvailable: Boolean = false,
     onOpenMembership: () -> Unit = {},
 ) {
@@ -204,6 +205,14 @@ fun HomeSettingsScreen(
         contentPadding = PaddingValues(vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
+        item {
+            SettingNavigationItem(
+                title = stringResource(R.string.onboarding_settings_title),
+                summary = stringResource(R.string.onboarding_settings_summary),
+                iconRes = R.drawable.ic_baseline_help_24,
+                onClick = onOpenOnboarding,
+            )
+        }
         if (membershipAvailable) item {
             SettingNavigationItem(
                 title = stringResource(R.string.membership_title),

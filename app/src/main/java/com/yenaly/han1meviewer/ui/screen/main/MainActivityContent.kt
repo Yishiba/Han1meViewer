@@ -12,6 +12,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
@@ -28,6 +29,7 @@ import com.yenaly.han1meviewer.logic.commerce.TrialResearchStore
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.UpdateDialog
 import com.yenaly.han1meviewer.ui.component.UsageNoticeDialog
+import com.yenaly.han1meviewer.ui.component.OnboardingGuide
 import com.yenaly.han1meviewer.ui.navigation.main.MainDestinationSpec
 import com.yenaly.han1meviewer.ui.navigation.main.MainNavHost
 import com.yenaly.han1meviewer.ui.navigation.main.handleMainIntent
@@ -63,7 +65,10 @@ fun MainActivityContent(
         val scope = rememberCoroutineScope()
         var currentMainDestination by remember { mutableStateOf(MainDestinationSpec.Home) }
         var pendingUpdate by remember { mutableStateOf<Latest?>(null) }
-        var showUsageNotice by remember { mutableStateOf(!Preferences.usageNoticeAccepted) }
+        var showUsageNotice by rememberSaveable { mutableStateOf(!Preferences.usageNoticeAccepted) }
+        var showOnboarding by rememberSaveable {
+            mutableStateOf(Preferences.onboardingPending && !Preferences.onboardingCompleted)
+        }
         val isDrawerOpen =
             drawerState.currentValue == DrawerValue.Open || drawerState.targetValue == DrawerValue.Open
 
@@ -196,6 +201,13 @@ fun MainActivityContent(
                     },
                     onDeclined = { activity.finish() },
                 )
+                if (!showUsageNotice && showOnboarding) {
+                    OnboardingGuide(onDone = {
+                        Preferences.onboardingCompleted = true
+                        Preferences.onboardingPending = false
+                        showOnboarding = false
+                    })
+                }
             }
         }
     }

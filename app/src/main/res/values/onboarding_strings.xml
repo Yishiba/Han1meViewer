@@ -1,0 +1,15 @@
+<resources>
+    <string name="onboarding_settings_title">使用導覽</string>
+    <string name="onboarding_settings_summary">重新查看瀏覽、翻譯與工具功能</string>
+    <string name="onboarding_progress">%1$d / %2$d</string>
+    <string name="onboarding_browse_title">從瀏覽和播放開始</string>
+    <string name="onboarding_browse_description">首頁可以瀏覽內容；點開卡片查看詳情並播放。搜尋、瀏覽和線上播放無需開通會員。網站帳號只在使用網站帳號相關功能時需要。</string>
+    <string name="onboarding_translate_title">用熟悉的語言搜尋</string>
+    <string name="onboarding_translate_description">搜尋框旁的翻譯按鈕可將中文或英文搜尋詞譯成日文，譯文可修改後再搜尋。設定中的自動翻譯可翻譯首頁標題、搜尋結果標題和詳情簡介；首次使用需下載本機模型。</string>
+    <string name="onboarding_tools_title">整理、備份和同步</string>
+    <string name="onboarding_tools_description">媒體庫支援合集與篩選；設定中可設定備份、還原和 WebDAV 同步。下載管理提供佇列與並行等工具。請先按需設定自己的儲存位置和同步服務。</string>
+    <string name="onboarding_pro_note">未來計畫將自動整理、自動備份、跨裝置同步和下載最佳化等進階工具列為 Pro。目前沒有啟用付費限制，也沒有付款入口；瀏覽、播放和基礎翻譯計畫保持免費。</string>
+    <string name="onboarding_skip">略過</string>
+    <string name="onboarding_next">下一步</string>
+    <string name="onboarding_done">開始使用</string>
+</resources>
