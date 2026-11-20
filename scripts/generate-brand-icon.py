@@ -1,46 +1,37 @@
 #!/usr/bin/env python3
-"""Regenerate Android vector foreground and preview from the brand SVG paths."""
+"""Build launcher and settings icons from the project owner's square illustration."""
 
 from pathlib import Path
-from xml.etree import ElementTree as ET
+
+from PIL import Image, ImageDraw
 
 
 ROOT = Path(__file__).resolve().parents[1]
-SVG = ROOT / "docs/brand/han1me-client-icon.svg"
-DRAWABLE = ROOT / "app/src/main/res/drawable"
-ANDROID = "http://schemas.android.com/apk/res/android"
-ET.register_namespace("android", ANDROID)
-
-
-def vector(include_background: bool) -> ET.Element:
-    result = ET.Element("vector", {
-        f"{{{ANDROID}}}width": "108dp",
-        f"{{{ANDROID}}}height": "108dp",
-        f"{{{ANDROID}}}viewportWidth": "108",
-        f"{{{ANDROID}}}viewportHeight": "108",
-    })
-    source = ET.parse(SVG).getroot()
-    for path in source.findall("{http://www.w3.org/2000/svg}path"):
-        if path.get("id") == "background" and not include_background:
-            continue
-        attributes = {
-            f"{{{ANDROID}}}fillColor": path.attrib["fill"],
-            f"{{{ANDROID}}}pathData": path.attrib["d"],
-        }
-        if alpha := path.get("fill-opacity"):
-            attributes[f"{{{ANDROID}}}fillAlpha"] = alpha
-        ET.SubElement(result, "path", attributes)
-    return result
+SOURCE = ROOT / "docs/brand/han1me-client-icon.jpg"
+OUTPUT = ROOT / "app/src/main/res/drawable-nodpi"
+SIZE = 1024
 
 
 def main() -> None:
-    for filename, background in (
-        ("ic_han1me_character_foreground.xml", False),
-        ("ic_han1me_character_preview.xml", True),
-    ):
-        tree = ET.ElementTree(vector(background))
-        ET.indent(tree, space="    ")
-        tree.write(DRAWABLE / filename, encoding="utf-8", xml_declaration=True)
+    source = Image.open(SOURCE).convert("RGB")
+    if source.size != (SIZE, SIZE):
+        raise ValueError("Brand illustration must be 1024 × 1024 pixels")
+
+    # Adaptive launchers may show only the center two thirds of the foreground.
+    # Leave space above the character so her hair and face survive round masks.
+    foreground = Image.new("RGB", (SIZE, SIZE), (13, 20, 35))
+    scaled = source.resize((922, 922), Image.Resampling.LANCZOS)
+    foreground.paste(scaled, (51, 72))
+    OUTPUT.mkdir(parents=True, exist_ok=True)
+    foreground.save(OUTPUT / "ic_han1me_client_foreground.webp", "WEBP", quality=94, method=6)
+
+    # The launcher picker uses an ordinary image, so render its visible shape.
+    preview = foreground.crop((171, 171, 853, 853)).resize((256, 256), Image.Resampling.LANCZOS)
+    mask = Image.new("L", (1024, 1024), 0)
+    ImageDraw.Draw(mask).rounded_rectangle((0, 0, 1023, 1023), radius=180, fill=255)
+    preview = preview.convert("RGBA")
+    preview.putalpha(mask.resize((256, 256), Image.Resampling.LANCZOS))
+    preview.save(OUTPUT / "ic_han1me_client_preview.webp", "WEBP", lossless=True, method=6)
 
 
 if __name__ == "__main__":
