@@ -132,6 +132,10 @@ class MainActivity : FrameActivity(), PermissionRequester {
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
 
+        if (!Preferences.usageNoticeAccepted && !Preferences.onboardingCompleted) {
+            Preferences.onboardingPending = true
+        }
+
         val prefs = PreferenceManager.getDefaultSharedPreferences(this)
         val useLock = prefs.getBoolean("use_lock_screen", false)
 

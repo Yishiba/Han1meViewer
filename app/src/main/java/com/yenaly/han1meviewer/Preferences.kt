@@ -23,6 +23,8 @@ import kotlin.time.ExperimentalTime
 
 object Preferences {
     private const val USAGE_NOTICE_ACCEPTED = "usage_notice_accepted"
+    private const val ONBOARDING_COMPLETED = "onboarding_completed"
+    private const val ONBOARDING_PENDING = "onboarding_pending"
 
     /**
      * [Preference][androidx.preference.PreferenceFragmentCompat]自帶的SP
@@ -49,6 +51,14 @@ object Preferences {
     var usageNoticeAccepted: Boolean
         get() = preferenceSp.getBoolean(USAGE_NOTICE_ACCEPTED, false)
         set(value) = preferenceSp.edit { putBoolean(USAGE_NOTICE_ACCEPTED, value) }
+
+    var onboardingCompleted: Boolean
+        get() = preferenceSp.getBoolean(ONBOARDING_COMPLETED, false)
+        set(value) = preferenceSp.edit { putBoolean(ONBOARDING_COMPLETED, value) }
+
+    var onboardingPending: Boolean
+        get() = preferenceSp.getBoolean(ONBOARDING_PENDING, false)
+        set(value) = preferenceSp.edit { putBoolean(ONBOARDING_PENDING, value) }
 
     val savedUserId: String
         get() = preferenceSp.getString(SAVED_USER_ID,"") ?: ""

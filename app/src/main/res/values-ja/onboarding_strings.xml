@@ -1,0 +1,15 @@
+<resources>
+    <string name="onboarding_settings_title">使い方ガイド</string>
+    <string name="onboarding_settings_summary">閲覧、翻訳、ツールをもう一度確認</string>
+    <string name="onboarding_progress">%1$d / %2$d</string>
+    <string name="onboarding_browse_title">閲覧と再生から始める</string>
+    <string name="onboarding_browse_description">ホーム画面で作品を探し、カードを開いて詳細を確認・再生できます。検索、閲覧、ストリーミングに会員登録は不要です。サイトのアカウントが必要なのは、そのアカウントに関係する機能だけです。</string>
+    <string name="onboarding_translate_title">使い慣れた言語で検索</string>
+    <string name="onboarding_translate_description">検索欄の横のボタンで中国語や英語の検索語を日本語に翻訳できます。翻訳結果は編集してから検索できます。設定の自動翻訳はホームのタイトル、検索結果のタイトル、詳細の説明に対応します。初回は端末内モデルのダウンロードが必要です。</string>
+    <string name="onboarding_tools_title">整理、バックアップ、同期</string>
+    <string name="onboarding_tools_description">メディアライブラリではコレクションとフィルターを使えます。設定にはバックアップ、復元、WebDAV 同期があります。ダウンロード管理にはキューと同時実行の設定があります。保存先と同期サービスは必要に応じて設定してください。</string>
+    <string name="onboarding_pro_note">自動整理、定期バックアップ、端末間同期、ダウンロード最適化などの高度なツールは、将来 Pro に含める予定です。現在は課金制限も決済画面もありません。閲覧、再生、基本的な翻訳は無料のままにする予定です。</string>
+    <string name="onboarding_skip">スキップ</string>
+    <string name="onboarding_next">次へ</string>
+    <string name="onboarding_done">使い始める</string>
+</resources>

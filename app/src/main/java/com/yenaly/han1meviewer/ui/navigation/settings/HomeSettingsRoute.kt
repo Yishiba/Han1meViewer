@@ -56,6 +56,7 @@ import com.yenaly.han1meviewer.ui.screen.settings.backup.BackupHistoryRoute
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
+import com.yenaly.han1meviewer.ui.component.OnboardingGuide
 import com.yenaly.han1meviewer.ui.screen.settings.HomeSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.dialog.LicenseDialog
 import com.yenaly.han1meviewer.ui.screen.settings.model.HomeSettingsUiState
@@ -125,6 +126,8 @@ fun HomeSettingsRouteScreen(
     var showRemoteLibrary by remember { mutableStateOf(false) }
     var showAutoTranslation by remember { mutableStateOf(false) }
     var showTrialResearch by remember { mutableStateOf(false) }
+    var showOnboarding by remember { mutableStateOf(false) }
+    if (showOnboarding) OnboardingGuide(onDone = { showOnboarding = false })
     var showMembership by remember { mutableStateOf(false) }
     if (showMembership) MembershipDialog { showMembership = false }
     if (showTrialResearch) com.yenaly.han1meviewer.ui.screen.settings.commerce.TrialResearchDialog {
@@ -377,6 +380,7 @@ fun HomeSettingsRouteScreen(
         onOpenRemoteLibrary = { showRemoteLibrary = true },
         onOpenAutoTranslation = { showAutoTranslation = true },
         onOpenTrialResearch = { showTrialResearch = true },
+        onOpenOnboarding = { showOnboarding = true },
         membershipAvailable = MembershipConfig.available,
         onOpenMembership = { showMembership = true },
     )
