@@ -19,6 +19,15 @@ def vector(include_background: bool) -> ET.Element:
         f"{{{ANDROID}}}viewportWidth": "108",
         f"{{{ANDROID}}}viewportHeight": "108",
     })
+    target = result
+    if include_background:
+        target = ET.SubElement(result, "group")
+        ET.SubElement(target, "clip-path", {
+            f"{{{ANDROID}}}pathData": (
+                "M24 0H84A24 24 0 0 1 108 24V84A24 24 0 0 1 84 108"
+                "H24A24 24 0 0 1 0 84V24A24 24 0 0 1 24 0Z"
+            ),
+        })
     source = ET.parse(SVG).getroot()
     for path in source.findall("{http://www.w3.org/2000/svg}path"):
         if path.get("id") == "background" and not include_background:
@@ -29,7 +38,7 @@ def vector(include_background: bool) -> ET.Element:
         }
         if alpha := path.get("fill-opacity"):
             attributes[f"{{{ANDROID}}}fillAlpha"] = alpha
-        ET.SubElement(result, "path", attributes)
+        ET.SubElement(target, "path", attributes)
     return result
 
 
