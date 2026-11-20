@@ -9,7 +9,10 @@ if [ -n "$(git status --porcelain)" ]; then
 fi
 
 release_keystore="$HOME/.android/han1meviewer-release.jks"
-legacy_keystore="$HOME/.android/debug.keystore"
+legacy_keystore="${HAN1MEVIEWER_LEGACY_KEYSTORE_PATH:-$HOME/.android/han1meviewer-legacy-debug.keystore}"
+if [ ! -f "$legacy_keystore" ] && [ -z "${HAN1MEVIEWER_LEGACY_KEYSTORE_PATH:-}" ]; then
+  legacy_keystore="$HOME/.android/debug.keystore"
+fi
 lineage_path="$HOME/.android/han1meviewer-signing-lineage.bin"
 for needed in "$release_keystore" "$legacy_keystore" "$lineage_path"; do
   if [ ! -f "$needed" ]; then
@@ -19,7 +22,14 @@ for needed in "$release_keystore" "$legacy_keystore" "$lineage_path"; do
 done
 
 export KEYSTORE_PASSWORD
-KEYSTORE_PASSWORD=$(security find-generic-password -a Yishiba -s Han1meViewerReleaseKeystore -w)
+if ! KEYSTORE_PASSWORD=$(security find-generic-password -a Yishiba -s Han1meViewerReleaseKeystore -w 2>/dev/null); then
+  if [ ! -t 0 ]; then
+    echo '钥匙串中没有签名密码；请在交互式终端运行并从密码管理器输入。' >&2
+    exit 1
+  fi
+  read -r -s -p 'Han1meViewer release 密钥密码：' KEYSTORE_PASSWORD
+  printf '\n'
+fi
 export KEY_ALIAS='han1meviewer_release'
 export RELEASE_KEYSTORE_PATH="$release_keystore"
 export OLD_KEYSTORE_PASSWORD='android'
