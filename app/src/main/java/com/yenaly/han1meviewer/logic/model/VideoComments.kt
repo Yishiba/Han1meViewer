@@ -77,8 +77,6 @@ data class VideoComments(
             val foreignId: String? = null,
             // 你點的
             var isPositive: Boolean = false,
-            // 你的id
-            val likeUserId: String? = null,
             var commentLikesCount: Int? = null,
             var commentLikesSum: Int? = null,
             // 你之前有沒有點過讚

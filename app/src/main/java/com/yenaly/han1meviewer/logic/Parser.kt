@@ -774,8 +774,11 @@ object Parser {
             .throwIfParseNull(Parser::userAccountPage.name, "avatarUrl")
         val username = parseBody.selectFirst("input[name=name]")?.attr("value")?.trim()
             .throwIfParseNull(Parser::userAccountPage.name, "username")
-        val email = parseBody.selectFirst("input[name=email]")?.attr("value")?.trim()
+        val emailInput = parseBody.selectFirst("input#email")
+            ?: parseBody.selectFirst("input[name=email]")
+        val email = emailInput?.attr("value")?.trim()
             .throwIfParseNull(Parser::userAccountPage.name, "email")
+        val emailEditable = emailInput?.hasAttr("disabled") == false
         val userIdText = parseBody.selectFirst("div.profile-sub-stats-id")?.text()
             .throwIfParseNull(Parser::userAccountPage.name, "userId")
         val userId = Regex("""\d+""").find(userIdText)?.value
@@ -796,6 +799,7 @@ object Parser {
                 joinedLabel = joinedLabel,
                 subscriberCount = statNumbers.getOrElse(0) { 0 },
                 videoCount = statNumbers.getOrElse(1) { 0 },
+                emailEditable = emailEditable,
             )
         )
     }
@@ -891,21 +895,30 @@ object Parser {
         return WebsiteState.Success(Playlists(playlists = playlists, csrfToken = csrfToken))
     }
 
-    @SuppressLint("BuildListAdds")
     fun comments(body: String): WebsiteState<VideoComments> {
         val jsonObject = JSONObject(body)
         val commentBody = jsonObject.get("comments").toString()
+        return parseCommentsHtml(commentBody)
+    }
+
+    @SuppressLint("BuildListAdds")
+    internal fun parseCommentsHtml(commentBody: String): WebsiteState<VideoComments> {
         val parseBody = Jsoup.parse(commentBody).body()
         val csrfToken = parseBody.selectFirst("input[name=_token]")?.attr("value")
         val currentUserId = parseBody.selectFirst("input[name=comment-user-id]")?.attr("value")
         val commentList = mutableListOf<VideoComments.VideoComment>()
         val allCommentsClass = parseBody.getElementById("comment-start")
 
-        buildList {
-            allCommentsClass?.children()?.chunked(4)?.forEach { elements ->
-                add(Element("div").apply { appendChildren(elements) })
+        val commentBlocks: List<Element> = allCommentsClass
+            ?.getElementsByClass("comment-item-block")
+            ?.takeIf { it.isNotEmpty() }
+            ?: buildList {
+                allCommentsClass?.children()?.chunked(4)?.forEach { elements ->
+                    add(Element("div").apply { appendChildren(elements) })
+                }
             }
-        }.forEach { child: Element ->
+
+        commentBlocks.forEach { child: Element ->
             val avatarUrl = child.selectFirst("img")?.absUrl("src")
                 .throwIfParseNull(Parser::comments.name, "avatarUrl")
             val textClass = child.getElementsByClass("comment-index-text")
@@ -920,12 +933,12 @@ object Parser {
             val thumbUp = child.getElementById("comment-like-form-wrapper")
                 ?.select("span[style]")?.getOrNull(1)
                 ?.text()?.toIntOrNull()
-            val id = child.selectFirst("div[id^=reply-section-wrapper]")
-                ?.id()?.substringAfterLast("-")
+            val id = child.attr("data-comment-id").takeIf { it.isNotBlank() }
+                ?: child.selectFirst("div[id^=reply-section-wrapper]")
+                    ?.id()?.substringAfterLast("-")
 
             val foreignId = child.getElementById("foreign_id")?.attr("value")
             val isPositive = child.getElementById("is_positive")?.attr("value")
-            val likeUserId = child.selectFirst("input[name=comment-like-user-id]")?.attr("value")
             val commentLikesCount =
                 child.selectFirst("input[name=comment-likes-count]")?.attr("value")
             val commentLikesSum = child.selectFirst("input[name=comment-likes-sum]")?.attr("value")
@@ -937,7 +950,6 @@ object Parser {
             val post = VideoComments.VideoComment.POST(
                 foreignId.logIfParseNull(Parser::comments.name, "foreignId", loginNeeded = true),
                 isPositive == "1",
-                likeUserId.logIfParseNull(Parser::comments.name, "likeUserId", loginNeeded = true),
                 commentLikesCount?.toIntOrNull().logIfParseNull(
                     Parser::comments.name,
                     "commentLikesCount", loginNeeded = true
@@ -967,7 +979,6 @@ object Parser {
                 )
             )
         }
-        Log.d("commentList", commentList.toString())
         return WebsiteState.Success(
             VideoComments(
                 commentList,
@@ -1007,8 +1018,6 @@ object Parser {
                     postClass?.getElementById("foreign_id")?.attr("value")
                 val isPositive =
                     postClass?.getElementById("is_positive")?.attr("value")
-                val likeUserId =
-                    postClass?.selectFirst("input[name=comment-like-user-id]")?.attr("value")
                 val commentLikesCount =
                     postClass?.selectFirst("input[name=comment-likes-count]")?.attr("value")
                 val commentLikesSum =
@@ -1024,11 +1033,6 @@ object Parser {
                         loginNeeded = true
                     ),
                     isPositive == "1",
-                    likeUserId.logIfParseNull(
-                        Parser::commentReply.name,
-                        "likeUserId",
-                        loginNeeded = true
-                    ),
                     commentLikesCount?.toIntOrNull().logIfParseNull(
                         Parser::commentReply.name,
                         "commentLikesCount", loginNeeded = true

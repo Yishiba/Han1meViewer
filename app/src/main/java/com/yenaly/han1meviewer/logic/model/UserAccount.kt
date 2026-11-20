@@ -9,6 +9,7 @@ data class UserAccount(
     val joinedLabel: String?,
     val subscriberCount: Int,
     val videoCount: Int,
+    val emailEditable: Boolean = true,
 )
 
 enum class UserAccountAction {

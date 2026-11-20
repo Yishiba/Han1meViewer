@@ -183,7 +183,7 @@ private fun AccountContent(
     account: UserAccount,
     submittingState: UserAccountSubmittingState,
     contentPadding: PaddingValues,
-    onUpdateProfile: (String, String) -> Unit,
+    onUpdateProfile: (String) -> Unit,
     onUpdatePassword: (String, String, String) -> Unit,
     onPickAvatar: suspend () -> Unit,
     onLogout: () -> Unit,
@@ -337,13 +337,14 @@ private fun AccountContent(
                     leadingIcon = { Icon(Icons.Default.Email, contentDescription = null) },
                     modifier = Modifier.fillMaxWidth(),
                     singleLine = true,
-                    shape = MaterialTheme.shapes.medium
+                    shape = MaterialTheme.shapes.medium,
+                    enabled = account.emailEditable,
                 )
 
                 Button(
-                    onClick = { onUpdateProfile(name.trim(), email.trim()) },
+                    onClick = { onUpdateProfile(name.trim()) },
                     modifier = Modifier.fillMaxWidth(),
-                    enabled = !isSubmitting && name.isNotBlank() && email.isNotBlank(),
+                    enabled = !isSubmitting && name.isNotBlank(),
                 ) {
                     if (isUpdatingProfile) {
                         LoadingIndicator(
@@ -500,9 +501,10 @@ private fun AccountScreenPreview() {
                 joinedLabel = "加入於 1年前",
                 subscriberCount = 0,
                 videoCount = 9,
+                emailEditable = false,
             ),
             contentPadding = PaddingValues(),
-            onUpdateProfile = { _, _ -> },
+            onUpdateProfile = { },
             onUpdatePassword = { _, _, _ -> },
             onPickAvatar = {},
             onLogout = {},
