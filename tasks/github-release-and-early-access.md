@@ -1,5 +1,7 @@
 # 自有 GitHub Release 与首批试用
 
+**历史候选记录**：本文件描述旧包名 `com.yenaly.han1meviewer` 的草稿 Release。2026-11-20 用户决定改用独立包名 `io.github.yishiba.han1meviewer`；旧草稿不得公开发布。当前方案见 [独立应用身份设计](../docs/superpowers/specs/2026-11-20-independent-app-identity-design.md)。
+
 记录于 2026-11-20。应用目前不收款，爱发电产品准入仍待回复。本文件用于首个自有 APK 发布前核对，不是已发布公告。
 
 ## 当前状态

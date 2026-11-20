@@ -329,9 +329,9 @@ DownloadScreen -> DownloadViewModel -> HanimeDownloadManagerV2 -> WorkManager Wo
 .\gradlew.bat :app:assembleDebug
 ```
 
-🔏 自有 Release 的本机签名脚本为 `bash scripts/build-release-local.sh`。签名私钥、旧签名与密钥轮换证明保存在本机 `~/.android/`，新密钥密码保存在 macOS 钥匙串；脚本检查版本号及 Android 13+ 使用的自有新证书。Android 8–12 为兼容既有安装，仍由旧证书签名。换机或重装开发环境前，必须安全备份签名文件、轮换证明及钥匙串密码。签名机制参考 [Android 官方文档](https://source.android.com/docs/security/features/apksigning/v3)。
+🔏 独立包名为 `io.github.yishiba.han1meviewer`（Debug 追加 `.debug`）。本机签名脚本为 `bash scripts/build-release-local.sh`；Android 8.1+ 均只使用自有正式证书。新包可与旧 `com.yenaly.han1meviewer` 并存，系统不会自动迁移数据；先在旧包导出备份，再到新包恢复，视频文件和登录 Cookie 需单独处理。签名私钥只在本机及个人加密备份中，密码存于钥匙串或跨设备密码管理器。
 
-🔑 应用通过 GitHub 公共 Release API 检查更新，构建和安装包不需要 GitHub API Token。CI 构建产物不再提供应用内更新；覆盖安装须保持包名、符合系统的签名传承，并使用更高的 `versionCode`。
+🔑 应用通过 GitHub 公共 Release API 检查更新，构建和安装包不需要 GitHub API Token。CI 构建产物不再提供应用内更新；同一包名的后续覆盖安装须保持签名和更高的 `versionCode`。旧包名的发行候选版仍是未公开草稿，不作为新包的更新源。
 
 ### 默认 DNS 配置
 
@@ -381,6 +381,8 @@ Han1meViewer/
 - 随时有想法随时写。
 
 ## 📄 许可证
+
+Android 客户端继续在本公开仓库开发。付款核验与授权服务今后在独立私有仓库维护；客户端仅包含公开 API 协议与验签公钥，不包含收款凭据或签名私钥。当前仍未开通真实付款或 Pro 拦截。
 
 本项目继承原始项目的 [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0)。主要条款包括：
 
