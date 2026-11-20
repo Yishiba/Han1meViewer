@@ -6,16 +6,17 @@
 
 - 应用内 Release API、仓库链接和反馈入口指向 `Yishiba/Han1meViewer`；客户端不再携带 GitHub Token，CI 构建产物不再作为更新通道。
 - 该 fork 暂无 Release。GitHub Issues / Discussions 已启用；README 有无露骨内容的功能示意和三步试用说明。
-- CI 仓库目前没有签名或 Firebase 配置 Secrets，不能产出当前手机可覆盖安装的公开 APK。当前手机安装版本 `0.26.0-release+26111903`，`versionCode=26111903`；手机和本地旧包的证书 SHA-256 均为 `25ffea57792a71ac2a8fcbb5d338df44cabdd4a62d2896a5e885e3157d1b0d64`，证书标识为 `Android Debug`。新包若要保留现有数据，须使用同一签名证书、同一包名和更高的 `versionCode`。调试证书不适合作为长期商业发行凭据，正式换钥须单独设计数据迁移与已有用户过渡。
-- 后续确认：现有手机与 `~/.android/debug.keystore` 的证书完全一致，该调试密钥的标准别名/密码是 `androiddebugkey` / `android`；另一份 `~/.android/keystore.jks` 的密码未知，无需用它生成本次候选包。调试密钥仅供当前小规模试用的覆盖升级，长期商业发布应设计换签名与数据迁移。
+- CI 仓库目前没有签名或 Firebase 配置 Secrets，不能产出公开 Release。当前手机是 Android 13、安装版本 `0.26.0-release+26111903`，`versionCode=26111903`；旧证书 SHA-256 为 `25ffea57792a71ac2a8fcbb5d338df44cabdd4a62d2896a5e885e3157d1b0d64`，来自本机 `~/.android/debug.keystore`。
+- 用户明确要求自有正式签名。已创建 `~/.android/han1meviewer-release.jks`（RSA 4096，权限 600；密码仅保存在 macOS 登录钥匙串的 `Han1meViewerReleaseKeystore` 项），新证书 SHA-256 为 `bbc987ea88753d153963350fd9c13f603ac7c6686900e034f9ab5b449e8d8d8c`；并用旧、新私钥创建私有签名传承文件 `~/.android/han1meviewer-signing-lineage.bin`。三者都不得提交仓库，且必须分别安全备份。
+- Android 官方 [v3/v3.1 签名轮换](https://source.android.com/docs/security/features/apksigning/v3)允许在支持的系统上使用新证书覆盖旧安装。当前方案让 Android 13+ 使用自有新证书，Android 8–12 为兼容既有安装继续使用旧证书；低版本若要完全改用新证书，需另行迁移数据或改包名。该行为须通过真机覆盖安装验证，不能只靠 `apksigner verify` 推断。
 
 ## 首个 Release 的准备与验收
 
 1. 核对本地工作区的大量未提交功能变更，审查无私人数据、Token 或测试凭据后，提交到要发布的分支。GitHub Release 的 tag 必须指向与 APK 同一份代码。
-2. 运行 `bash scripts/build-release-local.sh`。默认选用与当前手机匹配的 `~/.android/debug.keystore`，脚本用 JDK 21 构建并检查版本号与证书；如改用其他签名文件，可设置 `RELEASE_KEYSTORE_PATH`，并在本机输入其密码和别名，不要发到聊天或放进 Gradle BuildConfig。
-3. 生成 Release APK；用 `apksigner verify --print-certs` 确认证书与现有手机相同；核对 `versionCode` 大于 `26111903`，并在现有手机覆盖安装，确认本地下载、备份与设置仍在。
+2. 运行 `bash scripts/build-release-local.sh`。脚本从 macOS 钥匙串读取新密钥密码，使用 JDK 21 构建，再用 `apksigner` 将新旧证书和签名传承写入同一 APK；它校验 Android 13+ 的新证书、Android 8 的兼容旧证书及版本号。不要把密码、密钥文件或签名传承放进仓库、聊天或 APK 资源中。
+3. 生成 Release APK 后，在 Android 13 真机用 `adb install -r` 覆盖安装，确认包名、下载记录、备份与设置仍在；不要卸载旧 App。另找低版本设备验证时，按签名传承的 API 兼容范围核对。
 4. 创建与 `versionName` 对应的 Git tag 和 GitHub Release，只上传 APK、校验值与下方发布说明；从 Release API 验证 `digest=sha256:...`、资产名匹配 `Han1meViewer-v*.apk`，再用已安装旧版检查应用内更新。
-5. 若使用新签名，先停止覆盖安装流程并制定迁移方案；不能让已有用户通过卸载重装来“完成升级”。
+5. 若 Android 13 真机不接受签名传承，停止发布，先制定数据迁移方案；不能让已有用户通过卸载重装来“完成升级”。
 
 ## 首版发布说明草稿
 

@@ -329,12 +329,9 @@ DownloadScreen -> DownloadViewModel -> HanimeDownloadManagerV2 -> WorkManager Wo
 .\gradlew.bat :app:assembleDebug
 ```
 
-🔏 Release 构建需要本地或 CI 提供签名相关环境变量：
+🔏 自有 Release 的本机签名脚本为 `bash scripts/build-release-local.sh`。签名私钥、旧签名与密钥轮换证明保存在本机 `~/.android/`，新密钥密码保存在 macOS 钥匙串；脚本检查版本号及 Android 13+ 使用的自有新证书。Android 8–12 为兼容既有安装，仍由旧证书签名。换机或重装开发环境前，必须安全备份签名文件、轮换证明及钥匙串密码。签名机制参考 [Android 官方文档](https://source.android.com/docs/security/features/apksigning/v3)。
 
-- `KEYSTORE_PASSWORD`
-- `KEY_ALIAS`
-
-🔑 应用通过 GitHub 公共 Release API 检查更新，构建和安装包不需要 GitHub API Token。CI 构建产物不再提供应用内更新；签名发布包必须保持相同包名、签名证书，并使用更高的 `versionCode` 才能覆盖安装并保留本地数据。
+🔑 应用通过 GitHub 公共 Release API 检查更新，构建和安装包不需要 GitHub API Token。CI 构建产物不再提供应用内更新；覆盖安装须保持包名、符合系统的签名传承，并使用更高的 `versionCode`。
 
 ### 默认 DNS 配置
 

@@ -65,7 +65,7 @@ android {
     signingConfigs {
         create("release") {
             storeFile = file(System.getenv("RELEASE_KEYSTORE_PATH")
-                ?: (System.getenv("HOME") + "/.android/keystore.jks"))
+                ?: (System.getenv("HOME") + "/.android/han1meviewer-release.jks"))
             storePassword = System.getenv("KEYSTORE_PASSWORD")
             keyAlias = System.getenv("KEY_ALIAS")
             keyPassword = System.getenv("KEYSTORE_PASSWORD")

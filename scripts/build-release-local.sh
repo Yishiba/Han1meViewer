@@ -4,50 +4,42 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 
 if [ -n "$(git status --porcelain)" ]; then
-  echo "工作区有未提交改动；请先核对，避免 APK 与 Git tag 指向不同源码。" >&2
+  echo '工作区有未提交改动；请先核对，避免 APK 与 Git tag 指向不同源码。' >&2
   exit 1
 fi
 
-default_debug_keystore="$HOME/.android/debug.keystore"
-keystore_path="${RELEASE_KEYSTORE_PATH:-$default_debug_keystore}"
-if [ ! -f "$keystore_path" ]; then
-  echo "找不到现有签名文件：$keystore_path" >&2
-  exit 1
-fi
+release_keystore="$HOME/.android/han1meviewer-release.jks"
+legacy_keystore="$HOME/.android/debug.keystore"
+lineage_path="$HOME/.android/han1meviewer-signing-lineage.bin"
+for needed in "$release_keystore" "$legacy_keystore" "$lineage_path"; do
+  if [ ! -f "$needed" ]; then
+    echo "找不到签名材料：$needed" >&2
+    exit 1
+  fi
+done
 
-if [ "$keystore_path" = "$default_debug_keystore" ]; then
-  KEYSTORE_PASSWORD="${KEYSTORE_PASSWORD:-android}"
-  KEY_ALIAS="${KEY_ALIAS:-androiddebugkey}"
-fi
-export RELEASE_KEYSTORE_PATH="$keystore_path"
-
-if [ -z "${KEYSTORE_PASSWORD:-}" ]; then
-  read -rs -p '请输入现有 keystore 密码（不会显示）：' KEYSTORE_PASSWORD
-  printf '\n'
-fi
 export KEYSTORE_PASSWORD
-trap 'unset KEYSTORE_PASSWORD' EXIT
+KEYSTORE_PASSWORD=$(security find-generic-password -a Yishiba -s Han1meViewerReleaseKeystore -w)
+export KEY_ALIAS='han1meviewer_release'
+export RELEASE_KEYSTORE_PATH="$release_keystore"
+export OLD_KEYSTORE_PASSWORD='android'
+trap 'unset KEYSTORE_PASSWORD OLD_KEYSTORE_PASSWORD' EXIT
 
 jdk_path='/Applications/Android Studio.app/Contents/jbr/Contents/Home'
 export JAVA_HOME="${RELEASE_JAVA_HOME:-$jdk_path}"
 if [ ! -x "$JAVA_HOME/bin/keytool" ]; then
-  echo "需要 JDK 21；请设置 JAVA_HOME。" >&2
+  echo '需要 JDK 21；请设置 RELEASE_JAVA_HOME。' >&2
   exit 1
 fi
-
-if [ -z "${KEY_ALIAS:-}" ]; then
-  "$JAVA_HOME/bin/keytool" -list -keystore "$keystore_path" -storepass:env KEYSTORE_PASSWORD
-  read -r -p '请输入上面列出的签名别名：' KEY_ALIAS
-fi
-export KEY_ALIAS
-"$JAVA_HOME/bin/keytool" -list -alias "$KEY_ALIAS" -keystore "$keystore_path" -storepass:env KEYSTORE_PASSWORD >/dev/null
+"$JAVA_HOME/bin/keytool" -list -alias "$KEY_ALIAS" -keystore "$release_keystore" -storepass:env KEYSTORE_PASSWORD >/dev/null
 
 bash ./gradlew :app:assembleRelease --console=plain
 
 metadata='app/build/outputs/apk/release/output-metadata.json'
 read -r version_code version_name apk_name < <(python3 - "$metadata" <<'PY'
 import json, sys
-data = json.load(open(sys.argv[1], encoding='utf-8'))
+with open(sys.argv[1], encoding='utf-8') as source:
+    data = json.load(source)
 assert data['applicationId'] == 'com.yenaly.han1meviewer'
 assert len(data['elements']) == 1
 apk = data['elements'][0]
@@ -61,6 +53,7 @@ if [ "$version_code" -le 26111903 ]; then
 fi
 
 apk_path="app/build/outputs/apk/release/$apk_name"
+rotated_path="${apk_path%.apk}.rotated.apk"
 sdk_path="${ANDROID_HOME:-$HOME/Library/Android/sdk}"
 apksigner=''
 for candidate in "$sdk_path"/build-tools/*/apksigner; do
@@ -71,13 +64,28 @@ if [ -z "$apksigner" ]; then
   exit 1
 fi
 
-signer_digest=$("$apksigner" verify --print-certs "$apk_path" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1)
-expected_digest='25ffea57792a71ac2a8fcbb5d338df44cabdd4a62d2896a5e885e3157d1b0d64'
-if [ "$signer_digest" != "$expected_digest" ]; then
-  echo '签名证书与现有手机不一致；停止发布，以免覆盖安装失败或丢数据。' >&2
+"$apksigner" sign \
+  --ks "$legacy_keystore" --ks-key-alias androiddebugkey \
+  --ks-pass env:OLD_KEYSTORE_PASSWORD --key-pass env:OLD_KEYSTORE_PASSWORD \
+  --next-signer --ks "$release_keystore" --ks-key-alias "$KEY_ALIAS" \
+  --ks-pass env:KEYSTORE_PASSWORD --key-pass env:KEYSTORE_PASSWORD \
+  --lineage "$lineage_path" --rotation-min-sdk-version 33 \
+  --out "$rotated_path" --in "$apk_path"
+
+legacy_digest='25ffea57792a71ac2a8fcbb5d338df44cabdd4a62d2896a5e885e3157d1b0d64'
+release_digest='bbc987ea88753d153963350fd9c13f603ac7c6686900e034f9ab5b449e8d8d8c'
+legacy_certs=$("$apksigner" verify --print-certs --min-sdk-version 27 --max-sdk-version 27 "$rotated_path")
+modern_certs=$("$apksigner" verify --print-certs --min-sdk-version 33 --max-sdk-version 33 "$rotated_path")
+if ! printf '%s\n' "$legacy_certs" | grep -q "certificate SHA-256 digest: $legacy_digest"; then
+  echo 'Android 8 的签名与已安装用户不兼容，停止发布。' >&2
+  exit 1
+fi
+if ! printf '%s\n' "$modern_certs" | grep -q "minSdkVersion=33.*certificate SHA-256 digest: $release_digest"; then
+  echo 'Android 13+ 未使用自有正式签名，停止发布。' >&2
   exit 1
 fi
 
+mv "$rotated_path" "$apk_path"
 printf 'APK: %s\n版本: %s (code %s)\nGit tag: v%s\n' "$apk_path" "$version_name" "$version_code" "$version_name"
 shasum -a 256 "$apk_path"
-echo '签名与现有手机匹配。发布前仍须真机覆盖安装并检查数据。'
+echo 'Android 13+ 使用自有正式签名；Android 8–12 为保留原有安装数据，使用旧签名与密钥轮换证明。'
