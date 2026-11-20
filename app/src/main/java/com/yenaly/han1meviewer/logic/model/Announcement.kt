@@ -40,20 +40,18 @@ data class Announcement(
 
     @Composable
     fun getFormatedContent(linkColor: Color = MaterialTheme.colorScheme.primary): AnnotatedString {
-        val regex = "(https?://[\\w-]+(\\.[\\w-]+)+([/?%&=]*)?)".toRegex()
-
         return buildAnnotatedString {
-            val matches = regex.findAll(content).toList()
+            val matches = findAnnouncementLinks(content)
 
             if (matches.isEmpty()) {
                 append(content)
             } else {
                 var lastIdx = 0
                 for (match in matches) {
-                    append(content.substring(lastIdx, match.range.first))
+                    append(content.substring(lastIdx, match.start))
                     withLink(
                         LinkAnnotation.Url(
-                            url = match.value,
+                            url = match.url,
                             styles = TextLinkStyles(
                                 style = SpanStyle(
                                     color = linkColor,
@@ -62,9 +60,9 @@ data class Announcement(
                             )
                         )
                     ) {
-                        append(match.value)
+                        append(match.url)
                     }
-                    lastIdx = match.range.last + 1
+                    lastIdx = match.endExclusive
                 }
                 if (lastIdx < content.length) {
                     append(content.substring(lastIdx))

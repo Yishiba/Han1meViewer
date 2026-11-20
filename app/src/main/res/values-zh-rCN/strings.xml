@@ -426,7 +426,7 @@
     <string name="not_compact_lock_screen">你的系统版本不支持验证锁屏，无法启用此功能</string>
     <string name="not_set_sys_lock">请先在系统设置中启用指纹、图案或PIN锁</string>
     <string name="usage_notice_title">使用须知</string>
-    <string name="usage_notice_content">🧩 本应用为独立第三方工具，与 https://hanime1.me/ 及其关联方不存在隶属、合作、授权或代言关系。\n\n📢 请勿在任何公开平台宣传、搬运或引流本应用。若因此带来风险，维护者可能随时归档或隐藏仓库，并移除已编译发行版。\n\n🔍 本应用仅通过常规网络请求和 HTML DOM 解析获取目标网站公开显示的信息，不访问后端数据库，不进行注入攻击、授权绕过或获取非公开及隐私数据。\n\n⚖️ 本应用仅供技术研究、移动端体验优化与学习交流使用，不提供商业化服务。使用者应自行遵守所在地区法律法规和目标网站规则，并承担使用本应用产生的一切后果。\n\n©️ 原始视频、图文及相关内容版权归 https://hanime1.me/ 或原始制作、发行方所有。本应用不存储版权内容，不修改原始内容，也不声称拥有任何内容所有权。\n\n🛡️ 如对相关内容存在版权、DMCA、人身攻击或其他投诉，请直接联系源网站管理方处理。本应用开发者无法处理或协助处理相关内容纠纷。\n\nℹ️ 建议通过官方渠道支持原站内容与网站运营者。\n\n🔞 R18 警告：未满 18 岁禁止下载和使用本应用。\n\n2026 年 6 月 1 日</string>
+    <string name="usage_notice_content">🧩 Han1meClient 是独立第三方客户端，与 https://hanime1.me/ 及其关联方没有隶属、合作或授权关系。\n\n📺 应用提供浏览、搜索、播放、下载和本地整理功能。访问内容时，会向所选网站发起网络请求。\n\n📁 下载和备份的文件可保存在你的设备或你配置的存储位置。请自行确认保存、使用与分享内容的权限，并管理这些文件。\n\n©️ 网站提供的内容权利归原权利人所有。Han1meClient 不声称拥有或出售网站视频。\n\n💳 当前版本没有收款或 Pro 功能限制。若以后推出付费工具，会在购买前说明价格、权益和到期规则；基础浏览、播放和翻译继续免费。\n\n🔞 本应用仅供年满 18 岁者使用。请遵守所在地区的法律法规及所访问网站的使用规则。\n\n2026 年 11 月 20 日</string>
     <string name="usage_notice_accept">我已阅读并同意</string>
     <string name="usage_notice_accept_countdown">请阅读 %1$d 秒</string>
     <string name="usage_notice_decline">不同意并退出</string>

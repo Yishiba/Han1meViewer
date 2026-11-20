@@ -65,7 +65,9 @@ fun MainActivityContent(
         val scope = rememberCoroutineScope()
         var currentMainDestination by remember { mutableStateOf(MainDestinationSpec.Home) }
         var pendingUpdate by remember { mutableStateOf<Latest?>(null) }
-        var showUsageNotice by rememberSaveable { mutableStateOf(!Preferences.usageNoticeAccepted) }
+        var showUsageNotice by rememberSaveable {
+            mutableStateOf(!Preferences.usageNoticeAccepted || !Preferences.usageNoticeRevisionAccepted)
+        }
         var showOnboarding by rememberSaveable {
             mutableStateOf(Preferences.onboardingPending && !Preferences.onboardingCompleted)
         }
@@ -197,6 +199,7 @@ fun MainActivityContent(
                     visible = showUsageNotice,
                     onAccepted = {
                         Preferences.usageNoticeAccepted = true
+                        Preferences.usageNoticeRevisionAccepted = true
                         showUsageNotice = false
                     },
                     onDeclined = { activity.finish() },
