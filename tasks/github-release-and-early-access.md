@@ -12,7 +12,7 @@
 ## 首个 Release 的准备与验收
 
 1. 核对本地工作区的大量未提交功能变更，审查无私人数据、Token 或测试凭据后，提交到要发布的分支。GitHub Release 的 tag 必须指向与 APK 同一份代码。
-2. 在本机安全地提供 `KEYSTORE_PASSWORD`、`KEY_ALIAS`，或者配置 CI 的 `YOUR_KEYSTORE_BASE64`、`YOUR_KEYSTORE_PASSWORD`、`KEY_ALIAS`、`GOOGLE_SERVICES_JSON_BASE64`；不要把密钥放进 Gradle BuildConfig。当前 CI Secrets 为零，故先走本机签名更可控。
+2. 在本机终端运行 `bash scripts/build-release-local.sh`，按提示输入原 keystore 密码和别名，不要发到聊天。脚本用 JDK 21 构建，并检查版本号与签名证书；也可事先在终端环境中设置 `KEYSTORE_PASSWORD`、`KEY_ALIAS`。当前 CI Secrets 为零，故先走本机签名更可控；不要把密钥放进 Gradle BuildConfig。
 3. 生成 Release APK；用 `apksigner verify --print-certs` 确认证书与现有手机相同；核对 `versionCode` 大于 `26111903`，并在现有手机覆盖安装，确认本地下载、备份与设置仍在。
 4. 创建与 `versionName` 对应的 Git tag 和 GitHub Release，只上传 APK、校验值与下方发布说明；从 Release API 验证 `digest=sha256:...`、资产名匹配 `Han1meViewer-v*.apk`，再用已安装旧版检查应用内更新。
 5. 若使用新签名，先停止覆盖安装流程并制定迁移方案；不能让已有用户通过卸载重装来“完成升级”。
