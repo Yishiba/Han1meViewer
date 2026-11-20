@@ -404,16 +404,16 @@ Room 主要用于：
 
 关键文件：
 
-- `ui/viewmodel/MainViewModel.kt`
-- `ui/component/AnnouncementDialog.kt`
-- `ui/screen/home/HomePageScreen.kt`
+- `ui/screen/home/homepage/HomePageViewModel.kt`
+- `ui/screen/home/homepage/component/AnnouncementDialog.kt`
+- `ui/screen/home/homepage/HomePageScreen.kt`
 - `logic/model/Announcement.kt`
 - `HanimeAnnouncementManagerWebUI/HanimeAnnouncementManager.html`
 - `HanimeAnnouncementManagerWebUI/PermitAdmin.py`
 
 应用侧链路：
 
-- `MainViewModel.loadAnnouncements()` 从 Firebase Realtime Database 的 `announcements` 节点读取公告。
+- 配置自有数据库后，`HomePageViewModel.fetchAnnouncementsFromFirebase()` 从 Firebase Realtime Database 的 `announcements` 节点读取公告；当前地址为空，返回空列表。
 - 只有 `isActive = true` 的公告会参与展示。
 - 首页通过公告卡片展示公告列表。
 - 点击公告后进入 `AnnouncementDialog`，可查看标题、正文、时间、图片和按钮文案。

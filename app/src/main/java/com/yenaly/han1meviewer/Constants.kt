@@ -76,7 +76,9 @@ const val HA1_GITHUB_FORUM_URL = "$HA1_GITHUB_URL/discussions"
 const val HA1_GITHUB_RELEASES_URL = "$HA1_GITHUB_URL/releases"
 
 const val HA1_GITHUB_API_URL = "https://api.github.com/repos/Yishiba/Han1meViewer/"
-const val FIREBASE_REALTIME_DATABASE = "https://han1meviewer-86e5f-default-rtdb.asia-southeast1.firebasedatabase.app/"
+// No Realtime Database has been provisioned for this fork. Keep announcements
+// disabled until this points to a database owned by the Han1meClient project.
+const val FIREBASE_REALTIME_DATABASE = ""
 // for Shared Preference
 
 const val LOGIN_COOKIE = "cookie"
