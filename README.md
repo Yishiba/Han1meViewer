@@ -2,15 +2,19 @@
 
 目前处于小规模测试阶段，请勿在不允许讨论成人工具的社区刷屏、搬运露骨素材或冒充内容网站官方。本仓库只分发应用代码和安装包，不分发视频。
 
-# 🌸 Han1meViewer
+# YoruShelf
 
 🔞 R18 警告：未满 18 岁禁止下载和使用。
 
-Han1meViewer 是一个使用 Kotlin 开发的 Android 客户端，用于浏览、搜索、播放和管理 hanime 相关公开视频页面内容。当前项目以 Jetpack Compose、Navigation Compose、ViewModel、StateFlow、Retrofit、Jsoup、Room、WorkManager、Media3/JZVD/MPV 为主要技术栈，围绕视频浏览、详情播放、搜索、用户列表、下载管理、评论、订阅、设置和隐私保护等功能组织。
+YoruShelf 是一个使用 Kotlin 开发的 Android 客户端，用于浏览、搜索、播放和管理相关公开视频页面内容。桌面名称和默认图标由本项目独立设计，仓库名及旧数据目录仍保留 Han1meViewer，以兼容既有文件和迁移资料。当前项目以 Jetpack Compose、Navigation Compose、ViewModel、StateFlow、Retrofit、Jsoup、Room、WorkManager、Media3/JZVD/MPV 为主要技术栈，围绕视频浏览、详情播放、搜索、用户列表、下载管理、评论、订阅、设置和隐私保护等功能组织。
+
+![YoruShelf 图标](docs/brand/yorushelf-icon.svg)
 
 ![搜索与翻译功能示意](docs/release-preview.svg)
 
 本应用没有官方网站。正式版本通过[本仓库的 GitHub Releases](https://github.com/Yishiba/Han1meViewer/releases)分发和更新；首个自有 Release 尚未发布，页面为空时请勿从其他仓库下载安装包。
+
+同一 UTC 小时内连续构建正式版时，设置 `HA1_VERSION_CODE` 为高于已安装版本的八位数字；构建脚本会验证签名与包名。
 
 ### 首批试用重点
 

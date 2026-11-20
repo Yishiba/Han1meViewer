@@ -9,6 +9,7 @@ import kotlinx.datetime.format.char
  */
 const val EMPTY_STRING = ""
 
+// Legacy storage directory name. Keep it stable when the launcher brand changes.
 const val APP_NAME = "Han1meViewer"
 
 // 标准时间格式

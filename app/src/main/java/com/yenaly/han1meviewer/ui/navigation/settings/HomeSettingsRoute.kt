@@ -156,7 +156,7 @@ fun HomeSettingsRouteScreen(
         listOf(
             LauncherItem(
                 name = hanimeAppName,
-                iconRes = R.drawable.ic_launcher_new,
+                iconRes = R.drawable.ic_yoru_preview,
                 alias = "com.yenaly.han1meviewer.LauncherAliasDefault",
             ),
             LauncherItem(
