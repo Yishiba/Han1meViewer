@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="960" height="360" viewBox="0 0 960 360" role="img" aria-labelledby="title desc">
+  <title id="title">Han1meViewer 搜索与翻译功能示意</title>
+  <desc id="desc">中文关键词经过端侧翻译得到可编辑的日文查询词，搜索结果可显示原文和中文译文。</desc>
+  <rect width="960" height="360" rx="24" fill="#111827"/>
+  <text x="44" y="60" fill="#f9fafb" font-size="30" font-family="sans-serif" font-weight="700">Han1meViewer</text>
+  <text x="44" y="96" fill="#9ca3af" font-size="17" font-family="sans-serif">中文搜索 · 端侧翻译 · 本地整理</text>
+  <rect x="44" y="130" width="390" height="68" rx="14" fill="#1f2937" stroke="#4b5563"/>
+  <text x="64" y="173" fill="#f9fafb" font-size="21" font-family="sans-serif">中文关键词</text>
+  <text x="465" y="173" fill="#a78bfa" font-size="32" font-family="sans-serif">→</text>
+  <rect x="526" y="130" width="390" height="68" rx="14" fill="#312e81" stroke="#8b5cf6"/>
+  <text x="546" y="173" fill="#f9fafb" font-size="21" font-family="sans-serif">可编辑的日文查询词</text>
+  <rect x="44" y="226" width="872" height="90" rx="16" fill="#1f2937"/>
+  <text x="64" y="263" fill="#d1d5db" font-size="18" font-family="sans-serif">原文保留，标题与简介可译中文</text>
+  <text x="64" y="292" fill="#a78bfa" font-size="16" font-family="sans-serif">搜索建议　·　保存搜索　·　下载与备份</text>
+</svg>

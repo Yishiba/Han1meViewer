@@ -301,7 +301,7 @@ object Parser {
                 hanimeNormalItemVer2(hanimeSearchItem)?.let(hanimeSearchList::add)
             }
         }
-        Log.d("search_result", "$hanimeSearchList")
+        Log.d("search_result", "Parsed ${hanimeSearchList.size} results")
         return PageLoadingState.Success(hanimeSearchList)
     }
 

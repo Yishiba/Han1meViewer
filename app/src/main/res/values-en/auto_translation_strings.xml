@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auto_translation_title">Automatic translation</string>
+    <string name="auto_translation_enable">Translate content automatically</string>
+    <string name="auto_translation_target">Target language</string>
+    <string name="auto_translation_mobile">Allow automatic model downloads over mobile data</string>
+    <string name="auto_translation_help">Detect the source language and translate visible home and search titles, detail titles and descriptions. Originals are retained. Content already in the target language is skipped.</string>
+    <string name="auto_translation_download_help">Each new language may require a model download of about 30 MB. Downloads use Wi-Fi by default. Once models are installed, translation runs offline on device. Turning this off stops further translations; model downloads already started may still finish.</string>
+    <string name="auto_translation_settings_summary">Translate search titles and details, retaining originals</string>
+    <string name="auto_translation_result">%1$s · Machine translation</string>
+    <string name="auto_translation_working">Translating automatically…</string>
+    <string name="auto_translation_wifi_wait">A language model is needed. Connect to Wi-Fi or allow mobile data in automatic translation settings.</string>
+    <string name="auto_translation_failed">Translation unavailable. Retry or select the source language manually.</string>
+    <string name="auto_translation_retry">Retry automatic translation</string>
+    <string name="auto_translation_manual">Translate to %1$s</string>
+    <string name="auto_translation_chinese">Chinese</string>
+    <string name="auto_translation_same_language">The original is already in the target language.</string>
+</resources>

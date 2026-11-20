@@ -45,6 +45,9 @@ Thumbs.db
 # 开发环境文件
 .env
 .secrets/
+*.jks
+*.keystore
+*.lineage
 
 # Kotlin 相关
 .kotlin/

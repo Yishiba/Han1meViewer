@@ -7,5 +7,12 @@
 -->
 <full-backup-content>
    <include domain="sharedpref" path="."/>
+   <exclude domain="sharedpref" path="backup_device_config.xml"/>
+        <exclude domain="sharedpref" path="automatic_sync_config.xml"/>
+        <exclude domain="sharedpref" path="search_translation_tools.xml"/>
+        <exclude domain="sharedpref" path="saved_search_discovery.xml"/>
+        <exclude domain="sharedpref" path="content_translation_cache.xml"/>
+        <exclude domain="sharedpref" path="auto_translation_device.xml"/>
+        <exclude domain="sharedpref" path="trial_research_device.xml"/>
    <include domain="database" path="." />
 </full-backup-content>

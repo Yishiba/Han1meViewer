@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auto_sync_title">Background auto sync</string>
+    <string name="auto_sync_help">Off by default. Enabling automatically uploads and merges watch records, rules, selected settings, search aliases and translation history. First scheduled after the selected interval; network, battery and Android may delay it. Conflicts pause auto sync until a manual preview and confirmation. Disabling cancels future work; requests already sent may finish. Saving a connection disables auto sync.</string>
+    <string name="auto_sync_15">15 minutes</string>
+    <string name="auto_sync_60">1 hour</string>
+    <string name="auto_sync_360">6 hours</string>
+    <string name="auto_sync_unmetered">Unmetered networks only (usually Wi-Fi)</string>
+    <string name="auto_sync_idle">Waiting for the next scheduled run</string>
+    <string name="auto_sync_success">Last sync succeeded (or no changes needed)</string>
+    <string name="auto_sync_conflict">Auto sync paused: conflicting edits. Preview and confirm a manual sync to resume.</string>
+    <string name="auto_sync_auth">Auto sync paused: account or permission error. Save the connection again and enable auto sync.</string>
+    <string name="auto_sync_invalid">Auto sync paused: check passphrase, format, certificate and storage. A successful manual sync resumes it.</string>
+    <string name="auto_sync_busy">Downloads or data changes are busy. Retrying later.</string>
+    <string name="auto_sync_retry">Network or remote revision changed. Retrying later.</string>
+    <string name="auto_sync_local_changed">Local data changed. Will merge again without overwriting new edits.</string>
+    <string name="auto_sync_last_attempt">Last attempt: %1$s</string>
+    <string name="auto_sync_last_success">Last success: %1$s</string>
+</resources>

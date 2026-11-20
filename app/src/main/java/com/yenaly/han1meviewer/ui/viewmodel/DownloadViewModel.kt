@@ -2,6 +2,17 @@ package com.yenaly.han1meviewer.ui.viewmodel
 
 import android.app.Application
 import androidx.lifecycle.viewModelScope
+import com.yenaly.han1meviewer.Preferences
+import com.yenaly.han1meviewer.logic.library.SmartCollection
+import com.yenaly.han1meviewer.logic.library.SmartCollectionStore
+import com.yenaly.han1meviewer.logic.library.AndroidLibraryFileAccess
+import com.yenaly.han1meviewer.logic.library.DownloadAutoOrganizer
+import com.yenaly.han1meviewer.logic.library.GroupAssignment
+import com.yenaly.han1meviewer.logic.library.InspectionState
+import com.yenaly.han1meviewer.logic.library.LibraryInspector
+import com.yenaly.han1meviewer.logic.library.LibraryRecordActions
+import com.yenaly.han1meviewer.util.SafFileManager
+import com.yenaly.han1meviewer.logic.dao.DownloadDatabase
 import com.yenaly.han1meviewer.logic.DatabaseRepo
 import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
@@ -16,6 +27,9 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.CancellationException
 
 /**
  * @project Han1meViewer
@@ -26,6 +40,77 @@ import kotlinx.coroutines.launch
  * 实现分组移动、重命名等
  */
 class DownloadViewModel(application: Application) : YenalyViewModel(application) {
+    private val collectionStore = SmartCollectionStore(Preferences.preferenceSp)
+    val smartCollections = collectionStore.catalog
+    private val organizer = DownloadAutoOrganizer(DownloadDatabase.instance, Preferences.preferenceSp)
+    private val fileAccess = AndroidLibraryFileAccess(application)
+    private val recordActions = LibraryRecordActions(DownloadDatabase.instance, fileAccess) {
+        SafFileManager.deleteDownloadedFile(application, it)
+    }
+    private val mutableInspection = MutableStateFlow(InspectionState())
+    val inspection = mutableInspection.asStateFlow()
+    private var inspectionJob: Job? = null
+    @Volatile private var inspectionGeneration = 0
+
+    suspend fun moveCollection(id: String, offset: Int): Boolean = withContext(Dispatchers.IO) {
+        collectionStore.move(id, offset)
+    }
+
+    suspend fun previewOrganization(): List<GroupAssignment> = withContext(Dispatchers.IO) { organizer.preview() }
+    suspend fun applyOrganization(plan: List<GroupAssignment>): Int = withContext(Dispatchers.IO) { organizer.apply(plan) }
+
+    fun startInspection(thresholdMiB: Long) {
+        inspectionJob?.cancel()
+        val generation = ++inspectionGeneration
+        mutableInspection.value = InspectionState(running = true)
+        inspectionJob = viewModelScope.launch(Dispatchers.IO) {
+            try {
+                val snapshot = DownloadDatabase.instance.hanimeDownloadDao.getAll().filter { it.isDownloaded }
+                val report = LibraryInspector(fileAccess).scan(snapshot, thresholdMiB) {
+                    if (generation == inspectionGeneration) mutableInspection.value = InspectionState(running = true, progress = it)
+                }
+                val current = DownloadDatabase.instance.hanimeDownloadDao.getAll().filter { it.isDownloaded }
+                if (generation == inspectionGeneration) mutableInspection.value = InspectionState(report = report,
+                    stale = report.source.sortedBy { it.id } != current.sortedBy { it.id })
+            } catch (cancelled: CancellationException) {
+                throw cancelled
+            } catch (_: Exception) {
+                if (generation == inspectionGeneration) mutableInspection.value = InspectionState(failed = true)
+            }
+        }
+    }
+
+    fun cancelInspection() {
+        inspectionGeneration++
+        inspectionJob?.cancel()
+        mutableInspection.value = mutableInspection.value.copy(running = false)
+    }
+
+    fun invalidateInspection(items: List<VideoWithCategories>) {
+        val report = mutableInspection.value.report ?: return
+        if (report.source.sortedBy { it.id } != items.map { it.video }.sortedBy { it.id }) {
+            mutableInspection.value = mutableInspection.value.copy(stale = true)
+        }
+    }
+
+    /** Only remove a record after proving the file is still missing, with no URI/state change. */
+    suspend fun removeMissingRecord(expected: HanimeDownloadEntity): Boolean = withContext(Dispatchers.IO) {
+        recordActions.removeMissing(expected)
+    }
+
+    suspend fun saveCollection(collection: SmartCollection): Boolean = withContext(Dispatchers.IO) {
+        collectionStore.save(collection)
+    }
+
+    suspend fun deleteCollection(id: String): Boolean = withContext(Dispatchers.IO) {
+        collectionStore.delete(id)
+    }
+
+    override fun onCleared() {
+        inspectionJob?.cancel()
+        collectionStore.close()
+        super.onCleared()
+    }
 
     private val _downloaded = MutableStateFlow(mutableListOf<VideoWithCategories>())
     val downloaded = _downloaded.asStateFlow()

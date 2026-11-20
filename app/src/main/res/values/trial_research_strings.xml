@@ -1,0 +1,14 @@
+<resources>
+    <string name="trial_research_title">体验与价格研究</string>
+    <string name="trial_research_summary">查看体验期和未来价格意向</string>
+    <string name="trial_research_existing">你是现有用户，本轮研究不会改变你的使用方式。</string>
+    <string name="trial_research_not_started">首次成功加载首页后，开始记录 14 天体验期。</string>
+    <string name="trial_research_days">体验期剩余约 %1$d 天。</string>
+    <string name="trial_research_ended">14 天体验观察期已结束。</string>
+    <string name="trial_research_quote">未来商业版研究报价：¥%1$d/年。包含智能合集、自动整理、多版本备份及跨设备同步；浏览、播放和基础翻译保持免费。</string>
+    <string name="trial_research_disclaimer">目前所有功能继续免费开放；本页面不收款、不创建订阅，也不自动扣费。未来是否收费、正式价格及现有用户政策会另行公布。购买工具不包含片源或网站会员，不保证第三方站点可用。</string>
+    <string name="trial_research_consider">愿意按此价格考虑购买</string>
+    <string name="trial_research_conditional">满足条件后才考虑</string>
+    <string name="trial_research_decline">目前不会购买</string>
+    <string name="trial_research_undecided">暂时无法判断</string>
+</resources>

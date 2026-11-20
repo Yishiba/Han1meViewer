@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="membership_title">支援者メンバーシップ</string>
+    <string name="membership_summary">Afdian アカウントを連携して Pro の状態を確認</string>
+    <string name="membership_description">Afdian でログインすると会員状態を復元できます。基本的な閲覧・再生・翻訳は引き続き無料です。</string>
+    <string name="membership_not_connected">Afdian アカウントは未連携です</string>
+    <string name="membership_waiting_login">Afdian の認証待ちです。完了後、アプリに戻ってください。</string>
+    <string name="membership_active_until">Pro 有効期限: %1$s</string>
+    <string name="membership_no_active_plan">連携済みですが、有効な Pro プランは見つかりません。</string>
+    <string name="membership_loading">確認中…</string>
+    <string name="membership_error">失敗しました。通信状態を確認して再試行してください。</string>
+    <string name="membership_connect">Afdian と連携</string>
+    <string name="membership_return_from_browser">認証後、アプリに戻って「ログインを完了」をタップしてください。</string>
+    <string name="membership_finish_login">ログインを完了</string>
+    <string name="membership_order_optional">注文番号（自動反映されない場合のみ）</string>
+    <string name="membership_refresh">会員状態を更新</string>
+    <string name="membership_disconnect">アカウント連携を解除</string>
+</resources>

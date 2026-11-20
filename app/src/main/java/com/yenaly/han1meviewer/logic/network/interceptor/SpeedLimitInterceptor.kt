@@ -3,7 +3,7 @@ package com.yenaly.han1meviewer.logic.network.interceptor
 import okhttp3.Interceptor
 import okhttp3.Response
 
-class SpeedLimitInterceptor(var maxSpeed: Long) : Interceptor {
+class SpeedLimitInterceptor(@Volatile var maxSpeed: Long) : Interceptor {
 
     companion object {
         const val NO_LIMIT = 0L

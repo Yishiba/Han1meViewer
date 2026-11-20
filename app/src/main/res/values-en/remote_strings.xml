@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="remote_title">Device sync and NAS</string>
+    <string name="remote_help">Browse and play from your HTTPS WebDAV server. Enable WebDAV on your NAS; SMB/NFS are not supported in this version. NAS connections bypass the app’s website HTTP/SOCKS proxy.</string>
+    <string name="remote_connection">Connection settings</string>
+    <string name="remote_url">HTTPS WebDAV folder URL</string>
+    <string name="remote_username">Username</string>
+    <string name="remote_password">WebDAV password</string>
+    <string name="remote_passphrase">Shared sync passphrase (12–256 characters, optional)</string>
+    <string name="remote_credentials_help">Credentials are encrypted with Android Keystore and excluded from backups. Use the same URL and passphrase on all devices. A lost passphrase cannot decrypt remote data. Requires Basic authentication and a valid HTTPS certificate.</string>
+    <string name="remote_connect">Connect and save</string>
+    <string name="remote_sync_help">Sync watch records, rules, selected settings, WebDAV positions, search aliases and translation history. Data is encrypted in this folder. Cookies, download paths and videos are excluded. Deletions propagate; resolve conflicts with a manual preview. Update every device to a version supporting search-data sync.</string>
+    <string name="remote_prefer_remote">Prefer remote data on conflicts</string>
+    <string name="remote_sync_preview">Preview sync changes</string>
+    <string name="remote_preview_summary">Changed fields: %1$d · Conflicts: %2$d</string>
+    <string name="remote_confirm_help">Confirmation publishes remotely and merges locally. Pause downloads first. A local recovery snapshot is created; changed data requires a new preview. Turning remote priority off keeps local values on conflicts.</string>
+    <string name="remote_sync_confirm">Confirm sync</string>
+    <string name="remote_sync_done">Sync completed</string>
+    <string name="remote_open_folder">Open folder</string>
+    <string name="remote_parent">Parent folder</string>
+    <string name="remote_refresh">Refresh</string>
+    <string name="remote_empty">No items in this folder</string>
+    <string name="remote_forget">Forget connection on this device</string>
+    <string name="remote_forget_help">Delete local credentials, sync baseline and network playback positions? Remote data and videos are kept.</string>
+    <string name="remote_error">Operation failed. Check the HTTPS URL, credentials, certificate, network, passphrase and storage. If remote publishing succeeded, preview again to retry. Sync requires server ETag support.</string>
+    <string name="remote_auth_error">Access denied. Check the account, password and folder permissions.</string>
+    <string name="remote_conflict_error">Remote data changed and was not overwritten. Preview again.</string>
+    <string name="remote_play">Play</string>
+    <string name="remote_pause">Pause</string>
+    <string name="remote_retry">Retry</string>
+    <string name="remote_play_failed">Playback failed. Check the format, permissions and server range support.</string>
+    <string name="remote_progress_failed">Could not save playback position. Check available storage.</string>
+</resources>

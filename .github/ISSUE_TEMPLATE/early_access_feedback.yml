@@ -1,0 +1,54 @@
+name: 🧪 试用反馈
+description: 分享中文搜索、翻译、下载或备份的真实体验
+body:
+  - type: markdown
+    attributes:
+      value: |
+        请勿填写账号、Cookie、私人文件路径或上传露骨截图。反馈仅用于改进软件。
+  - type: input
+    id: version
+    attributes:
+      label: App 版本
+      description: 设置页显示的版本号
+    validations:
+      required: true
+  - type: dropdown
+    id: feature
+    attributes:
+      label: 试用功能
+      options:
+        - 中文／英文译日文搜索
+        - 首页或详情翻译
+        - 下载管理
+        - 智能合集／自动整理
+        - 备份／WebDAV 同步
+    validations:
+      required: true
+  - type: textarea
+    id: result
+    attributes:
+      label: 实际效果
+      description: 原本要完成什么、实际发生了什么？
+    validations:
+      required: true
+  - type: dropdown
+    id: continued_use
+    attributes:
+      label: 一周后还会使用吗？
+      options:
+        - 会
+        - 不确定
+        - 不会
+    validations:
+      required: true
+  - type: dropdown
+    id: paid_interest
+    attributes:
+      label: 若未来高级下载／整理／备份工具为 ¥30/年，你会考虑购买吗？
+      description: 仅调查意向，当前不收款，也不影响现有功能。
+      options:
+        - 会考虑
+        - 不确定
+        - 不会
+    validations:
+      required: true

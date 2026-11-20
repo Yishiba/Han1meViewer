@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="membership_title">Supporter membership</string>
+    <string name="membership_summary">Connect Afdian to view Pro status</string>
+    <string name="membership_description">Sign in with Afdian to restore membership. Basic browsing, playback and translation remain free.</string>
+    <string name="membership_not_connected">Afdian account not connected</string>
+    <string name="membership_waiting_login">Waiting for Afdian authorization. Return to the app when done.</string>
+    <string name="membership_active_until">Pro active until %1$s</string>
+    <string name="membership_no_active_plan">Connected, but no active Pro plan was found.</string>
+    <string name="membership_loading">Checking…</string>
+    <string name="membership_error">Request failed. Check your connection and try again.</string>
+    <string name="membership_connect">Connect Afdian</string>
+    <string name="membership_return_from_browser">After authorization, return to the app and tap Finish sign-in.</string>
+    <string name="membership_finish_login">Finish sign-in</string>
+    <string name="membership_order_optional">Order number (optional if not detected automatically)</string>
+    <string name="membership_refresh">Refresh membership</string>
+    <string name="membership_disconnect">Disconnect account</string>
+</resources>

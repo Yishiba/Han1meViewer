@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="remote_title">跨设备同步与 NAS</string>
+    <string name="remote_help">连接自有 HTTPS WebDAV，可浏览目录与播放视频。NAS 需启用 WebDAV；此版本不支持 SMB／NFS。 NAS 连接不使用站点 HTTP／SOCKS 代理。</string>
+    <string name="remote_connection">连接设置</string>
+    <string name="remote_url">HTTPS WebDAV 文件夹地址</string>
+    <string name="remote_username">用户名</string>
+    <string name="remote_password">WebDAV 密码</string>
+    <string name="remote_passphrase">同步共享口令（12–256 字符，可留空）</string>
+    <string name="remote_credentials_help">连接凭据以 Android Keystore 加密保存在本机，不随备份导出。同步需所有设备使用相同地址和口令；口令丢失无法解密远端数据。仅支持 Basic 认证与有效 HTTPS 证书。</string>
+    <string name="remote_connect">连接并保存</string>
+    <string name="remote_sync_help">同步观看记录、合集规则、部分显示设置、WebDAV 播放进度、搜索别名与翻译历史。数据加密存于此文件夹，不含登录 Cookie、下载路径和视频。删除记录会传播；有冲突时请手动预览并确认。所有设备需更新到支持搜索数据同步的版本。</string>
+    <string name="remote_prefer_remote">冲突时优先远端数据</string>
+    <string name="remote_sync_preview">预览同步变更</string>
+    <string name="remote_preview_summary">同步字段变更 %1$d 项 · 冲突 %2$d 项</string>
+    <string name="remote_confirm_help">确认后会写入远端并合并本机数据。先暂停所有下载。将建立恢复前保护版本；远端或本机变化后须重新预览。关闭“优先远端”会在冲突时采用本机数据。</string>
+    <string name="remote_sync_confirm">确认同步</string>
+    <string name="remote_sync_done">同步完成</string>
+    <string name="remote_open_folder">打开文件夹</string>
+    <string name="remote_parent">上一层</string>
+    <string name="remote_refresh">刷新</string>
+    <string name="remote_empty">目录中没有可显示的项目</string>
+    <string name="remote_forget">移除此设备的连接数据</string>
+    <string name="remote_forget_help">删除本机凭据、同步基准及网络播放进度？不删除远端数据或视频。</string>
+    <string name="remote_error">操作失败。请检查 HTTPS 地址、凭据、证书、网络、同步口令及存储空间。若远端已写入，请重新预览后重试；不支持 ETag 的服务器无法同步。</string>
+    <string name="remote_auth_error">服务器拒绝访问，请确认账号、密码与目录权限。</string>
+    <string name="remote_conflict_error">远端数据已变更，本次未覆盖。请重新预览。</string>
+    <string name="remote_play">播放</string>
+    <string name="remote_pause">暂停</string>
+    <string name="remote_retry">重试</string>
+    <string name="remote_play_failed">无法播放。请检查文件格式、访问权限及服务器范围读取支持。</string>
+    <string name="remote_progress_failed">未能保存播放进度，请检查可用空间。</string>
+</resources>

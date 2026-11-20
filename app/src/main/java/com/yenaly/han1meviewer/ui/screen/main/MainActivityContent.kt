@@ -24,6 +24,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.exception.CloudFlareBlockedException
 import com.yenaly.han1meviewer.logic.model.github.Latest
 import com.yenaly.han1meviewer.logic.state.PageState
+import com.yenaly.han1meviewer.logic.commerce.TrialResearchStore
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.UpdateDialog
 import com.yenaly.han1meviewer.ui.component.UsageNoticeDialog
@@ -67,6 +68,10 @@ fun MainActivityContent(
             drawerState.currentValue == DrawerValue.Open || drawerState.targetValue == DrawerValue.Open
 
         val homeState by viewModel.homePageFlow.collectAsStateWithLifecycle()
+        val trialResearch = remember(activity) { TrialResearchStore(activity) }
+        LaunchedEffect(homeState) {
+            if (homeState is PageState.Success) trialResearch.recordSuccessfulHomeLoad()
+        }
         val isLoggedIn by Preferences.loginStateFlow.collectAsStateWithLifecycle()
         val headerAvatarUrl = if (isLoggedIn) {
             (homeState as? PageState.Success)?.info?.page?.avatarUrl

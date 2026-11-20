@@ -27,6 +27,9 @@ import com.yenaly.han1meviewer.HFileManager
 import com.yenaly.han1meviewer.HFileManager.createVideoName
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.DatabaseRepo
+import com.yenaly.han1meviewer.Preferences
+import com.yenaly.han1meviewer.logic.dao.DownloadDatabase
+import com.yenaly.han1meviewer.logic.library.DownloadAutoOrganizer
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.network.ServiceCreator
 import com.yenaly.han1meviewer.logic.state.DownloadState
@@ -104,6 +107,7 @@ class HanimeDownloadWorker(
 
         private const val MAX_STREAM_RETRY_COUNT = 3
         private const val MAX_WORK_RETRY_COUNT = 3
+        private const val DOWNLOAD_BUFFER_SIZE = 64 * 1024
 
         const val FAST_PATH_CANCEL = "fast_path_cancel"
         const val DELETE = "delete"
@@ -180,8 +184,12 @@ class HanimeDownloadWorker(
 
     override suspend fun doWork(): Result {
         if (fastPathCancel) return Result.success()
-        setForeground(createForegroundInfo())
-        return download()
+        val backups = com.yenaly.han1meviewer.logic.backup.BackupService.get(applicationContext)
+        if (backups.recoveryRequired.value) return Result.retry()
+        return backups.withDownloadAccess {
+            setForeground(createForegroundInfo())
+            download()
+        }
     }
 
     private suspend fun createNewRaf(file: File): HanimeDownloadEntity? {
@@ -242,7 +250,7 @@ class HanimeDownloadWorker(
     }
 
     private suspend fun requestContentLength(useHead: Boolean): Long? {
-        val requestBuilder = Request.Builder().url(downloadUrl)
+        val requestBuilder = Request.Builder().url(downloadUrl).header("Accept-Encoding", "identity")
         val request = if (useHead) {
             requestBuilder.head().build()
         } else {
@@ -314,7 +322,8 @@ class HanimeDownloadWorker(
             }
 
             if (entity.downloadedLength >= entity.length && entity.length > 0) {
-                DatabaseRepo.HanimeDownload.update(entity.copy(state = DownloadState.Finished))
+                DownloadAutoOrganizer(DownloadDatabase.instance, Preferences.preferenceSp)
+                    .complete(entity.id, entity.downloadedLength)
                 showSuccessNotification()
                 return@withContext Result.success(
                     workDataOf(DownloadState.STATE to DownloadState.Finished.mask)
@@ -337,7 +346,6 @@ class HanimeDownloadWorker(
             }
 
             var downloadedLength = entity.downloadedLength
-            val needRange = downloadedLength > 0
             var raf: RandomAccessFile? = null
             var safPfd: ParcelFileDescriptor? = null
             var safChannel: FileChannel? = null
@@ -360,22 +368,62 @@ class HanimeDownloadWorker(
                     }
                     safChannel.position(downloadedLength)
                 } else {
-                    raf = RandomAccessFile(file, "rwd")
-                    if (needRange) raf.seek(downloadedLength)
+                    raf = RandomAccessFile(file, "rw")
+                    if (raf.length() < downloadedLength) {
+                        downloadedLength = 0
+                        DatabaseRepo.HanimeDownload.update(
+                            entity.copy(downloadedLength = 0, state = DownloadState.Queued)
+                        )
+                    }
+                    if (downloadedLength > 0) raf.seek(downloadedLength)
                 }
-                val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+                val privateFile = raf
+                if (privateFile != null && entity.length - downloadedLength >= SegmentedFileDownloader.MIN_REMAINING_BYTES &&
+                    Preferences.downloadSpeedLimit == 0L
+                ) {
+                    try {
+                        SegmentedFileDownloader(ServiceCreator.downloadClient).download(
+                            downloadUrl, privateFile, downloadedLength, entity.length
+                        ) { prefix, received ->
+                            downloadedLength = prefix
+                            val progress = (received * 100 / entity.length).coerceAtMost(100).toInt()
+                            setProgress(workDataOf(PROGRESS to progress))
+                            updateDownloadNotification(progress)
+                            DatabaseRepo.HanimeDownload.update(
+                                entity.copy(downloadedLength = prefix, state = DownloadState.Downloading)
+                            )
+                        }
+                    } catch (e: SegmentRangeUnsupportedException) {
+                        Log.i(TAG, "Bounded ranges unavailable; continuing single connection: $videoCode")
+                    }
+                    privateFile.seek(downloadedLength)
+                }
+                val buffer = ByteArray(DOWNLOAD_BUFFER_SIZE)
                 var delayTime = 0L
                 var retryCount = 0
 
                 while (downloadedLength < entity.length) {
+                    val requestStart = downloadedLength
                     val requestNeedRange = downloadedLength > 0
-                    val requestBuilder = Request.Builder().url(downloadUrl).get()
+                    val requestBuilder = Request.Builder().url(downloadUrl)
+                        .header("Accept-Encoding", "identity").get()
                     if (requestNeedRange) requestBuilder.header("Range", "bytes=$downloadedLength-")
                     val request = requestBuilder.build()
                     response = ServiceCreator.downloadClient.newCall(request).await()
-                    val canWrite = (requestNeedRange && response.code == 206) || (!requestNeedRange && response.isSuccessful)
+                    val canWrite = ResumeRangeValidator.accepts(
+                        response.code,
+                        response.header("Content-Range"),
+                        response.header("Content-Length"),
+                        downloadedLength,
+                        entity.length
+                    )
                     if (!canWrite) {
-                        val reason = response.toDownloadErrorMessage(requestNeedRange)
+                        if (response.code == 408 || response.code == 429 || response.code in 500..599) {
+                            throw IOException("HTTP ${response.code}")
+                        }
+                        val reason = if (response.code == 206) {
+                            context.getString(R.string.download_error_range_not_supported)
+                        } else response.toDownloadErrorMessage(requestNeedRange)
                         showFailureNotification(reason)
                         mainScope.launch {
                             showShortToast(context.getString(R.string.download_task_failed_s_reason_s, hanimeName, reason))
@@ -391,6 +439,9 @@ class HanimeDownloadWorker(
 
                     try {
                         while (len != -1) {
+                            if (len > entity.length - downloadedLength) {
+                                throw IOException("Download exceeds expected length")
+                            }
                             if (raf != null) {
                                 raf.write(buffer, 0, len)
                             } else if (safChannel != null) {
@@ -399,6 +450,7 @@ class HanimeDownloadWorker(
                             downloadedLength += len
 
                             if (System.currentTimeMillis() - delayTime > RESPONSE_INTERVAL) {
+                                raf?.fd?.sync()
                                 val progress = (downloadedLength * 100 / entity.length).coerceAtMost(100)
                                 setProgress(workDataOf(PROGRESS to progress.toInt()))
                                 updateDownloadNotification(progress.toInt())
@@ -425,13 +477,22 @@ class HanimeDownloadWorker(
                         continue
                     }
 
-                    break
+                    if (downloadedLength == requestStart) {
+                        throw IOException("Download incomplete: empty response")
+                    }
+                    response.closeQuietly()
+                    body.closeQuietly()
+                    bodyStream.closeQuietly()
+                    response = null
+                    body = null
+                    bodyStream = null
                 }
 
                 if (downloadedLength < entity.length) {
                     throw IOException("Download incomplete: $downloadedLength/${entity.length}")
                 }
 
+                raf?.fd?.sync()
                 showSuccessNotification()
                 result = Result.success(
                     workDataOf(DownloadState.STATE to DownloadState.Finished.mask)
@@ -467,18 +528,25 @@ class HanimeDownloadWorker(
                 val state = DownloadState.from(
                     result.outputData.getInt(DownloadState.STATE, DownloadState.Unknown.mask)
                 )
-                DatabaseRepo.HanimeDownload.update(
-                    entity.copy(
-                        state = if (shouldRetry) DownloadState.Queued else state,
-                        downloadedLength = downloadedLength
+                try {
+                    raf?.fd?.sync()
+                    if (state == DownloadState.Finished && !shouldRetry) {
+                        DownloadAutoOrganizer(DownloadDatabase.instance, Preferences.preferenceSp)
+                            .complete(entity.id, downloadedLength)
+                    } else DatabaseRepo.HanimeDownload.update(
+                        entity.copy(
+                            state = if (shouldRetry) DownloadState.Queued else state,
+                            downloadedLength = downloadedLength
+                        )
                     )
-                )
-                raf?.closeQuietly()
-                safChannel?.closeQuietly()
-                safPfd?.closeQuietly()
-                response?.closeQuietly()
-                body?.closeQuietly()
-                bodyStream?.closeQuietly()
+                } finally {
+                    raf?.closeQuietly()
+                    safChannel?.closeQuietly()
+                    safPfd?.closeQuietly()
+                    response?.closeQuietly()
+                    body?.closeQuietly()
+                    bodyStream?.closeQuietly()
+                }
             }
             return@withContext result
         }
@@ -553,9 +621,7 @@ class HanimeDownloadWorker(
             if (isSuccess && uri != null) {
                 val coverUriStr = uri.toString()
                 withContext(Dispatchers.IO) {
-                    DatabaseRepo.HanimeDownload.update(
-                        entity.copy(coverUri = coverUriStr)
-                    )
+                    DownloadDatabase.instance.hanimeDownloadDao.updateCoverUri(entity.id, coverUriStr)
                 }
                 entity.coverUri = coverUriStr
             }

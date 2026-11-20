@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_tools">履歴・別名・モデル</string>
+    <string name="search_tools_help">別名200件と翻訳履歴50件まで通常／暗号化バックアップに含みます。設定済みの WebDAV 同期では暗号化して転送し、自動同期が有効なら自動送信します。検索時は実際の検索語をコンテンツサイトに送信します。</string>
+    <string name="search_tools_error">データ操作またはモデル管理に失敗しました。既存データは保持します。</string>
+    <string name="search_aliases">作品の別名</string>
+    <string name="search_alias_original">元の別名</string>
+    <string name="search_alias_save">別名を保存・更新</string>
+    <string name="search_reuse">訳文を使用</string>
+    <string name="search_translation_history">翻訳検索履歴（直近50件）</string>
+    <string name="search_clear_history">翻訳履歴を消去</string>
+    <string name="search_models">言語モデル</string>
+    <string name="search_models_help">モバイル通信を使用する場合があります。削除後は再取得が必要です。共有モデルはすべての翻訳方向に影響します。</string>
+    <string name="search_model_installed">取得済み</string>
+    <string name="search_model_absent">未取得</string>
+    <string name="search_model_download">取得</string>
+    <string name="search_detect">中国語・英語を判定（変更可）</string>
+    <string name="search_detect_unknown">判定できません。手動で選択してください</string>
+    <string name="search_matching_tag">サイトのタグを使用：%1$s</string>
+    <string name="search_both">原文と日本語を合わせて検索</string>
+    <string name="search_combined_active">統合検索：%1$s</string>
+    <string name="search_retry_routes">一部失敗しました。未取得ページを再試行</string>
+</resources>

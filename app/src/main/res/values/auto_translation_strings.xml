@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auto_translation_title">自动翻译</string>
+    <string name="auto_translation_enable">自动翻译内容</string>
+    <string name="auto_translation_target">目标语言</string>
+    <string name="auto_translation_mobile">允许自动下载模型使用移动数据</string>
+    <string name="auto_translation_help">开启后自动识别原文语言，翻译首页、搜索结果标题和详情标题、简介，原文始终保留。与目标语言相同的内容会跳过。仅翻译当前可见内容。</string>
+    <string name="auto_translation_download_help">首次使用每种语言可能需要下载约 30 MB 模型，默认仅通过 Wi-Fi 下载。模型齐备后在本机离线翻译。关闭开关会停止后续翻译；已经开始的模型下载可能继续完成。</string>
+    <string name="auto_translation_settings_summary">翻译搜索标题、详情标题与简介，保留原文</string>
+    <string name="auto_translation_result">%1$s · 机器译文</string>
+    <string name="auto_translation_working">自动翻译中…</string>
+    <string name="auto_translation_wifi_wait">需要下载语言模型，请连接 Wi-Fi，或在自动翻译设置中允许移动数据。</string>
+    <string name="auto_translation_failed">暂未译出，可重试或手动选择原文语言。</string>
+    <string name="auto_translation_retry">重试自动翻译</string>
+    <string name="auto_translation_manual">译为%1$s</string>
+    <string name="auto_translation_chinese">中文</string>
+    <string name="auto_translation_same_language">原文已是目标语言，无需翻译。</string>
+</resources>

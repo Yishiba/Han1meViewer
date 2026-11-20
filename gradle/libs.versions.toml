@@ -61,8 +61,12 @@ firebaseBom = "34.13.0"
 composeBom = "2026.05.01"
 compose-material3 = "1.5.0-alpha20"
 mpv = "v0.1.7"
+mlkitTranslate = "17.0.3"
+mlkitLanguageId = "17.0.6"
 
 [libraries]
+mlkit-translate = { module = "com.google.mlkit:translate", version.ref = "mlkitTranslate" }
+mlkit-language-id = { module = "com.google.mlkit:language-id", version.ref = "mlkitLanguageId" }
 # Android
 aboutlibraries-core = { module = "com.mikepenz:aboutlibraries-core", version.ref = "aboutlibraries" }
 androidx-biometric = { module = "androidx.biometric:biometric", version.ref = "biometric" }

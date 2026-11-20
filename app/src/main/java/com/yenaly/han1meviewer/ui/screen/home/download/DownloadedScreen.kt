@@ -26,6 +26,7 @@ import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -33,6 +34,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -65,6 +67,10 @@ fun DownloadedScreen(
     var pendingRename by remember { mutableStateOf<DownloadHeaderNode?>(null) }
     var pendingMoveVideo by remember { mutableStateOf<VideoWithCategories?>(null) }
     var pendingBatchDeleteVideos by remember { mutableStateOf<List<VideoWithCategories>?>(null) }
+    val visibleIds = uiState.downloadedNodes.filterIsInstance<DownloadItemNode>().map { it.data.video.id }.toSet()
+    LaunchedEffect(visibleIds) {
+        if (pendingBatchDeleteVideos?.any { it.video.id !in visibleIds } == true) pendingBatchDeleteVideos = null
+    }
 
     CreateGroupDialog(
         visible = uiState.showCreateGroupDialog,
@@ -107,8 +113,8 @@ fun DownloadedScreen(
     if (uiState.downloadedNodes.isEmpty()) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
             EmptyContent(
-                hint = stringResource(R.string.empty_content),
-                subHint = stringResource(R.string.downloaded),
+                hint = stringResource(if (uiState.libraryFiltered) R.string.library_no_matches else R.string.empty_content),
+                subHint = stringResource(if (uiState.libraryFiltered) R.string.library_no_matches_help else R.string.downloaded),
             )
         }
         return
@@ -316,6 +322,7 @@ private fun BatchActionBar(
                 }
                 TextButton(
                     onClick = onDeleteSelected,
+                    modifier = Modifier.testTag("library.batch.delete"),
                     enabled = hasSelection,
                     colors = ButtonDefaults.textButtonColors(
                         contentColor = MaterialTheme.colorScheme.error,

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_tools">History, aliases and models</string>
+    <string name="search_tools_help">Up to 200 aliases and 50 translations are included in plain/encrypted backups. Configured WebDAV sync encrypts and transfers these records; enabling background sync sends them automatically. Searching still sends the actual query to the content website.</string>
+    <string name="search_tools_error">Unable to access data or manage models. Existing data is retained.</string>
+    <string name="search_aliases">Title aliases</string>
+    <string name="search_alias_original">Original alias</string>
+    <string name="search_alias_save">Save / update alias</string>
+    <string name="search_reuse">Use translation</string>
+    <string name="search_translation_history">Translation searches (latest 50)</string>
+    <string name="search_clear_history">Clear translation history</string>
+    <string name="search_models">Language models</string>
+    <string name="search_models_help">Downloads may use mobile data. Deleted models must be downloaded again; shared models affect all translation directions.</string>
+    <string name="search_model_installed">Installed</string>
+    <string name="search_model_absent">Not installed</string>
+    <string name="search_model_download">Download</string>
+    <string name="search_detect">Detect Chinese / English (editable)</string>
+    <string name="search_detect_unknown">Uncertain language: select manually</string>
+    <string name="search_matching_tag">Use site tag: %1$s</string>
+    <string name="search_both">Search original and Japanese</string>
+    <string name="search_combined_active">Combined queries: %1$s</string>
+    <string name="search_retry_routes">Some queries failed; retry pending pages</string>
+</resources>

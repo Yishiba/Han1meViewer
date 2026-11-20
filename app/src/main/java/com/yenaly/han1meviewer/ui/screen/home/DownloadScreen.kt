@@ -15,6 +15,8 @@ import androidx.compose.material3.Tab
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.key
+import androidx.compose.runtime.mutableLongStateOf
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -23,15 +25,25 @@ import androidx.compose.runtime.saveable.Saver
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.compose.LocalLifecycleOwner
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.repeatOnLifecycle
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.entity.download.DownloadGroupEntity
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
 import com.yenaly.han1meviewer.logic.model.DownloadHeaderNode
+import com.yenaly.han1meviewer.logic.model.DownloadItemNode
+import com.yenaly.han1meviewer.logic.model.DownloadedNode
+import com.yenaly.han1meviewer.logic.library.CollectionCatalog
+import com.yenaly.han1meviewer.logic.library.MediaLibraryRule
+import com.yenaly.han1meviewer.logic.library.SmartCollection
 import com.yenaly.han1meviewer.ui.component.appbar.HanimeScaffold
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
@@ -40,6 +52,9 @@ import com.yenaly.han1meviewer.ui.screen.home.download.DownloadUiState
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadedScreen
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadingScreen
 import com.yenaly.han1meviewer.ui.screen.home.download.MoveGroupDialog
+import com.yenaly.han1meviewer.ui.screen.home.download.LibraryRuleSaver
+import com.yenaly.han1meviewer.ui.screen.home.download.MediaLibraryControls
+import com.yenaly.han1meviewer.ui.screen.home.download.MediaLibraryRuleDialog
 import com.yenaly.han1meviewer.ui.screen.home.download.toDisplayGroups
 import com.yenaly.han1meviewer.ui.screen.home.download.toFlatNodeList
 import com.yenaly.han1meviewer.ui.screen.home.download.toNodeList
@@ -48,6 +63,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.delay
 
 /**
  * 下载页面 Screen 层。
@@ -74,6 +90,11 @@ fun DownloadScreen(
     onBack: () -> Unit,
     onLoadDownloaded: () -> Unit,
     onEvent: (DownloadEvent) -> Unit,
+    collectionCatalog: CollectionCatalog = CollectionCatalog(),
+    onSaveCollection: suspend (SmartCollection) -> Boolean = { false },
+    onDeleteCollection: suspend (String) -> Boolean = { false },
+    onOpenOrganizer: () -> Unit = {},
+    onOpenInspection: () -> Unit = {},
 ) {
     val downloadingItems by downloadingFlow.collectAsStateWithLifecycle(initialValue = emptyList())
     val downloadedItems by downloadedFlow.collectAsStateWithLifecycle()
@@ -92,10 +113,39 @@ fun DownloadScreen(
     var selectedVideoIds by remember { mutableStateOf(setOf<Int>()) }
     var pendingBatchMove by remember { mutableStateOf(false) }
     var pendingBatchMoveConfirm by remember { mutableStateOf<Pair<List<VideoWithCategories>, Int>?>(null) }
+    var draftRule by rememberSaveable(stateSaver = LibraryRuleSaver) { mutableStateOf(MediaLibraryRule()) }
+    var collectionId by rememberSaveable { mutableStateOf<String?>(null) }
+    var showRuleEditor by rememberSaveable { mutableStateOf(false) }
+    val focusManager = LocalFocusManager.current
+    val keyboard = LocalSoftwareKeyboardController.current
+    fun clearLibraryFocus() {
+        focusManager.clearFocus()
+        keyboard?.hide()
+    }
+    fun closeRuleEditor() {
+        showRuleEditor = false
+        clearLibraryFocus()
+    }
+    val activeCollection = collectionCatalog.collections.find { it.id == collectionId }
+    val libraryRule = activeCollection?.rule ?: draftRule
+    val filteredView = collectionId != null || libraryRule != MediaLibraryRule()
+    var nowMillis by remember { mutableLongStateOf(System.currentTimeMillis()) }
+    val lifecycleOwner = LocalLifecycleOwner.current
+    LaunchedEffect(lifecycleOwner) {
+        lifecycleOwner.lifecycle.repeatOnLifecycle(Lifecycle.State.STARTED) {
+            while (true) {
+                nowMillis = System.currentTimeMillis()
+                delay(60_000)
+            }
+        }
+    }
+    val matchedItems = remember(downloadedItems, libraryRule, nowMillis) {
+        libraryRule.apply(downloadedItems, System.currentTimeMillis())
+    }
 
     val displayGroups = downloadedGroups.toDisplayGroups()
 
-    val downloadedNodes =
+    val groupedNodes =
         remember(downloadedItems, displayGroups, collapseDownloadedGroup, downloadedHeaderNodes, downloadedGroupExpandedState) {
             val groupIdToNameMap = displayGroups.associate { it.id to it.name }
             if (downloadedItems.isEmpty()) {
@@ -115,6 +165,24 @@ fun DownloadScreen(
             }
         }
 
+    // Filtered results are flat so the chosen ordering is global, independent of collapsed groups.
+    val downloadedNodes: List<DownloadedNode> = if (filteredView) {
+        matchedItems.map { DownloadItemNode(it, displayGroups.find { group -> group.id == it.video.groupId }?.name.orEmpty()) }
+    } else groupedNodes
+
+    LaunchedEffect(libraryRule, collectionId) {
+        selectedVideoIds = emptySet()
+        multiSelectMode = false
+        pendingBatchMove = false
+        pendingBatchMoveConfirm = null
+        downloadedLazyListState.scrollToItem(0)
+    }
+    val visibleIds = downloadedNodes.filterIsInstance<DownloadItemNode>().map { it.data.video.id }.toSet()
+    LaunchedEffect(visibleIds) {
+        selectedVideoIds = selectedVideoIds.intersect(visibleIds)
+        if (pendingBatchMoveConfirm?.first?.any { it.video.id !in visibleIds } == true) pendingBatchMoveConfirm = null
+    }
+
     val uiState = DownloadUiState(
         downloadingItems = downloadingItems,
         downloadedNodes = downloadedNodes,
@@ -123,6 +191,7 @@ fun DownloadScreen(
         showCreateGroupDialog = showCreateGroupDialog,
         multiSelectMode = multiSelectMode,
         selectedVideoIds = selectedVideoIds,
+        libraryFiltered = filteredView,
     )
 
     val handleEvent: (DownloadEvent) -> Unit = { event ->
@@ -245,6 +314,19 @@ fun DownloadScreen(
                 )
             }
 
+            if (uiState.currentPage == 1) {
+                MediaLibraryControls(
+                    rule = libraryRule, selectedId = activeCollection?.id, catalog = collectionCatalog,
+                    matched = matchedItems.size, total = downloadedItems.size,
+                    onKeyword = { draftRule = libraryRule.copy(keyword = it); collectionId = null },
+                    onSelect = { draftRule = it.rule; collectionId = it.id; clearLibraryFocus() },
+                    onReset = { draftRule = MediaLibraryRule(); collectionId = null; clearLibraryFocus() },
+                    onEdit = { clearLibraryFocus(); showRuleEditor = true },
+                    onOrganize = { clearLibraryFocus(); onOpenOrganizer() },
+                    onInspect = { clearLibraryFocus(); onOpenInspection() },
+                )
+            }
+
             HorizontalPager(
                 state = pagerState,
                 modifier = Modifier
@@ -257,14 +339,27 @@ fun DownloadScreen(
                         onEvent = handleEvent,
                     )
 
-                    else -> DownloadedScreen(
+                    else -> key(libraryRule, collectionId) { DownloadedScreen(
                         uiState = uiState,
                         listState = downloadedLazyListState,
                         onEvent = handleEvent,
-                    )
+                    ) }
                 }
             }
         }
+    }
+
+    if (showRuleEditor) {
+        MediaLibraryRuleDialog(
+            initial = libraryRule, collection = activeCollection, catalog = collectionCatalog,
+            groups = displayGroups, qualities = downloadedItems.map { it.video.quality }.distinct(),
+            onDismiss = ::closeRuleEditor,
+            onApply = { draftRule = it; collectionId = null; closeRuleEditor() },
+            onSave = onSaveCollection,
+            onSaved = { draftRule = it.rule; collectionId = it.id; closeRuleEditor() },
+            onDelete = onDeleteCollection,
+            onDeleted = { draftRule = MediaLibraryRule(); collectionId = null; closeRuleEditor() },
+        )
     }
 
     if (pendingBatchMove) {

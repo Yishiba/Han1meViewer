@@ -5,6 +5,7 @@ import androidx.core.content.edit
 import androidx.core.net.toUri
 import androidx.preference.PreferenceManager
 import com.yenaly.han1meviewer.HanimeConstants.HANIME_URL
+import com.yenaly.han1meviewer.logic.network.DohConfig
 import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.logic.network.interceptor.SpeedLimitInterceptor
 import com.yenaly.han1meviewer.ui.navigation.settings.SettingsPreferenceKeys
@@ -86,9 +87,6 @@ object Preferences {
 
     val updatePopupIntervalDays
         get() = preferenceSp.getInt(SettingsPreferenceKeys.UPDATE_POPUP_INTERVAL_DAYS, 0)
-
-    val useCIUpdateChannel
-        get() = preferenceSp.getBoolean(SettingsPreferenceKeys.USE_CI_UPDATE_CHANNEL, false)
 
     // Check if show update dialog.
     @OptIn(ExperimentalTime::class)
@@ -229,10 +227,12 @@ object Preferences {
         get() = preferenceSp.getString(SettingsPreferenceKeys.CUSTOM_HOSTS_DATA, EMPTY_STRING).orEmpty()
 
     val useDoH: Boolean
-        get() = preferenceSp.getBoolean(SettingsPreferenceKeys.USE_DOH, false)
+        // Apply the new default only when unset; keep explicit choices and existing Hosts setups.
+        get() = preferenceSp.getBoolean(SettingsPreferenceKeys.USE_DOH, !useBuiltInHosts)
 
     val dohPreset: String
-        get() = preferenceSp.getString(SettingsPreferenceKeys.DOH_PRESET, "alidns") ?: "alidns"
+        get() = preferenceSp.getString(SettingsPreferenceKeys.DOH_PRESET, DohConfig.DEFAULT_PRESET_KEY)
+            ?: DohConfig.DEFAULT_PRESET_KEY
 
     val dohCustomUrl: String
         get() = preferenceSp.getString(SettingsPreferenceKeys.DOH_CUSTOM_URL, EMPTY_STRING).orEmpty()

@@ -1,0 +1,14 @@
+<resources>
+    <string name="trial_research_title">Trial and price research</string>
+    <string name="trial_research_summary">View your trial period and future pricing question</string>
+    <string name="trial_research_existing">You are an existing user. This research does not change your access.</string>
+    <string name="trial_research_not_started">The 14-day observation period starts after the home page first loads successfully.</string>
+    <string name="trial_research_days">About %1$d days left in the observation period.</string>
+    <string name="trial_research_ended">The 14-day observation period has ended.</string>
+    <string name="trial_research_quote">Research price for a future commercial version: ¥%1$d/year. Includes smart collections, automatic organization, backup history and device sync; browsing, playback and basic translation remain free.</string>
+    <string name="trial_research_disclaimer">All features remain free for now. This screen collects no payment and creates no subscription. Any future pricing and existing-user terms will be announced separately. The tool does not include content or site membership and cannot guarantee third-party availability.</string>
+    <string name="trial_research_consider">Would consider buying at this price</string>
+    <string name="trial_research_conditional">Only if certain conditions are met</string>
+    <string name="trial_research_decline">Would not buy now</string>
+    <string name="trial_research_undecided">Cannot decide yet</string>
+</resources>

@@ -59,7 +59,6 @@ fun HomeSettingsScreen(
     onCollapseDownloadedGroupChange: (Boolean) -> Unit,
     onSearchGridColumnsConfigChange: (SearchGridColumnsConfig) -> Unit,
     onHorizontalCardCountConfigChange: (HorizontalCardCountConfig) -> Unit,
-    onUseCIUpdateChannelChange: (Boolean) -> Unit,
     onUseAnalyticsChange: (Boolean) -> Unit,
     onUseLockScreenChange: (Boolean) -> Unit,
     onThemeColorChange: (String) -> Unit,
@@ -80,6 +79,12 @@ fun HomeSettingsScreen(
     onImportBackup: () -> Unit,
     onSubmitBug: () -> Unit,
     onOpenForum: () -> Unit,
+    onOpenBackupHistory: () -> Unit = {},
+    onOpenRemoteLibrary: () -> Unit = {},
+    onOpenAutoTranslation: () -> Unit = {},
+    onOpenTrialResearch: () -> Unit = {},
+    membershipAvailable: Boolean = false,
+    onOpenMembership: () -> Unit = {},
 ) {
     var activeDialog by rememberSaveable { mutableStateOf<HomeSettingsChoiceDialog?>(null) }
     var showSearchGridColumnsDialog by rememberSaveable { mutableStateOf(false) }
@@ -199,6 +204,30 @@ fun HomeSettingsScreen(
         contentPadding = PaddingValues(vertical = 8.dp),
         verticalArrangement = Arrangement.spacedBy(2.dp),
     ) {
+        if (membershipAvailable) item {
+            SettingNavigationItem(
+                title = stringResource(R.string.membership_title),
+                summary = stringResource(R.string.membership_summary),
+                iconRes = R.drawable.baseline_simp_to_trad_24,
+                onClick = onOpenMembership,
+            )
+        }
+        item {
+            SettingNavigationItem(
+                title = stringResource(R.string.trial_research_title),
+                summary = stringResource(R.string.trial_research_summary),
+                iconRes = R.drawable.baseline_simp_to_trad_24,
+                onClick = onOpenTrialResearch,
+            )
+        }
+        item {
+            SettingNavigationItem(
+                title = stringResource(R.string.auto_translation_title),
+                summary = stringResource(R.string.auto_translation_settings_summary),
+                iconRes = R.drawable.baseline_simp_to_trad_24,
+                onClick = onOpenAutoTranslation,
+            )
+        }
         item { SettingsGroupTitle(stringResource(R.string.video)) }
         item {
             SettingNavigationItem(
@@ -408,14 +437,6 @@ fun HomeSettingsScreen(
             )
         }
         item {
-            SettingSwitchItem(
-                title = stringResource(R.string.use_ci_update_channel),
-                checked = state.useCIUpdateChannel,
-                iconRes = R.drawable.ic_setting_ci,
-                onCheckedChange = onUseCIUpdateChannelChange,
-            )
-        }
-        item {
             SettingSliderItem(
                 title = stringResource(R.string.update_popup_interval_days),
                 summary = state.updatePopupIntervalSummary,
@@ -456,6 +477,18 @@ fun HomeSettingsScreen(
         }
 
         item { SettingsGroupTitle(stringResource(R.string.other)) }
+        item {
+            SettingNavigationItem(title = stringResource(R.string.remote_title), summary = stringResource(R.string.remote_help),
+                iconRes = R.drawable.baseline_backup_24, onClick = onOpenRemoteLibrary)
+        }
+        item {
+            SettingNavigationItem(
+                title = stringResource(R.string.backup_history_title),
+                summary = stringResource(R.string.backup_history_summary),
+                iconRes = R.drawable.baseline_backup_24,
+                onClick = onOpenBackupHistory,
+            )
+        }
         item {
             SettingNavigationItem(
                 title = stringResource(R.string.backup_export_title),
@@ -549,7 +582,6 @@ private fun HomeSettingsScreenPreview() {
                 disableComments = false,
                 collapseDownloadedGroup = false,
                 useDynamicColor = true,
-                useCIUpdateChannel = false,
                 useAnalytics = true,
                 useLockScreen = false,
                 fakeLauncherIconName = "Han1meViewer",
@@ -584,7 +616,6 @@ private fun HomeSettingsScreenPreview() {
             onCollapseDownloadedGroupChange = {},
             onSearchGridColumnsConfigChange = {},
             onHorizontalCardCountConfigChange = {},
-            onUseCIUpdateChannelChange = {},
             onUseAnalyticsChange = {},
             onUseLockScreenChange = {},
             onThemeColorChange = {},

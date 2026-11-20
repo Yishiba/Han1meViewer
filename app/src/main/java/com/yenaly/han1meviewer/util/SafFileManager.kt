@@ -49,6 +49,18 @@ import java.io.OutputStream
  * 注意：所有操作需要已获取有效的URI权限
  */
 object SafFileManager {
+    /** Delete only the selected file; covers and metadata may be shared by other qualities. */
+    fun deleteDownloadedFile(context: Context, entity: HanimeDownloadEntity): Boolean = runCatching {
+        val uri = entity.videoUri.toUri()
+        when (uri.scheme) {
+            "content" -> DocumentFile.fromSingleUri(context, uri)?.delete() == true
+            "file", null -> {
+                val file = File(if (uri.scheme == "file") uri.path ?: return false else entity.videoUri)
+                file.isFile && file.delete()
+            }
+            else -> false
+        }
+    }.getOrDefault(false)
 
     const val KEY_TREE_URI = "saf_download_path"
     private val VIDEO_EXTENSIONS = setOf("mp4", "mkv", "avi", "flv", "mov", "webm")

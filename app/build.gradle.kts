@@ -5,6 +5,7 @@ import Config.Version.source
 import Config.isRelease
 import Config.lastCommitSha
 import com.android.build.api.variant.impl.VariantOutputImpl
+import java.util.Base64
 import org.jetbrains.kotlin.gradle.dsl.JvmTarget
 
 plugins {
@@ -12,13 +13,19 @@ plugins {
     alias(libs.plugins.org.jetbrains.kotlin.plugin.parcelize)
     alias(libs.plugins.org.jetbrains.kotlin.plugin.serialization)
     alias(libs.plugins.com.google.devtools.ksp)
-    alias(libs.plugins.com.google.gms.google.services)
-    alias(libs.plugins.com.google.firebase.crashlytics)
-    alias(libs.plugins.com.google.firebase.firebase.pref)
+    alias(libs.plugins.com.google.gms.google.services) apply false
+    alias(libs.plugins.com.google.firebase.crashlytics) apply false
+    alias(libs.plugins.com.google.firebase.firebase.pref) apply false
     alias(libs.plugins.compose.compiler)
     alias(libs.plugins.navigation.safeargs)
     id("com.mikepenz.aboutlibraries.plugin") version "14.2.0"
     id("com.github.ben-manes.versions") version "0.54.0"
+}
+
+if (file("google-services.json").exists()) {
+    apply(plugin = libs.plugins.com.google.gms.google.services.get().pluginId)
+    apply(plugin = libs.plugins.com.google.firebase.crashlytics.get().pluginId)
+    apply(plugin = libs.plugins.com.google.firebase.firebase.pref.get().pluginId)
 }
 
 android {
@@ -26,15 +33,18 @@ android {
 
     val commitSha = if (isRelease) lastCommitSha else "b8eace8" // 方便调试
 
-    // 先 Github Secrets 再读取环境变量，若没有则读取本地文件
-
-    val githubToken = System.getenv("HA_GITHUB_TOKEN") ?: File(
-        projectDir, "ha1_github_token.txt"
-    ).checkIfExists()?.readText().orEmpty()
+    // Public membership connection settings only. Never put merchant tokens or signing keys here.
+    val commerceApiUrl = System.getenv("COMMERCE_API_BASE_URL")
+        ?: providers.gradleProperty("commerce.api.url").orNull.orEmpty()
+    val commercePublicKey = System.getenv("COMMERCE_PUBLIC_KEY_DER_B64")
+        ?: providers.gradleProperty("commerce.public.key.der.base64").orNull.orEmpty()
+    val commercePublicKeyClean = commercePublicKey.trim()
+    val commerceApiUrlB64 = Base64.getEncoder()
+        .encodeToString(commerceApiUrl.toByteArray(Charsets.UTF_8))
 
 
     defaultConfig {
-        applicationId = "com.yenaly.han1meviewer"
+        applicationId = "io.github.yishiba.han1meviewer"
         minSdk = property("min.sdk")?.toString()?.toIntOrNull()
         targetSdk = property("target.sdk")?.toString()?.toIntOrNull()
         val (code, name) = createVersion(major = 0, minor = 26, patch = 0)
@@ -46,14 +56,16 @@ android {
         buildConfigField("String", "COMMIT_SHA", "\"$commitSha\"")
         buildConfigField("String", "VERSION_NAME", "\"${versionName}\"")
         buildConfigField("int", "VERSION_CODE", "$versionCode")
-        buildConfigField("String", "HA_GITHUB_TOKEN", "\"${githubToken}\"")
         buildConfigField("String", "VERSION_SOURCE", "\"${source}\"")
+        buildConfigField("String", "COMMERCE_API_URL_B64", "\"$commerceApiUrlB64\"")
+        buildConfigField("String", "COMMERCE_PUBLIC_KEY_DER_B64", "\"$commercePublicKeyClean\"")
 
         buildConfigField("int", "SEARCH_YEAR_RANGE_END", "${Config.thisYear}")
     }
     signingConfigs {
         create("release") {
-            storeFile = file(System.getenv("HOME") + "/.android/keystore.jks")
+            storeFile = file(System.getenv("RELEASE_KEYSTORE_PATH")
+                ?: (System.getenv("HOME") + "/.android/han1meviewer-release.jks"))
             storePassword = System.getenv("KEYSTORE_PASSWORD")
             keyAlias = System.getenv("KEY_ALIAS")
             keyPassword = System.getenv("KEYSTORE_PASSWORD")
@@ -171,6 +183,8 @@ dependencies {
 
     implementation(libs.serialization.json)
     implementation(libs.jsoup)
+    implementation(libs.mlkit.translate)
+    implementation(libs.mlkit.language.id)
 
     // network
 
@@ -222,7 +236,10 @@ dependencies {
     // debugImplementation(libs.leak.canary)
 }
 
-/**
- * This function is used to check if a file exists and is a file.
- */
-fun File.checkIfExists(): File? = if (exists() && isFile) this else null
+
+// Private NAS URLs and encrypted metadata must not enter automatic Firebase network traces.
+androidComponents {
+    onVariants(selector().all()) { variant ->
+        variant.instrumentation.excludes.add("com/yenaly/han1meviewer/logic/remote/**")
+    }
+}

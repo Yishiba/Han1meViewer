@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_crypto_export">バックアップを書き出す</string>
+    <string name="backup_crypto_unlock">バックアップのロック解除</string>
+    <string name="backup_crypto_encrypted">パスワード暗号化</string>
+    <string name="backup_crypto_plain">通常の JSON</string>
+    <string name="backup_crypto_password_help">12～256 文字のパスワードを設定し、安全に保管してください。忘れた場合、このファイルは復元できません。</string>
+    <string name="backup_crypto_unlock_help">書き出し時に設定したパスワードを入力してください。</string>
+    <string name="backup_crypto_password">パスワード</string>
+    <string name="backup_crypto_confirmation">パスワードを再入力</string>
+    <string name="backup_crypto_plain_warning">通常の JSON は直接読み取ることができ、利用履歴と設定を含みます。信頼できる場所に保管してください。</string>
+    <string name="backup_crypto_wrong_password">パスワードが違うか、暗号化ファイルが破損しています。確認して再試行してください。</string>
+    <string name="backup_crypto_restart_export">書き出しが中断されました。もう一度開始してください。</string>
+    <string name="backup_crypto_disable">コピーの暗号化を無効化</string>
+    <string name="backup_crypto_disable_help">今後のフォルダーコピーは通常の JSON になります。既存の暗号化ファイルには元のパスワードが必要です。既存の通常ファイルは変換されません。</string>
+    <string name="backup_crypto_scope">暗号化の対象は書き出すファイルと任意のフォルダーコピーです。ローカル履歴と復旧用スナップショットはアプリ専用領域に保存され、パスワード暗号化されません。既存のコピーは変換されません。</string>
+    <string name="backup_crypto_copy_on">フォルダーコピー：暗号化</string>
+    <string name="backup_crypto_copy_off">フォルダーコピー：通常の JSON</string>
+    <string name="backup_crypto_set_password">コピー用パスワードの設定／変更</string>
+    <string name="backup_crypto_copy_help">12～256 文字で設定してください。今後の自動コピー用に Android Keystore で暗号化して端末に保存します。既存のファイルには元のパスワードが必要です。忘れた場合は復元できません。</string>
+</resources>

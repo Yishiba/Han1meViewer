@@ -50,7 +50,9 @@ import com.yenaly.han1meviewer.HA1_GITHUB_ISSUE_URL
 import com.yenaly.han1meviewer.HanimeApplication
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
-import com.yenaly.han1meviewer.logic.BackupManager
+import com.yenaly.han1meviewer.logic.commerce.MembershipConfig
+import com.yenaly.han1meviewer.ui.screen.settings.commerce.MembershipDialog
+import com.yenaly.han1meviewer.ui.screen.settings.backup.BackupHistoryRoute
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.ui.activity.MainActivity
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
@@ -79,7 +81,6 @@ private const val HOME_DEFAULT_VIDEO_QUALITY = "default_video_quality"
 private const val HOME_SHOW_PLAYED_INDICATOR = "show_played_indicator"
 private const val HOME_ALLOW_PIP_MODE = "allow_pip_mode"
 private const val HOME_UPDATE_POPUP_INTERVAL_DAYS = "update_popup_interval_days"
-private const val HOME_USE_CI_UPDATE_CHANNEL = "use_ci_update_channel"
 private const val HOME_USE_ANALYTICS = "use_analytics"
 private const val HOME_FAKE_LAUNCHER_ICON = "pref_fake_launcher_icon"
 private const val HOME_USE_DARK_MODE = "use_dark_mode"
@@ -121,23 +122,30 @@ fun HomeSettingsRouteScreen(
     var showRestartConfirmDialog by remember { mutableStateOf(false) }
     var showAnalyticsDialog by remember { mutableStateOf(false) }
     var showLauncherPicker by remember { mutableStateOf(false) }
-    var pendingImportUri by remember { mutableStateOf<android.net.Uri?>(null) }
-
-    val exportLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.CreateDocument("application/json")
-    ) { uri ->
-        uri ?: return@rememberLauncherForActivityResult
-        coroutineScope.launch(Dispatchers.IO) {
-            runCatching { BackupManager.exportTo(context, uri) }
-                .onSuccess { withContext(Dispatchers.Main) { showShortToast(R.string.backup_export_success) } }
-                .onFailure { withContext(Dispatchers.Main) { showShortToast(R.string.backup_export_failed) } }
-        }
+    var showRemoteLibrary by remember { mutableStateOf(false) }
+    var showAutoTranslation by remember { mutableStateOf(false) }
+    var showTrialResearch by remember { mutableStateOf(false) }
+    var showMembership by remember { mutableStateOf(false) }
+    if (showMembership) MembershipDialog { showMembership = false }
+    if (showTrialResearch) com.yenaly.han1meviewer.ui.screen.settings.commerce.TrialResearchDialog {
+        showTrialResearch = false
     }
-    val importLauncher = rememberLauncherForActivityResult(
-        ActivityResultContracts.OpenDocument()
-    ) { uri ->
-        pendingImportUri = uri
+    if (showAutoTranslation) com.yenaly.han1meviewer.ui.screen.search.AutoTranslationSettingsDialog {
+        showAutoTranslation = false
     }
+    if (showRemoteLibrary) com.yenaly.han1meviewer.ui.screen.settings.remote.RemoteLibraryDialog(
+        onDismiss = { showRemoteLibrary = false },
+        onSynced = {
+            showRemoteLibrary = false
+            ThemeUtils.applyDarkModeFromPreferences(context)
+            showShortToast(R.string.remote_sync_done)
+            activity.recreate()
+        },
+    )
+    var showBackupHistory by remember { mutableStateOf(false) }
+    val backupTransfers = com.yenaly.han1meviewer.ui.screen.settings.backup.rememberBackupTransfers { ThemeUtils.applyDarkModeFromPreferences(context); activity.recreate() }
+    if (showBackupHistory) BackupHistoryRoute(onDismiss = { showBackupHistory = false },
+        onRestored = { showBackupHistory = false; ThemeUtils.applyDarkModeFromPreferences(context); activity.recreate() })
 
     val hanimeAppName = stringResource(R.string.hanime_app_name)
     val fakeNameCalc = stringResource(R.string.app_name_fake_calc)
@@ -289,11 +297,6 @@ fun HomeSettingsRouteScreen(
             saveHomeCategoryPreferences(order, hiddenKeys)
             refreshKey++
         },
-        onUseCIUpdateChannelChange = { value ->
-            saveBoolean(HOME_USE_CI_UPDATE_CHANNEL, value)
-            refreshKey++
-            AppViewModel.getLatestVersion()
-        },
         onUseAnalyticsChange = { value ->
             if (!value) {
                 showAnalyticsDialog = true
@@ -363,41 +366,19 @@ fun HomeSettingsRouteScreen(
             showClearCacheConfirm = true
         },
         onExportBackup = {
-            exportLauncher.launch("Han1meViewer-backup-${System.currentTimeMillis()}.json")
+            backupTransfers.exportCurrent()
         },
         onImportBackup = {
-            importLauncher.launch(arrayOf("application/json", "text/*", "*/*"))
+            backupTransfers.importBackup()
         },
         onSubmitBug = { context.browse(HA1_GITHUB_ISSUE_URL) },
         onOpenForum = { context.browse(HA1_GITHUB_FORUM_URL) },
-    )
-
-    ConfirmDialog(
-        visible = pendingImportUri != null,
-        title = stringResource(R.string.backup_import_title),
-        message = stringResource(R.string.backup_import_confirm_message),
-        confirmText = stringResource(R.string.confirm),
-        dismissText = stringResource(R.string.cancel),
-        onConfirm = {
-            val uri = pendingImportUri ?: return@ConfirmDialog
-            pendingImportUri = null
-            coroutineScope.launch(Dispatchers.IO) {
-                runCatching { BackupManager.importFrom(context, uri) }
-                    .onSuccess {
-                        withContext(Dispatchers.Main) {
-                            showShortToast(R.string.backup_import_success)
-                            refreshKey++
-                            activity.recreate()
-                        }
-                    }
-                    .onFailure {
-                        withContext(Dispatchers.Main) {
-                            showShortToast(R.string.backup_import_failed)
-                        }
-                    }
-            }
-        },
-        onDismiss = { pendingImportUri = null },
+        onOpenBackupHistory = { showBackupHistory = true },
+        onOpenRemoteLibrary = { showRemoteLibrary = true },
+        onOpenAutoTranslation = { showAutoTranslation = true },
+        onOpenTrialResearch = { showTrialResearch = true },
+        membershipAvailable = MembershipConfig.available,
+        onOpenMembership = { showMembership = true },
     )
 
     ConfirmDialog(
@@ -582,7 +563,6 @@ private fun buildHomeSettingsUiState(
         disableComments = Preferences.preferenceSp.getBoolean(HOME_DISABLE_COMMENTS, false),
         collapseDownloadedGroup = Preferences.collapseDownloadedGroup,
         useDynamicColor = Preferences.useDynamicColor,
-        useCIUpdateChannel = Preferences.useCIUpdateChannel,
         useAnalytics = Preferences.isAnalyticsEnabled,
         useLockScreen = Preferences.preferenceSp.getBoolean(HOME_USE_LOCK_SCREEN, false),
         fakeLauncherIconName = currentItem.name,

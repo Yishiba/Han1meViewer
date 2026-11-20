@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_history_title">自动备份与历史版本</string>
+    <string name="backup_history_summary">定期备份、多版本恢复</string>
+    <string name="backup_scope">搜索别名、翻译历史；备份设置、合集规则、下载与观看记录、关键帧及打卡数据。不含视频文件或登录 Cookie。导出时可选择密码加密。</string>
+    <string name="backup_automatic">自动备份</string>
+    <string name="backup_schedule_help">默认关闭。由系统在电量充足时调度，时间可能延后；首次符合条件时即可执行。</string>
+    <string name="backup_daily">每天</string>
+    <string name="backup_weekly">每周</string>
+    <string name="backup_retention">本机保留数量（另保留最近一次恢复前版本）</string>
+    <string name="backup_keep_count">%1$d 个</string>
+    <string name="backup_storage_help">历史版本存在应用私有目录，卸载或清除数据会删除。可另选文件夹，每次备份生成副本；外部副本不自动清理，可用“导入备份”恢复。</string>
+    <string name="backup_choose_directory">选择副本文件夹</string>
+    <string name="backup_local_only">仅保留本机</string>
+    <string name="backup_last_success">最近本机备份：%1$s</string>
+    <string name="backup_last_failed">最近一次备份失败，已有版本仍保留。</string>
+    <string name="backup_mirror_failed">本机备份已完成，但文件夹副本失败。请重新选择可写入的文件夹。</string>
+    <string name="backup_now">立即备份</string>
+    <string name="backup_versions">历史版本</string>
+    <string name="backup_empty">还没有本机备份版本</string>
+    <string name="backup_kind_manual">手动备份</string>
+    <string name="backup_kind_automatic">自动备份</string>
+    <string name="backup_kind_safety">恢复前保护版本（不可手动删除）</string>
+    <string name="backup_version_summary">下载 %1$d · 观看 %2$d · 规则 %3$d · %4$d KiB</string>
+    <string name="backup_restore_version">恢复此版本</string>
+    <string name="backup_export_version">导出</string>
+    <string name="backup_restore_confirm">恢复 %1$s 的数据？将替换备份包含的设置和记录；先校验并建立当前数据的保护版本。请先暂停所有下载。未完成下载恢复为暂停；视频文件及当前登录状态不变。</string>
+    <string name="backup_delete_confirm">删除 %1$s 的本机备份版本？外部副本不会删除。</string>
+    <string name="backup_downloads_busy">请先暂停下载并等待待处理任务结束，再恢复。</string>
+    <string name="backup_operation_failed">操作失败。请检查存储空间、文件夹权限或备份文件完整性。</string>
+    <string name="backup_created">本机版本已建立</string>
+    <string name="backup_deleted">本机版本已删除</string>
+    <string name="backup_working">正在处理备份…</string>
+    <string name="backup_recovery_title">需要恢复数据</string>
+    <string name="backup_recovery_help">上次恢复未完成，目前暂停使用媒体库。保护版本仍保留，请确认可用存储空间后重试，以恢复到操作前状态。</string>
+    <string name="backup_retry_recovery">重试数据恢复</string>
+    <string name="backup_exit">退出</string>
+</resources>

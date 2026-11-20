@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="discovery_suggestions">Search suggestions</string>
+    <string name="discovery_source_alias">Alias</string>
+    <string name="discovery_source_translation">Translation history</string>
+    <string name="discovery_source_history">Search history</string>
+    <string name="discovery_source_tag">Tag</string>
+    <string name="discovery_source_author">Author</string>
+    <string name="discovery_translate_chinese">Translate to Chinese</string>
+    <string name="discovery_translation_hint">The original is retained. First use downloads models and may use mobile data. Translation and caching run on device. Choose the source language.</string>
+    <string name="discovery_japanese">Japanese</string>
+    <string name="discovery_original">Original</string>
+    <string name="discovery_machine_translation">Machine translation (for reference)</string>
+    <string name="discovery_text_too_long">Texts over 5,000 characters are not supported yet.</string>
+    <string name="discovery_downloading">Preparing models; the first download may take a few minutes…</string>
+    <string name="discovery_translating">Translating on device…</string>
+    <string name="discovery_translation_failed">Translation failed. Retry; the original is unchanged.</string>
+    <string name="discovery_clear_cache">Clear content translation cache</string>
+    <string name="discovery_save_search">Save search</string>
+    <string name="discovery_watchlist">Saved searches &amp; updates</string>
+    <string name="discovery_watch_name">Search name</string>
+    <string name="discovery_save_alias">Save search alias</string>
+    <string name="discovery_alias_original">Common name / alias</string>
+    <string name="discovery_alias_target">Actual search query</string>
+    <string name="discovery_saved">Saved</string>
+    <string name="discovery_operation_failed">Operation failed. Check the name, duplicate searches or storage, then retry.</string>
+    <string name="discovery_check_updates">Check for updates</string>
+    <string name="discovery_checking">Checking; you can keep browsing…</string>
+    <string name="discovery_watch_hint">Due searches are checked on app launch after 6 hours, or manually. Up to 10 searches are checked per launch; manual checks include all. Only the first page of each query is checked. The first success establishes a baseline; later matches are newly discovered, not necessarily newly uploaded. Stored on this device only; not included in backup or sync yet.</string>
+    <string name="discovery_watch_empty">No saved searches. Run a search, then save its criteria.</string>
+    <string name="discovery_watch_baseline">Waiting for the first successful baseline check</string>
+    <string name="discovery_watch_failed">Check failed; previous records are retained. Retry after checking the site/network or completing verification on the search page.</string>
+    <string name="discovery_watch_unread">%1$d unread discoveries</string>
+    <string name="discovery_watch_last_check">Last success: %1$s</string>
+    <string name="discovery_read_all">Mark all as read</string>
+    <string name="discovery_reopen">Search again</string>
+    <string name="discovery_pause">Pause tracking</string>
+    <string name="discovery_resume">Resume tracking</string>
+    <string name="discovery_rename">Rename</string>
+    <string name="discovery_remove">Delete tracker</string>
+    <string name="discovery_remove_confirm">Delete this saved search and its discoveries? Videos and other searches are retained.</string>
+    <string name="discovery_unread">Unread</string>
+    <string name="discovery_read">Read</string>
+    <string name="discovery_storage_unreadable">Saved search data cannot be read. Original data is retained and writes are blocked. Reopen this list after repairing the data.</string>
+    <string name="discovery_site_mismatch">This search belongs to another site. Switch back in network settings first.</string>
+</resources>

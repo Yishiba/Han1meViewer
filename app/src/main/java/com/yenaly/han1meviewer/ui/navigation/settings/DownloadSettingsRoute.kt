@@ -116,6 +116,9 @@ fun DownloadSettingsRouteScreen(
         },
         onDownloadSpeedLimitChange = { value ->
             Preferences.preferenceSp.edit { putInt(DOWNLOAD_SPEED_LIMIT, value) }
+            com.yenaly.han1meviewer.logic.network.ServiceCreator.updateDownloadSpeedLimit(
+                Preferences.downloadSpeedLimit
+            )
             refreshKey++
         },
     )

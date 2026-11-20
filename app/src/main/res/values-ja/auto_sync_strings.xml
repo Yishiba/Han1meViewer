@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auto_sync_title">バックグラウンド自動同期</string>
+    <string name="auto_sync_help">初期設定はオフです。有効にすると視聴履歴、ルール、一部設定、検索別名、翻訳履歴を自動送信・統合します。初回は指定間隔後に予約され、通信・電池・省電力で遅れる場合があります。競合時は停止し、手動プレビューと確認で再開します。無効化で今後の処理は中止しますが送信済み要求は完了する場合があります。接続を保存すると自動同期はオフになります。</string>
+    <string name="auto_sync_15">15 分</string>
+    <string name="auto_sync_60">1 時間</string>
+    <string name="auto_sync_360">6 時間</string>
+    <string name="auto_sync_unmetered">従量制でない回線のみ（通常は Wi-Fi）</string>
+    <string name="auto_sync_idle">次の実行を待機中</string>
+    <string name="auto_sync_success">前回の同期は成功（または変更なし）</string>
+    <string name="auto_sync_conflict">競合のため自動同期を停止しました。手動でプレビュー・確定して再開してください。</string>
+    <string name="auto_sync_auth">認証または権限エラーで停止中。接続を再保存して自動同期を有効にしてください。</string>
+    <string name="auto_sync_invalid">停止中。口令、形式、証明書、空き容量を確認してください。手動同期が成功すると再開します。</string>
+    <string name="auto_sync_busy">ダウンロードやデータ変更の処理中です。後で再試行します。</string>
+    <string name="auto_sync_retry">通信またはリモートの版が変化しました。後で再試行します。</string>
+    <string name="auto_sync_local_changed">端末データが変化しました。新しい変更を上書きせず再統合します。</string>
+    <string name="auto_sync_last_attempt">前回の試行：%1$s</string>
+    <string name="auto_sync_last_success">前回の成功：%1$s</string>
+</resources>
