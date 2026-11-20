@@ -14,6 +14,8 @@ YoruShelf 是一个使用 Kotlin 开发的 Android 客户端，用于浏览、�
 
 本应用没有官方网站。正式版本通过[本仓库的 GitHub Releases](https://github.com/Yishiba/Han1meViewer/releases)分发和更新；首个自有 Release 尚未发布，页面为空时请勿从其他仓库下载安装包。
 
+同一 UTC 小时内连续构建正式版时，设置 `HA1_VERSION_CODE` 为高于已安装版本的八位数字；构建脚本会验证签名与包名。
+
 ### 首批试用重点
 
 1. 在搜索框输入中文或英文，点击旁边的翻译按钮，检查日文译词，必要时编辑后搜索。原词保留。

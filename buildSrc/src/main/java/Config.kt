@@ -44,9 +44,18 @@ object Config {
                 }
 
                 else -> {
-                    versionCode = LocalDateTime.now(Clock.systemUTC()).format(
+                    val hourlyCode = LocalDateTime.now(Clock.systemUTC()).format(
                         DateTimeFormatter.ofPattern("yyMMddHH")
                     ).toInt()
+                    // Multiple releases within one UTC hour need a higher explicit code.
+                    val override = System.getenv("HA1_VERSION_CODE")
+                    versionCode = if (override == null) hourlyCode else {
+                        val requested = override.toIntOrNull()
+                        require(requested != null && requested >= hourlyCode) {
+                            "HA1_VERSION_CODE must be a decimal integer >= $hourlyCode"
+                        }
+                        requested
+                    }
                     versionName = "${major}.${minor}.${patch}-$source+$versionCode"
                 }
             }
