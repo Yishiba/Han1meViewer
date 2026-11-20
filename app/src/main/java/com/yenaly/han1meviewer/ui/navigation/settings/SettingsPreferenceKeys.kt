@@ -1,10 +1,14 @@
 package com.yenaly.han1meviewer.ui.navigation.settings
 
 object SettingsPreferenceKeys {
+    const val AUTO_TRANSLATE_ENABLED = "auto_translate_enabled"
+    const val AUTO_TRANSLATE_TARGET = "auto_translate_target"
+    const val AUTO_TRANSLATE_MOBILE_MODELS = "auto_translate_mobile_models"
     const val VIDEO_LANGUAGE = "video_language"
     const val DEFAULT_VIDEO_QUALITY = "default_video_quality"
     const val SHOW_PLAYED_INDICATOR = "show_played_indicator"
     const val UPDATE_POPUP_INTERVAL_DAYS = "update_popup_interval_days"
+    // Retained to validate and restore backups created by earlier builds.
     const val USE_CI_UPDATE_CHANNEL = "use_ci_update_channel"
     const val USE_ANALYTICS = "use_analytics"
     const val FAKE_LAUNCHER_ICON = "pref_fake_launcher_icon"

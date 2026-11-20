@@ -14,6 +14,10 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -30,6 +34,7 @@ import com.yenaly.han1meviewer.ui.preview.fakeHomePageVideos
 import com.yenaly.han1meviewer.ui.screen.rememberCardResponsiveWidth
 import com.yenaly.han1meviewer.ui.theme.SpacingLarge
 import com.yenaly.han1meviewer.ui.theme.SpacingNormal
+import com.yenaly.han1meviewer.ui.screen.search.AutomaticTranslatedText
 
 /**
  * 显示横向滚动的视频分类行。
@@ -48,7 +53,8 @@ fun CategoryRow(
     onMoreClick: () -> Unit,
     onVideoClick: (String) -> Unit,
     onVideoLongClick: (String, String) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    autoTranslationActive: Boolean = true,
 ) {
     Column(modifier = modifier) {
         Row(
@@ -77,19 +83,28 @@ fun CategoryRow(
 
         val uniqueVideos = videos.distinctBy { it.videoCode }
         val (cardWidth, _) = rememberCardResponsiveWidth()
+        val rowState = rememberLazyListState()
+        val visibleCodes by remember(rowState) { derivedStateOf {
+            rowState.layoutInfo.visibleItemsInfo.map { it.key }.toSet()
+        } }
         LazyRow(
+            state = rowState,
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(SpacingNormal),
             contentPadding = PaddingValues(horizontal = SpacingLarge)
         ) {
             items(uniqueVideos, key = { it.videoCode }) { video ->
+                Column(Modifier.width(cardWidth)) {
                 VideoCardItem(
-                    modifier = Modifier.width(cardWidth),
+                    modifier = Modifier.fillMaxWidth(),
                     videoItem = video,
                     isHorizontalCard = true,
                     onClickVideosItem = onVideoClick,
                     onLongClickVideosItem = onVideoLongClick
                 )
+                AutomaticTranslatedText(video.title,
+                    active = autoTranslationActive && video.videoCode in visibleCodes, maxLines = 3)
+                }
             }
         }
     }

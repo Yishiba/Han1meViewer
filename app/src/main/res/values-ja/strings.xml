@@ -220,8 +220,6 @@
     <string name="account_or_password_wrong">アカウントまたはパスワードが間違っている可能性</string>
     <string name="login_tips">この方法ではログイン状態は2時間のみ保持… ウェブでのログインを推奨\nただしウェブはHostsを通さないので、VPNが必要かも</string>
     <string name="update">更新</string>
-    <string name="use_ci_update_channel">CI更新チャンネルを使用</string>
-    <string name="use_ci_update_channel_summary">CI更新チャンネルは最新変更をより早く取得可能\nただし安定性は保証しない</string>
     <string name="update_popup_interval_days">更新確認ポップアップ間隔（日）</string>
     <string name="update_failed">更新失敗</string>
     <string name="update_download_background">バックグラウンドで更新をダウンロード</string>
@@ -887,4 +885,94 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
         <item>ワクワクしながら待機中……</item>
         <item>◝(⑅•ᴗ•⑅)◜..°♡ 転送中……</item>
     </string-array>
+
+    <!-- On-device search translation -->
+    <string name="search_translate_title">日本語に翻訳</string>
+    <string name="search_translate_original">原文（変更せず保持）</string>
+    <string name="search_translate_source">原文の言語</string>
+    <string name="search_translate_chinese">中国語</string>
+    <string name="search_translate_english">英語</string>
+    <string name="search_translate_privacy">初回は必要な言語モデル（合計80 MBを超える場合があります）をダウンロードします。モバイルデータを使用する場合があります。翻訳は端末内で行いますが、検索語はコンテンツサイトに送信されます。</string>
+    <string name="search_translate_start">翻訳／再試行</string>
+    <string name="search_translate_downloading">モデルを準備中。初回はダウンロードが必要です…</string>
+    <string name="search_translate_working">端末内で翻訳中…</string>
+    <string name="search_translate_error">モデルの準備または翻訳に失敗しました。接続を確認して再試行するか、原文で検索してください。</string>
+    <string name="search_translate_result">日本語訳（編集可）</string>
+    <string name="search_translate_attribution">Google 翻訳による翻訳</string>
+    <string name="search_translate_accuracy">機械翻訳は作品名や作者名の正式表記と異なる場合があります。確認して検索してください。</string>
+    <string name="search_translate_search_japanese">日本語で検索</string>
+    <string name="search_translate_search_original">原文で検索</string>
+    <string name="search_translate_active">検索語（日本語）：%1$s</string>
+
+    <!-- Local media library and smart collections -->
+    <string name="library_keyword">タイトル・動画番号</string>
+    <string name="library_excluded">除外するタイトル・番号の語句</string>
+    <string name="library_all">すべてのダウンロード</string>
+    <string name="library_count">%2$d 件中 %1$d 件一致</string>
+    <string name="library_reset">リセット</string>
+    <string name="library_edit">絞り込み・コレクション</string>
+    <string name="library_read_error">保存済みコレクションを読み込めません。元データは保持されています。バックアップから復元してください。一時的な絞り込みは利用できます。</string>
+    <string name="library_rules_help">条件間はすべて一致、グループ・画質はいずれかに一致。未入力は制限なし。内容を自動更新します。</string>
+    <string name="library_name">コレクション名</string>
+    <string name="library_name_help">重複不可・80文字以内。</string>
+    <string name="library_groups">グループ（複数選択可）</string>
+    <string name="library_missing_group">削除済みグループ #%1$d</string>
+    <string name="library_qualities">画質（複数選択可）</string>
+    <string name="library_unknown_quality">不明な画質</string>
+    <string name="library_min_size">最小ファイルサイズ（MiB）</string>
+    <string name="library_max_size">最大ファイルサイズ（MiB）</string>
+    <string name="library_recent_days">追加からの日数（1–36500）</string>
+    <string name="library_bounds_error">サイズは0以上の整数で最小値≤最大値、日数は1〜36500です。数値の桁数にも上限があります。</string>
+    <string name="library_sort">並び順</string>
+    <string name="library_newest">追加日時の新しい順</string>
+    <string name="library_oldest">追加日時の古い順</string>
+    <string name="library_title_sort">タイトル順</string>
+    <string name="library_largest">サイズの大きい順</string>
+    <string name="library_smallest">サイズの小さい順</string>
+    <string name="library_apply">適用</string>
+    <string name="library_save">保存</string>
+    <string name="library_delete">コレクションを削除</string>
+    <string name="library_delete_message">保存したルールだけを削除します。動画・ダウンロード履歴・グループは削除しません。</string>
+    <string name="library_save_error">保存できませんでした。名前の重複を確認するか、再試行してください。</string>
+    <string name="library_delete_file_error">一部のファイルを削除できませんでした（移動済み・権限失効など）。該当のダウンロード記録は保持しています。確認して再試行してください。</string>
+    <string name="library_no_matches">一致するダウンロードはありません</string>
+    <string name="library_no_matches_help">条件を変更するかリセットしてください。既存のファイルは変更されていません。</string>
+
+    <!-- Automatic organization and local file inspection -->
+    <string name="library_auto_enable">新しいダウンロードを自動整理</string>
+    <string name="library_auto_help">保存後に有効になります。完了済み・未分類の動画だけを整理し、最初に一致した有効ルールを適用します。既存動画はプレビュー後に確認が必要です。</string>
+    <string name="library_auto_target_required">「未分類」以外の保存先グループを選んでください。必要ならダウンロード画面で先に作成してください。</string>
+    <string name="library_organize">ルールで整理</string>
+    <string name="library_organize_help">コレクションの編集で自動整理と保存先を設定します。上のルールを優先し、手動の分類は変更しません。</string>
+    <string name="library_organize_error">整理に失敗したか、プレビュー後に内容が変わりました。ルールと保存先を確認して再度プレビューしてください。</string>
+    <string name="library_organize_done">%1$d 件を整理しました</string>
+    <string name="library_organize_empty">ルールがありません。コレクションを保存し、自動整理の保存先を設定してください。</string>
+    <string name="library_rule_up">上へ</string>
+    <string name="library_rule_down">下へ</string>
+    <string name="library_organize_preview">%1$d 件の分類を変更予定（ファイルは移動しません）</string>
+    <string name="library_preview_organize">既存動画をプレビュー</string>
+    <string name="library_confirm_organize">整理を実行</string>
+    <string name="library_inspect">ライブラリを検査</string>
+    <string name="library_inspect_help">完了済みの動画だけを検査します。SHA-256の照合には時間がかかる場合があり、キャンセルできます。自動削除せず、権限の問題をファイル消失と判定しません。</string>
+    <string name="library_large_threshold">大きなファイルの基準（MiB、1以上）</string>
+    <string name="library_scan_files">ファイル確認：%1$d / %2$d</string>
+    <string name="library_scan_hashes">重複候補を照合：%1$d / %2$d</string>
+    <string name="library_inspect_error">検査または記録の削除に失敗しました。ファイルの復元・権限変更・記録の更新後は再検査してください。</string>
+    <string name="library_inspect_stale">ダウンロード記録が変わりました。再検査するまで操作を無効にしています。</string>
+    <string name="library_inspect_start_help">検査を開始してレポートを作成します。サイズ不明のファイルは内容重複・大きなファイルの判定対象外です。</string>
+    <string name="library_scan_summary">%1$d 件を検査、問題 %2$d 件</string>
+    <string name="library_duplicates">重複グループ：%1$d</string>
+    <string name="library_duplicate_refs">同じファイルへの複数の記録です。共有ファイルの削除は無効です</string>
+    <string name="library_duplicate_hash">サイズとSHA-256が一致する別ファイルです。削除前に確認してください</string>
+    <string name="library_large_files">大きなファイル：%1$d 件（基準 %2$d MiB）</string>
+    <string name="library_scan_cancel">検査を中止</string>
+    <string name="library_scan_start">開始／再検査</string>
+    <string name="library_size_unknown">サイズ不明</string>
+    <string name="library_file_missing">ファイルの欠落を確認</string>
+    <string name="library_file_empty">空のファイル（0バイト）</string>
+    <string name="library_file_changed">検査中にファイルが変更されました。再検査してください</string>
+    <string name="library_file_unavailable">読み取り不可または権限失効です。消失とは判定していません</string>
+    <string name="library_check_play">再生して確認</string>
+    <string name="library_remove_missing">欠落した記録を削除</string>
+    <string name="library_remove_missing_help">ファイルを削除せず、この記録だけを削除します。欠落を再確認し、権限の問題では記録を削除しません。</string>
 </resources>

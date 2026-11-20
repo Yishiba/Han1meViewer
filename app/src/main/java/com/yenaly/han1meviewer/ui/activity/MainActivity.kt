@@ -25,6 +25,14 @@ import androidx.biometric.BiometricPrompt
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
+import androidx.lifecycle.lifecycleScope
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.CancellationException
+import kotlinx.coroutines.withTimeoutOrNull
+import com.yenaly.han1meviewer.logic.backup.BackupService
+import com.yenaly.han1meviewer.ui.screen.settings.backup.BackupRecoveryScreen
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.content.edit
@@ -96,6 +104,11 @@ class MainActivity : FrameActivity(), PermissionRequester {
 
     private fun initData() {
         setContent {
+            val recoveryRequired by BackupService.get(this).recoveryRequired.collectAsStateWithLifecycle()
+            if (recoveryRequired) {
+                BackupRecoveryScreen(onRecovered = { recreate() }, onExit = { finish() })
+                return@setContent
+            }
             MainActivityContent(
                 activity = this,
                 viewModel = viewModel,
@@ -206,6 +219,15 @@ class MainActivity : FrameActivity(), PermissionRequester {
     override fun onStart() {
         super.onStart()
         registerPipReceiver()
+        if (BackupService.get(this).recoveryRequired.value) return
+        if (Preferences.usageNoticeAccepted) lifecycleScope.launch(Dispatchers.IO) {
+            try {
+                withTimeoutOrNull(120_000) {
+                    com.yenaly.han1meviewer.logic.discovery.SavedSearchService.get(this@MainActivity).check()
+                }
+            } catch (cancelled: CancellationException) { throw cancelled }
+            catch (_: Exception) { Log.w("SearchDiscovery", "Saved search check unavailable; records retained") }
+        }
         window.decorView.post {
             textFromClipboard?.let {
                 videoUrlRegex.find(it)?.groupValues?.get(1)?.let { videoCode ->
@@ -255,7 +277,7 @@ class MainActivity : FrameActivity(), PermissionRequester {
     }
 
     override fun onSupportNavigateUp(): Boolean {
-        return navController.navigateUp() || super.onSupportNavigateUp()
+        return (::navController.isInitialized && navController.navigateUp()) || super.onSupportNavigateUp()
     }
 
     private fun showFindRelatedLinkSnackBar(videoCode: String) {

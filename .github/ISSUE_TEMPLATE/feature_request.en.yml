@@ -1,6 +1,6 @@
 name: ⭐ Feature Request
 description: Suggest an idea to improve Han1meViewer
-labels: ["enhancement", "good idea"]
+labels: ["enhancement"]
 body:
   - type: textarea
     id: feature-description

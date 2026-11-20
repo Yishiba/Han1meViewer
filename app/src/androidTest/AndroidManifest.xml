@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+    <application>
+        <receiver android:name="com.yenaly.han1meviewer.ui.screen.settings.backup.BackupTestGrantReceiver"
+            android:exported="true" />
+        <provider android:name="com.yenaly.han1meviewer.ui.screen.settings.backup.BackupTestDocumentsProvider"
+            android:authorities="com.yenaly.han1meviewer.backup.test.documents"
+            android:permission="android.permission.MANAGE_DOCUMENTS"
+            android:exported="true" android:grantUriPermissions="true">
+            <intent-filter><action android:name="android.content.action.DOCUMENTS_PROVIDER" /></intent-filter>
+        </provider>
+    </application>
+</manifest>

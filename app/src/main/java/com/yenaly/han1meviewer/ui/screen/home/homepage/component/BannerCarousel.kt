@@ -38,6 +38,8 @@ import com.yenaly.han1meviewer.logic.model.HomePage
 import com.yenaly.han1meviewer.ui.preview.ComponentPreview
 import com.yenaly.han1meviewer.ui.preview.fakeBanner
 import com.yenaly.han1meviewer.ui.screen.RetryableImage
+import com.yenaly.han1meviewer.ui.screen.search.AutomaticTranslatedText
+import androidx.compose.ui.platform.testTag
 
 /**
  * 显示首页 Banner 轮播图。
@@ -50,7 +52,8 @@ import com.yenaly.han1meviewer.ui.screen.RetryableImage
 fun BannerCarousel(
     banners: List<HomePage.Banner>,
     onBannerClick: (String?) -> Unit,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    autoTranslationActive: Boolean = true,
 ) {
     if (banners.isEmpty()) return
 
@@ -65,7 +68,7 @@ fun BannerCarousel(
         ) {
             HorizontalPager(
                 state = pagerState,
-                modifier = Modifier.fillMaxSize(),
+                modifier = Modifier.fillMaxSize().testTag("home-banner-pager"),
                 contentPadding = PaddingValues(0.dp),
                 pageSpacing = 0.dp,
                 beyondViewportPageCount = 1
@@ -146,6 +149,11 @@ fun BannerCarousel(
                 }
             }
         }
+        AutomaticTranslatedText(
+            original = banners[pagerState.settledPage.coerceIn(banners.indices)].title,
+            active = autoTranslationActive && !pagerState.isScrollInProgress,
+            maxLines = 3,
+        )
     }
 }
 

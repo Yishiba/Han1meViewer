@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="membership_title">發電會員</string>
+    <string name="membership_summary">連接愛發電帳號，查看 Pro 狀態</string>
+    <string name="membership_description">登入愛發電後可恢復會員。基本瀏覽、播放和翻譯繼續免費。</string>
+    <string name="membership_not_connected">尚未連接愛發電帳號</string>
+    <string name="membership_waiting_login">等待愛發電授權；完成後請返回 App。</string>
+    <string name="membership_active_until">Pro 有效期至 %1$s</string>
+    <string name="membership_no_active_plan">已連接帳號，未查到有效 Pro 方案。</string>
+    <string name="membership_loading">正在查詢…</string>
+    <string name="membership_error">操作失敗，請檢查網絡後重試。</string>
+    <string name="membership_connect">連接愛發電</string>
+    <string name="membership_return_from_browser">授權完成後返回 App，點擊「完成登入」。</string>
+    <string name="membership_finish_login">完成登入</string>
+    <string name="membership_order_optional">訂單號（可選；未自動入帳時填寫）</string>
+    <string name="membership_refresh">刷新會員狀態</string>
+    <string name="membership_disconnect">退出會員帳號</string>
+</resources>

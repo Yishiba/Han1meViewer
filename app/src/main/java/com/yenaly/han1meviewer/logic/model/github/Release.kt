@@ -70,6 +70,7 @@ data class Release(
 
         val state: String,
         val size: Long,
+        val digest: String? = null,
 
         @SerialName("download_count")
         val downloadCount: Long,

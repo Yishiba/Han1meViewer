@@ -224,8 +224,6 @@
     <string name="account_or_password_wrong">帳號或密碼可能錯誤</string>
     <string name="login_tips">該方法只能保持登入 2 個小時… 還是推薦使用網頁登入，\n但網頁是不走 Hosts 的，所以可能需要 VPN</string>
     <string name="update">更新</string>
-    <string name="use_ci_update_channel">使用 CI 更新通道。</string>
-    <string name="use_ci_update_channel_summary">CI 更新頻道能更快地取得最新變更\n但不保證穩定性</string>
     <string name="update_popup_interval_days">檢查更新跳出視窗間隔天數</string>
     <string name="update_failed">更新失敗</string>
     <string name="update_download_background">在背景下載更新</string>
@@ -936,4 +934,94 @@
         <item>搓手手期待ing……</item>
         <item>◝(⑅•ᴗ•⑅)◜..°♡ 傳送中……</item>
     </string-array>
+
+    <!-- On-device search translation -->
+    <string name="search_translate_title">譯成日文</string>
+    <string name="search_translate_original">原文（保留不變）</string>
+    <string name="search_translate_source">原文語言</string>
+    <string name="search_translate_chinese">中文</string>
+    <string name="search_translate_english">英文</string>
+    <string name="search_translate_privacy">首次翻譯需連網下載所需語言模型（總量可能超過 80 MB，可能使用行動數據）。下載後翻譯在本機完成；搜尋詞仍會傳送給內容網站。</string>
+    <string name="search_translate_start">開始翻譯／重試</string>
+    <string name="search_translate_downloading">正在準備模型，首次使用可能需要下載…</string>
+    <string name="search_translate_working">正在本機翻譯…</string>
+    <string name="search_translate_error">模型準備或翻譯失敗，請檢查網路後重試，也可以直接搜尋原文。</string>
+    <string name="search_translate_result">日文譯文（可編輯）</string>
+    <string name="search_translate_attribution">由 Google 翻譯提供</string>
+    <string name="search_translate_accuracy">機器翻譯可能無法對應作品或作者的正式名稱，請確認後搜尋。</string>
+    <string name="search_translate_search_japanese">搜尋日文</string>
+    <string name="search_translate_search_original">搜尋原文</string>
+    <string name="search_translate_active">目前搜尋詞（日文）：%1$s</string>
+
+    <!-- Local media library and smart collections -->
+    <string name="library_keyword">標題或編號關鍵字</string>
+    <string name="library_excluded">排除標題或編號中的詞</string>
+    <string name="library_all">全部下載</string>
+    <string name="library_count">符合 %1$d / %2$d 項</string>
+    <string name="library_reset">重設</string>
+    <string name="library_edit">篩選與合集</string>
+    <string name="library_read_error">儲存的合集無法讀取。原資料已保留，可從備份還原；暫時篩選仍可使用。</string>
+    <string name="library_rules_help">條件間需同時符合，分組／畫質複選符合任一項；留空不限。合集會自動更新。</string>
+    <string name="library_name">合集名稱</string>
+    <string name="library_name_help">名稱須唯一，最多 80 字。</string>
+    <string name="library_groups">分組（可複選）</string>
+    <string name="library_missing_group">已刪除的分組 #%1$d</string>
+    <string name="library_qualities">畫質（可複選）</string>
+    <string name="library_unknown_quality">未知畫質</string>
+    <string name="library_min_size">最小檔案大小（MiB）</string>
+    <string name="library_max_size">最大檔案大小（MiB）</string>
+    <string name="library_recent_days">最近新增天數（1–36500）</string>
+    <string name="library_bounds_error">大小須為非負整數，最小值不能超過最大值；天數須為 1–36500，且數字不能溢位。</string>
+    <string name="library_sort">排序</string>
+    <string name="library_newest">新增時間從新到舊</string>
+    <string name="library_oldest">新增時間從舊到新</string>
+    <string name="library_title_sort">標題順序</string>
+    <string name="library_largest">檔案從大到小</string>
+    <string name="library_smallest">檔案從小到大</string>
+    <string name="library_apply">套用篩選</string>
+    <string name="library_save">儲存合集</string>
+    <string name="library_delete">刪除合集</string>
+    <string name="library_delete_message">只刪除此合集規則，不會刪除影片、下載記錄或原有分組。</string>
+    <string name="library_save_error">儲存失敗，請檢查名稱是否重複或稍後重試。</string>
+    <string name="library_delete_file_error">部分影片檔案未能刪除（可能已移動或權限失效），對應下載記錄已保留，請檢查後重試。</string>
+    <string name="library_no_matches">沒有符合的下載</string>
+    <string name="library_no_matches_help">調整篩選條件或點擊重設；原有檔案未被修改。</string>
+
+    <!-- Automatic organization and local file inspection -->
+    <string name="library_auto_enable">自動整理新下載</string>
+    <string name="library_auto_help">儲存合集後生效：只整理未分組的已完成下載。選擇目標分組；多條規則依清單順序首條符合生效。現有下載需預覽確認。</string>
+    <string name="library_auto_target_required">請選擇有效的目標分組（不能是未分組）；可先在下載頁新增分組。</string>
+    <string name="library_organize">規則整理</string>
+    <string name="library_organize_help">在「篩選與合集」編輯條件、開啟自動整理並儲存。越靠上優先級越高，首條符合生效；手動分組不會被覆蓋。</string>
+    <string name="library_organize_error">整理失敗或預覽已變更，請檢查規則與目標分組後重新預覽；失效預覽不會執行。</string>
+    <string name="library_organize_done">已整理 %1$d 筆下載記錄</string>
+    <string name="library_organize_empty">尚無合集規則，請先儲存合集並設定自動整理的目標分組。</string>
+    <string name="library_rule_up">上移</string>
+    <string name="library_rule_down">下移</string>
+    <string name="library_organize_preview">待整理 %1$d 筆（只修改記錄所屬分組，不移動磁碟檔案）</string>
+    <string name="library_preview_organize">預覽現有下載</string>
+    <string name="library_confirm_organize">確認整理</string>
+    <string name="library_inspect">媒體庫檢查</string>
+    <string name="library_inspect_help">只檢查已完成下載。重複檔案需完整讀取並核對 SHA-256，可能耗時，可取消。檢查不會自動刪除；權限問題不視為檔案遺失。</string>
+    <string name="library_large_threshold">大檔案門檻（MiB，至少 1）</string>
+    <string name="library_scan_files">檢查檔案：%1$d / %2$d</string>
+    <string name="library_scan_hashes">核對重複內容：%1$d / %2$d</string>
+    <string name="library_inspect_error">檢查或移除記錄失敗，請重新檢查；檔案還原、權限變更或下載記錄變更都會使舊結果失效。</string>
+    <string name="library_inspect_stale">下載記錄已變更，請重新檢查；舊結果的操作已停用。</string>
+    <string name="library_inspect_start_help">點擊「開始／重新檢查」產生報告。大小不明的檔案不參與內容重複和大檔案判斷。</string>
+    <string name="library_scan_summary">已檢查 %1$d 筆記錄，異常 %2$d 筆</string>
+    <string name="library_duplicates">重複組：%1$d</string>
+    <string name="library_duplicate_refs">同一檔案的重複記錄：不允許直接刪除共享檔案</string>
+    <string name="library_duplicate_hash">不同檔案：大小與 SHA-256 一致，刪除前請先核對</string>
+    <string name="library_large_files">大檔案：%1$d（門檻 %2$d MiB）</string>
+    <string name="library_scan_cancel">取消檢查</string>
+    <string name="library_scan_start">開始／重新檢查</string>
+    <string name="library_size_unknown">大小不明</string>
+    <string name="library_file_missing">檔案確認遺失</string>
+    <string name="library_file_empty">空檔案（0 位元組）</string>
+    <string name="library_file_changed">檢查期間檔案已變更，請重新檢查</string>
+    <string name="library_file_unavailable">檔案暫時無法讀取或權限失效，無法確認已遺失</string>
+    <string name="library_check_play">播放核對</string>
+    <string name="library_remove_missing">移除失效記錄</string>
+    <string name="library_remove_missing_help">只移除此筆下載記錄，不刪除檔案。操作前會再次確認檔案仍然遺失；權限問題不會移除記錄。</string>
 </resources>

@@ -358,7 +358,8 @@ private fun VideoIntroductionContent(
         }
 
         item(key = "title") {
-            TitleSection(video = video, onCopyText = onCopyText)
+            TitleSection(video = video, onCopyText = onCopyText,
+                translationActive = listState.layoutInfo.visibleItemsInfo.any { it.key == "title" })
         }
 
         item(key = "meta") {
@@ -370,10 +371,15 @@ private fun VideoIntroductionContent(
         }
 
         item(key = "intro") {
+            Column {
             ExpandableIntroductionSection(
                 introduction = video.introduction.orEmpty(),
                 onIntroductionLinkClick = onIntroductionLinkClick,
             )
+            com.yenaly.han1meviewer.ui.screen.search.ContentTranslationButton(
+                org.jsoup.Jsoup.parse(video.introduction.orEmpty()).text(),
+                active = listState.layoutInfo.visibleItemsInfo.any { it.key == "intro" })
+            }
         }
 
         if (!fromDownload) {
@@ -870,7 +876,7 @@ private fun ArtistSection(
 
 @OptIn(ExperimentalFoundationApi::class)
 @Composable
-private fun TitleSection(video: HanimeVideo, onCopyText: (String) -> Unit) {
+private fun TitleSection(video: HanimeVideo, onCopyText: (String) -> Unit, translationActive: Boolean) {
     val primaryTitle = video.chineseTitle?.takeIf { it.isNotBlank() } ?: video.title
     val secondaryTitle = video.title.takeIf { it != primaryTitle }
 
@@ -901,6 +907,7 @@ private fun TitleSection(video: HanimeVideo, onCopyText: (String) -> Unit) {
                 )
             }
         }
+        com.yenaly.han1meviewer.ui.screen.search.ContentTranslationButton(video.title, active = translationActive)
     }
 }
 

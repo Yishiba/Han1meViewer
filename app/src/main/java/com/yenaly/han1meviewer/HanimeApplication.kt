@@ -11,8 +11,6 @@ import com.google.firebase.analytics.analytics
 import com.google.firebase.crashlytics.crashlytics
 import com.google.firebase.crashlytics.setCustomKeys
 import com.google.firebase.database.database
-import com.google.firebase.remoteconfig.remoteConfig
-import com.google.firebase.remoteconfig.remoteConfigSettings
 import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.han1meviewer.util.AnimeShaders
@@ -21,6 +19,8 @@ import com.yenaly.yenaly_libs.base.YenalyApplication
 import com.yenaly.yenaly_libs.utils.LanguageHelper
 import `is`.xyz.mpv.MPVLib
 import java.net.ProxySelector
+import com.yenaly.han1meviewer.logic.backup.BackupService
+import kotlinx.coroutines.*
 
 /**
  * @project Hanime1
@@ -40,6 +40,10 @@ class HanimeApplication : YenalyApplication() {
 
     override fun onCreate() {
         super.onCreate()
+        val backups = BackupService.get(this)
+        // Only interrupted restores need blocking recovery, before any ordinary database writers start.
+        try { runBlocking { backups.recoverOnStartup() } }
+        catch (_: Exception) { Log.e(TAG, "Backup recovery pending; library access is blocked") }
         ThemeUtils.applyDarkModeFromPreferences(this)
         if (Preferences.useDynamicColor){
             DynamicColors.applyToActivitiesIfAvailable(this)
@@ -59,6 +63,12 @@ class HanimeApplication : YenalyApplication() {
         }
         val selected = Preferences.fakeLauncherIcon
         switchLauncher(selected)
+        CoroutineScope(SupervisorJob() + Dispatchers.IO).launch {
+            try { backups.initialize() }
+            catch (_: Exception) { Log.w(TAG, "Backup initialization failed") }
+            try { com.yenaly.han1meviewer.logic.remote.AutomaticSyncScheduler(this@HanimeApplication).initialize() }
+            catch (_: Exception) { Log.w(TAG, "Automatic sync initialization failed") }
+        }
     }
 
     private fun initFirebase() {
@@ -78,17 +88,7 @@ class HanimeApplication : YenalyApplication() {
                 )
             }
         }
-        // 用于处理 Firebase Remote Config 初始化
-        Firebase.remoteConfig.apply {
-            setConfigSettingsAsync(remoteConfigSettings {
-                minimumFetchIntervalInSeconds = if (BuildConfig.DEBUG) 0 else 3 * 60 * 60
-                fetchTimeoutInSeconds = 10
-            })
-            setDefaultsAsync(FirebaseConstants.remoteConfigDefaults)
-            fetchAndActivate().addOnCompleteListener {
-                AppViewModel.getLatestVersion(delayMillis = 200)
-            }
-        }
+        AppViewModel.getLatestVersion(delayMillis = 200)
         Firebase.database.setPersistenceEnabled(true)
     }
 

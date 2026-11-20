@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="auto_sync_title">背景自動同步</string>
+    <string name="auto_sync_help">預設關閉。啟用後會自動上傳並合併觀看紀錄、合集規則、部分設定、搜尋別名及翻譯歷史。首次任務在所選間隔後排程，受網路、電量和系統省電影響，時間不固定。有衝突時暫停，需手動預覽並確認；關閉會取消後續任務，已送出的請求可能完成。儲存連線會關閉自動同步。</string>
+    <string name="auto_sync_15">15 分鐘</string>
+    <string name="auto_sync_60">1 小時</string>
+    <string name="auto_sync_360">6 小時</string>
+    <string name="auto_sync_unmetered">僅非計費網路（通常為 Wi-Fi）</string>
+    <string name="auto_sync_idle">等待下次排程</string>
+    <string name="auto_sync_success">最近一次同步成功（或無需變更）</string>
+    <string name="auto_sync_conflict">自動同步已暫停：存在衝突。請手動預覽並確認同步後恢復。</string>
+    <string name="auto_sync_auth">自動同步已暫停：帳號或權限錯誤。請重新儲存連線並開啟自動同步。</string>
+    <string name="auto_sync_invalid">自動同步已暫停：檢查口令、資料格式、憑證和儲存空間。手動同步成功後恢復。</string>
+    <string name="auto_sync_busy">目前正在下載或修改資料，稍後重試。</string>
+    <string name="auto_sync_retry">網路或遠端版本發生變化，稍後重試。</string>
+    <string name="auto_sync_local_changed">本機資料已變化，稍後重新合併，不覆蓋新修改。</string>
+    <string name="auto_sync_last_attempt">最近嘗試：%1$s</string>
+    <string name="auto_sync_last_success">最近成功：%1$s</string>
+</resources>

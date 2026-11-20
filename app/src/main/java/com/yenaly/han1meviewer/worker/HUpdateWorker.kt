@@ -34,6 +34,7 @@ import com.yenaly.han1meviewer.util.runSuspendCatching
 import com.yenaly.han1meviewer.util.updateFile
 import com.yenaly.yenaly_libs.utils.showShortToast
 import java.io.File
+import java.security.MessageDigest
 import java.util.Locale
 import kotlin.random.Random
 
@@ -51,6 +52,7 @@ class HUpdateWorker(
 
         const val DOWNLOAD_LINK = "download_link"
         const val NODE_ID = "node_id"
+        const val EXPECTED_SHA256 = "expected_sha256"
         const val UPDATE_APK = "update_apk"
 
         /**
@@ -63,6 +65,7 @@ class HUpdateWorker(
             val data = workDataOf(
                 DOWNLOAD_LINK to latest.downloadLink,
                 NODE_ID to latest.nodeId,
+                EXPECTED_SHA256 to latest.sha256,
             )
             val req = OneTimeWorkRequestBuilder<HUpdateWorker>()
                 .addTag(TAG)
@@ -104,6 +107,7 @@ class HUpdateWorker(
 
     private val downloadLink by inputData(DOWNLOAD_LINK, EMPTY_STRING)
     private val nodeId by inputData(NODE_ID, EMPTY_STRING)
+    private val expectedSha256 by inputData(EXPECTED_SHA256, EMPTY_STRING)
     private val downloadId = Random.nextInt()
 
     override suspend fun doWork(): Result {
@@ -113,8 +117,14 @@ class HUpdateWorker(
         with(HUpdater) {
             val file = context.updateFile.apply { delete() }
             val inject = runSuspendCatching {
+                require(expectedSha256.matches(Regex("[a-fA-F0-9]{64}"))) {
+                    "Release is missing a valid SHA-256 digest"
+                }
                 file.injectUpdate(downloadLink) { progress, fileSize, downloadedSize ->
                     updateNotification(progress, fileSize, downloadedSize)
+                }
+                check(file.sha256().equals(expectedSha256, ignoreCase = true)) {
+                    "Release APK checksum mismatch"
                 }
             }
             if (inject.isSuccess) {
@@ -132,6 +142,19 @@ class HUpdateWorker(
                 return Result.failure()
             }
         }
+    }
+
+    private fun File.sha256(): String {
+        val digest = MessageDigest.getInstance("SHA-256")
+        inputStream().use { input ->
+            val buffer = ByteArray(DEFAULT_BUFFER_SIZE)
+            while (true) {
+                val count = input.read(buffer)
+                if (count < 0) break
+                digest.update(buffer, 0, count)
+            }
+        }
+        return digest.digest().joinToString("") { "%02x".format(it.toInt() and 0xff) }
     }
 
     private fun createNotification(progress: Int = 0, fileSizeMB: String = "0", downloadedSizeMB: String = "0", isPending: Boolean = true): Notification {

@@ -12,7 +12,9 @@ data class Latest(
     /**
      * Node ID for the download link
      *
-     * 其实就是个变相的 md5 验证
+     * GitHub release asset identity, used only for cache matching.
      */
     val nodeId: String,
+    /** SHA-256 from GitHub's release asset metadata. */
+    val sha256: String = "",
 )

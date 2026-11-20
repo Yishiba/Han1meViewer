@@ -10,7 +10,15 @@ data class DohPreset(
 )
 
 object DohConfig {
+    const val DEFAULT_PRESET_KEY = "google"
+
     val presets = listOf(
+        DohPreset(
+            key = DEFAULT_PRESET_KEY,
+            title = "Google Public DNS",
+            url = "https://dns.google/dns-query",
+            bootstrapIps = listOf("8.8.8.8", "8.8.4.4"),
+        ),
         DohPreset(
             key = "alidns",
             title = "AliDNS",

@@ -13,6 +13,7 @@ import com.yenaly.han1meviewer.logic.DatabaseRepo.HanimeAdvancedSearchRepo.toSea
 import com.yenaly.han1meviewer.logic.NetworkRepo
 import com.yenaly.han1meviewer.logic.entity.HanimeAdvancedSearchHistoryEntity
 import com.yenaly.han1meviewer.logic.entity.SearchHistoryEntity
+import com.yenaly.han1meviewer.logic.discovery.SearchCriteria
 import com.yenaly.han1meviewer.logic.model.HanimeInfo
 import com.yenaly.han1meviewer.logic.model.SearchOption
 import com.yenaly.han1meviewer.logic.state.PageLoadingState
@@ -20,13 +21,14 @@ import com.yenaly.han1meviewer.util.loadAssetAs
 import com.yenaly.yenaly_libs.base.YenalyViewModel
 import com.yenaly.yenaly_libs.utils.unsafeLazy
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
+import kotlinx.coroutines.ensureActive
+import kotlinx.coroutines.flow.last
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.flowOn
-import kotlinx.coroutines.flow.getAndUpdate
-import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
@@ -119,12 +121,26 @@ class SearchViewModel(
     val searchFlow = _searchFlow.asStateFlow()
     var recyclerViewState: Parcelable? = null
 
+    var mergedQueries: List<String>
+        get() = state["mergedQueries"] ?: emptyList()
+        set(value) { state["mergedQueries"] = ArrayList(value) }
+    private var requestJob: Job? = null
+    private val paging = com.yenaly.han1meviewer.logic.translation.SearchPaging()
+    val partialFailure = MutableStateFlow(false)
+    var lastSuccessfulCriteria: SearchCriteria? = null
+        private set
+
     fun clearHanimeSearchResult() {
+        requestJob?.cancel()
+        paging.reset(); partialFailure.value = false
+        lastSuccessfulCriteria = null
         _searchFlow.value = emptyList()
         _searchStateFlow.value = PageLoadingState.Loading
     }
 
     fun resetSearchUiState() {
+        clearHanimeSearchResult()
+        mergedQueries = emptyList()
         page = 1
         query = null
         genre = null
@@ -148,36 +164,42 @@ class SearchViewModel(
         sort: String?, broad: Boolean, date: String?,
         duration: String?, tags: Set<String>, brands: Set<String>,
     ) {
-        viewModelScope.launch {
-            NetworkRepo.getHanimeSearchResult(
-                page, query, genre,
-                sort, broad, date ,
-                duration, tags, brands
-            ).collect { state ->
-                val prev = _searchStateFlow.getAndUpdate { state }
-                if (prev is PageLoadingState.Loading) _searchFlow.value = emptyList()
-                _searchFlow.update { prevList ->
-                    when (state) {
-//                        is PageLoadingState.Success -> prevList + state.info
-                        is PageLoadingState.Success -> {
-                            val list = state.info
-                            val updatedList = if (Preferences.showPlayedIndicator) {
-                                val codes = list.map { it.videoCode }
-                                val watchedCodes = withContext(Dispatchers.IO) {
-                                    DatabaseRepo.WatchHistory.getWatched(codes).toSet()
-                                }
-                                list.map { item ->
-                                    item.copy(watched = watchedCodes.contains(item.videoCode))
-                                }
-                            } else {
-                                list
-                            }
-                            (prevList + updatedList).distinctBy(HanimeInfo::videoCode)
-                        }
-                        is PageLoadingState.Loading -> emptyList()
-                        else -> prevList
+        if (requestJob?.isActive == true) return
+        if (mergedQueries.lastOrNull() != query) mergedQueries = emptyList()
+        val queries = mergedQueries.ifEmpty { listOf(query) }.distinct()
+        val criteria = SearchCriteria(Preferences.baseUrl, queries, genre, sort, broad, date,
+            duration, tags.toSet(), brands.toSet())
+        requestJob = viewModelScope.launch {
+            _searchStateFlow.value = PageLoadingState.Loading
+            var failure: Throwable? = null
+            var succeeded = false
+            val incoming = mutableListOf<HanimeInfo>()
+            for (term in paging.pending(queries)) {
+                val nextPage = paging.page(term)
+                val result = NetworkRepo.getHanimeSearchResult(nextPage, term, genre, sort, broad, date, duration, tags, brands).last()
+                ensureActive()
+                when (result) {
+                    is PageLoadingState.Success -> {
+                        incoming += result.info
+                        paging.success(term)
+                        succeeded = true
                     }
+                    is PageLoadingState.NoMoreData -> { paging.end(term); succeeded = true }
+                    is PageLoadingState.Error -> { failure = result.throwable; paging.fail(term) }
+                    else -> Unit
                 }
+            }
+            val decorated = if (Preferences.showPlayedIndicator && incoming.isNotEmpty()) {
+                val watched = withContext(Dispatchers.IO) { DatabaseRepo.WatchHistory.getWatched(incoming.map { it.videoCode }).toSet() }
+                incoming.map { it.copy(watched = it.videoCode in watched) }
+            } else incoming
+            _searchFlow.value = (_searchFlow.value + decorated).distinctBy { it.videoCode }
+            partialFailure.value = failure != null && (succeeded || _searchFlow.value.isNotEmpty())
+            if (failure == null && succeeded) lastSuccessfulCriteria = criteria
+            _searchStateFlow.value = when {
+                failure != null && !succeeded -> PageLoadingState.Error(failure)
+                paging.complete(queries) -> PageLoadingState.NoMoreData
+                else -> PageLoadingState.Success(_searchFlow.value)
             }
         }
     }
@@ -261,7 +283,30 @@ class SearchViewModel(
         clearHanimeSearchResult()
         refreshTriggerFlow.tryEmit(Unit)
     }
+
+    fun restoreSavedSearch(criteria: SearchCriteria) {
+        criteria.validate()
+        check(criteria.baseUrl == Preferences.baseUrl)
+        query = criteria.queries.last()
+        mergedQueries = if (criteria.queries.size > 1) criteria.queries.filterNotNull() else emptyList()
+        genre = criteria.genre
+        sort = criteria.sort
+        broad = criteria.broad
+        duration = criteria.duration
+        approxTime = criteria.date
+        year = null
+        month = null
+        tagMap.clear()
+        brandMap.clear()
+        val allTags = tags.values.flatten()
+        tagMap.put(0, criteria.tags.map { key -> allTags.firstOrNull { it.searchKey == key }
+            ?: SearchOption(name = key, searchKey = key) }.toSet())
+        brandMap.put(0, criteria.brands.map { key -> brands.firstOrNull { it.searchKey == key }
+            ?: SearchOption(name = key, searchKey = key) }.toSet())
+        triggerNewSearch()
+    }
     fun restoreSearchMap(history: HanimeAdvancedSearchHistoryEntity) {
+        mergedQueries = emptyList()
         with(this) {
             page = 1
             query = history.query

@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="search_tools">翻译历史、别名与模型</string>
+    <string name="search_tools_help">别名最多 200 条，翻译历史最多 50 条，纳入普通／加密备份。配置 WebDAV 同步后可加密同步这些记录；开启后台同步后会自动发送。搜索仍将实际查询词发给内容网站。</string>
+    <string name="search_tools_error">无法读写数据或管理模型；原有数据保留。</string>
+    <string name="search_aliases">作品别名</string>
+    <string name="search_alias_original">原文别名</string>
+    <string name="search_alias_save">保存／更新别名</string>
+    <string name="search_reuse">使用译文</string>
+    <string name="search_translation_history">翻译搜索历史（最近 50 条）</string>
+    <string name="search_clear_history">清空翻译历史</string>
+    <string name="search_models">语言模型</string>
+    <string name="search_models_help">下载可能使用移动网络。删除后再次翻译需要重新下载；共用模型影响所有翻译方向。</string>
+    <string name="search_model_installed">已下载</string>
+    <string name="search_model_absent">未下载</string>
+    <string name="search_model_download">下载</string>
+    <string name="search_detect">自动判断中／英文（可手动改选）</string>
+    <string name="search_detect_unknown">无法可靠判断，请手动选择</string>
+    <string name="search_matching_tag">使用站点标签：%1$s</string>
+    <string name="search_both">合并搜索原文与日文</string>
+    <string name="search_combined_active">合并查询：%1$s</string>
+    <string name="search_retry_routes">部分查询失败，重试未成功的页面</string>
+</resources>

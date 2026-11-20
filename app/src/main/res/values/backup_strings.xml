@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_history_title">自動備份與歷史版本</string>
+    <string name="backup_history_summary">定期備份、多版本恢復</string>
+    <string name="backup_scope">搜尋別名、翻譯歷史；備份設定、合集規則、下載與觀看記錄、關鍵幀及打卡資料。不含影片檔案或登入 Cookie。匯出時可選擇密碼加密。</string>
+    <string name="backup_automatic">自動備份</string>
+    <string name="backup_schedule_help">預設關閉。由系統在電量充足時排程，時間可能延後；首次符合條件時即可執行。</string>
+    <string name="backup_daily">每天</string>
+    <string name="backup_weekly">每週</string>
+    <string name="backup_retention">本機保留數量（另保留最近一次恢復前版本）</string>
+    <string name="backup_keep_count">%1$d 個</string>
+    <string name="backup_storage_help">歷史版本存在應用私有目錄，卸載或清除資料會刪除。可另選資料夾，每次備份產生副本；外部副本不自動清理，可用「匯入備份」恢復。</string>
+    <string name="backup_choose_directory">選擇副本資料夾</string>
+    <string name="backup_local_only">僅保留本機</string>
+    <string name="backup_last_success">最近本機備份：%1$s</string>
+    <string name="backup_last_failed">最近一次備份失敗，既有版本仍保留。</string>
+    <string name="backup_mirror_failed">本機備份已完成，但資料夾副本失敗。請重新選擇可寫入的資料夾。</string>
+    <string name="backup_now">立即備份</string>
+    <string name="backup_versions">歷史版本</string>
+    <string name="backup_empty">尚無本機備份版本</string>
+    <string name="backup_kind_manual">手動備份</string>
+    <string name="backup_kind_automatic">自動備份</string>
+    <string name="backup_kind_safety">恢復前保護版本（不可手動刪除）</string>
+    <string name="backup_version_summary">下載 %1$d · 觀看 %2$d · 規則 %3$d · %4$d KiB</string>
+    <string name="backup_restore_version">恢復此版本</string>
+    <string name="backup_export_version">匯出</string>
+    <string name="backup_restore_confirm">恢復 %1$s 的資料？將取代備份包含的設定和記錄；先校驗並建立目前資料的保護版本。請先暫停所有下載。未完成下載恢復為暫停；影片檔案及目前登入狀態不變。</string>
+    <string name="backup_delete_confirm">刪除 %1$s 的本機備份版本？外部副本不會刪除。</string>
+    <string name="backup_downloads_busy">請先暫停下載並等待待處理任務結束，再恢復。</string>
+    <string name="backup_operation_failed">操作失敗。請檢查儲存空間、資料夾權限或備份檔案完整性。</string>
+    <string name="backup_created">本機版本已建立</string>
+    <string name="backup_deleted">本機版本已刪除</string>
+    <string name="backup_working">正在處理備份…</string>
+    <string name="backup_recovery_title">需要恢復資料</string>
+    <string name="backup_recovery_help">上次恢復未完成，目前暫停使用媒體庫。保護版本仍保留，請確認可用儲存空間後重試，以恢復至操作前狀態。</string>
+    <string name="backup_retry_recovery">重試資料恢復</string>
+    <string name="backup_exit">退出</string>
+</resources>

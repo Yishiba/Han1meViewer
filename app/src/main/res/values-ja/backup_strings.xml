@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_history_title">自動バックアップと履歴</string>
+    <string name="backup_history_summary">定期保存とバージョンの復元</string>
+    <string name="backup_scope">設定、ルール、ダウンロード・視聴履歴、キーフレーム、記録を保存します。動画とログイン Cookie は含みません。書き出し時に暗号化を選択できます。検索別名・翻訳履歴も含みます。</string>
+    <string name="backup_automatic">自動バックアップ</string>
+    <string name="backup_schedule_help">初期設定はオフです。電池残量が少なくないときに実行します。時刻は前後し、初回はすぐ実行する場合があります。</string>
+    <string name="backup_daily">毎日</string>
+    <string name="backup_weekly">毎週</string>
+    <string name="backup_retention">端末に残す数（直近の復元前データは別途保持）</string>
+    <string name="backup_keep_count">%1$d 件</string>
+    <string name="backup_storage_help">端末内の履歴はアンインストールやデータ消去で失われます。フォルダーを選ぶと毎回コピーします。外部コピーは自動削除しません。インポートで復元できます。</string>
+    <string name="backup_choose_directory">コピー先フォルダー</string>
+    <string name="backup_local_only">端末のみに保存</string>
+    <string name="backup_last_success">前回の端末内保存：%1$s</string>
+    <string name="backup_last_failed">前回の保存に失敗しました。既存の履歴は保持しています。</string>
+    <string name="backup_mirror_failed">端末内保存は成功しましたが、外部コピーに失敗しました。書き込み可能なフォルダーを選び直してください。</string>
+    <string name="backup_now">今すぐ保存</string>
+    <string name="backup_versions">保存済みバージョン</string>
+    <string name="backup_empty">端末内の履歴はまだありません</string>
+    <string name="backup_kind_manual">手動保存</string>
+    <string name="backup_kind_automatic">自動保存</string>
+    <string name="backup_kind_safety">復元前の保護データ（削除不可）</string>
+    <string name="backup_version_summary">ダウンロード %1$d · 視聴 %2$d · ルール %3$d · %4$d KiB</string>
+    <string name="backup_restore_version">この版を復元</string>
+    <string name="backup_export_version">エクスポート</string>
+    <string name="backup_restore_confirm">%1$s のデータを復元しますか？含まれる設定と記録を置き換えます。検証後、現在の保護データを保存します。先に全ダウンロードを一時停止してください。未完了分は一時停止として復元し、動画ファイルと現在のログインは維持します。</string>
+    <string name="backup_delete_confirm">%1$s の端末内履歴を削除しますか？外部コピーは保持します。</string>
+    <string name="backup_downloads_busy">ダウンロードを一時停止し、処理中のタスクが終了してから復元してください。</string>
+    <string name="backup_operation_failed">操作に失敗しました。空き容量、アクセス権、ファイルの破損を確認してください。</string>
+    <string name="backup_created">端末内に保存しました</string>
+    <string name="backup_deleted">端末内の履歴を削除しました</string>
+    <string name="backup_working">バックアップ処理中…</string>
+    <string name="backup_recovery_title">データの回復が必要です</string>
+    <string name="backup_recovery_help">前回の復元が完了していません。ライブラリを停止し、保護データを保持しています。空き容量を確認して再試行すると、復元前の状態に回復します。</string>
+    <string name="backup_retry_recovery">回復を再試行</string>
+    <string name="backup_exit">終了</string>
+</resources>

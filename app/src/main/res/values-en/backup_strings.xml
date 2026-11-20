@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_history_title">Automatic backups and versions</string>
+    <string name="backup_history_summary">Scheduled backups and version recovery</string>
+    <string name="backup_scope">Includes settings, collection rules, download and watch records, keyframes and check-in data. Excludes videos and login cookies. Password encryption is available when exporting. Search aliases and translation history are included.</string>
+    <string name="backup_automatic">Automatic backups</string>
+    <string name="backup_schedule_help">Off by default. Android schedules work when the battery is not low; timing may vary. The first eligible run can start immediately.</string>
+    <string name="backup_daily">Daily</string>
+    <string name="backup_weekly">Weekly</string>
+    <string name="backup_retention">Local retention (plus the latest recovery snapshot)</string>
+    <string name="backup_keep_count">%1$d versions</string>
+    <string name="backup_storage_help">Local versions are removed on uninstall or clearing app data. Choose a folder for an additional copy of each backup. External copies are kept until you delete them; restore with Import backup.</string>
+    <string name="backup_choose_directory">Choose copy folder</string>
+    <string name="backup_local_only">Local only</string>
+    <string name="backup_last_success">Last local backup: %1$s</string>
+    <string name="backup_last_failed">The last backup failed. Existing versions are retained.</string>
+    <string name="backup_mirror_failed">Saved locally, but the folder copy failed. Choose a writable folder again.</string>
+    <string name="backup_now">Back up now</string>
+    <string name="backup_versions">Saved versions</string>
+    <string name="backup_empty">No local versions yet</string>
+    <string name="backup_kind_manual">Manual backup</string>
+    <string name="backup_kind_automatic">Automatic backup</string>
+    <string name="backup_kind_safety">Recovery snapshot (protected)</string>
+    <string name="backup_version_summary">Downloads %1$d · History %2$d · Rules %3$d · %4$d KiB</string>
+    <string name="backup_restore_version">Restore version</string>
+    <string name="backup_export_version">Export</string>
+    <string name="backup_restore_confirm">Restore data from %1$s? This replaces included settings and records. The file is validated and a recovery snapshot saved first. Pause all downloads. Unfinished records restore as paused; video files and current login are preserved.</string>
+    <string name="backup_delete_confirm">Delete the local version from %1$s? External copies are kept.</string>
+    <string name="backup_downloads_busy">Pause downloads and wait for pending tasks before restoring.</string>
+    <string name="backup_operation_failed">Operation failed. Check storage space, folder access and backup integrity.</string>
+    <string name="backup_created">Local version created</string>
+    <string name="backup_deleted">Local version deleted</string>
+    <string name="backup_working">Processing backup…</string>
+    <string name="backup_recovery_title">Data recovery required</string>
+    <string name="backup_recovery_help">A restore was interrupted. Library access is paused and the recovery snapshot is retained. Check available storage, then retry to recover the state before the restore.</string>
+    <string name="backup_retry_recovery">Retry recovery</string>
+    <string name="backup_exit">Exit</string>
+</resources>

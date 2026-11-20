@@ -37,6 +37,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Search
+import androidx.compose.material.icons.filled.Translate
 import androidx.compose.material3.AssistChip
 import androidx.compose.material3.AssistChipDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -53,6 +54,7 @@ import androidx.compose.material3.pulltorefresh.PullToRefreshBox
 import androidx.compose.material3.pulltorefresh.PullToRefreshDefaults
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -101,6 +103,15 @@ import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.distinctUntilChanged
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import com.yenaly.han1meviewer.logic.translation.SearchToolsStore
+import com.yenaly.han1meviewer.logic.translation.SearchToolsData
+import com.yenaly.han1meviewer.logic.translation.SearchSuggestions
+import com.yenaly.han1meviewer.logic.translation.SuggestionTerm
+import com.yenaly.han1meviewer.logic.discovery.SearchCriteria
+import com.yenaly.han1meviewer.logic.discovery.SavedSearchService
+import androidx.compose.ui.platform.LocalContext
 
 // ─────────────────────────────────────────────
 // 搜索主屏幕
@@ -121,6 +132,7 @@ fun SearchScreen(
     onOpenAdvancedSearch: () -> Unit,
     initialQuery: String? = null,
 ) {
+    val partialFailure by viewModel.partialFailure.collectAsStateWithLifecycle()
     val searchState by viewModel.searchStateFlow.collectAsStateWithLifecycle()
     val searchResults by viewModel.searchFlow.collectAsStateWithLifecycle()
 
@@ -131,6 +143,34 @@ fun SearchScreen(
     var isSearchFocused by remember { mutableStateOf(false) }
     var isCriteriaVisible by rememberSaveable { mutableStateOf(true) }
     var isLeavingScreen by remember { mutableStateOf(false) }
+    var translationOriginal by rememberSaveable { mutableStateOf<String?>(null) }
+    var translatedSearch by rememberSaveable { mutableStateOf<String?>(null) }
+    var showSavedSearches by rememberSaveable { mutableStateOf(false) }
+    var showAutoTranslation by rememberSaveable { mutableStateOf(false) }
+    var savingCriteria by remember { mutableStateOf<SearchCriteria?>(null) }
+    var showSaveAlias by rememberSaveable { mutableStateOf(false) }
+    var toolsRevision by remember { mutableStateOf(0) }
+    var toolsData by remember { mutableStateOf(SearchToolsData()) }
+    val context = LocalContext.current
+    val toolsStore = remember(context) { SearchToolsStore(context) }
+    val savedSearches = remember(context) { SavedSearchService.get(context) }
+    val savedSearchState by savedSearches.state.collectAsStateWithLifecycle()
+    val suggestionTerms = remember(viewModel, searchResults) {
+        viewModel.tags.values.flatten().mapNotNull { option -> option.searchKey?.let { key ->
+            SuggestionTerm(option.value.ifBlank { key }, listOfNotNull(option.name, key,
+                option.lang?.zhrCN, option.lang?.zhrTW, option.lang?.en, option.lang?.ja), key, true)
+        } } + searchResults.mapNotNull { it.currentArtist?.takeIf(String::isNotBlank) }.distinct()
+            .map { SuggestionTerm(it, listOf(it), it, false) }
+    }
+    val suggestions = remember(searchQuery, toolsData, histories, suggestionTerms) {
+        SearchSuggestions.find(searchQuery, toolsData, histories.map { it.query }, suggestionTerms)
+    }
+    LaunchedEffect(searchQuery, toolsRevision, isSearchFocused) {
+        delay(200)
+        toolsData = withContext(Dispatchers.IO) {
+            try { toolsStore.read() } catch (_: Exception) { SearchToolsData() }
+        }
+    }
 
     val refreshState = rememberPullToRefreshState()
     val gridState = rememberLazyGridState(
@@ -229,7 +269,12 @@ fun SearchScreen(
     LaunchedEffect(Unit) {
         viewModel.refreshTriggerFlow.collect {
             hasSearched = true
-            searchQuery = viewModel.query.orEmpty()
+            val query = viewModel.query.orEmpty()
+            // Changing only advanced filters must not overwrite the retained original.
+            if (translatedSearch == null || translatedSearch != query) {
+                translatedSearch = null
+                searchQuery = query
+            }
             doSearch(resetScroll = true)
         }
     }
@@ -322,6 +367,57 @@ fun SearchScreen(
         onBack()
     }
 
+    fun submitSearch(input: String, translated: Boolean = false, combineOriginal: String? = null) {
+        val query = input.trim()
+        if (query.isBlank() && !hasAdvancedFilters()) return
+        viewModel.mergedQueries = combineOriginal?.let { com.yenaly.han1meviewer.logic.translation.SearchTerms.queries(it, input) }.orEmpty()
+        translatedSearch = if (translated) query else null
+        hasSearched = true
+        viewModel.query = query.ifBlank { null }
+        focusMgr.clearFocus()
+        kb?.hide()
+        if (query.isNotBlank()) viewModel.insertSearchHistory(SearchHistoryEntity(query = query))
+        doSearch(resetScroll = true)
+    }
+
+    savingCriteria?.let { criteria ->
+        SearchNameDialog(stringResource(R.string.discovery_save_search), searchQuery, { savingCriteria = null }) {
+            savedSearches.add(it, criteria)
+        }
+    }
+    if (showSaveAlias) SaveSearchAliasDialog(searchQuery, viewModel.query.orEmpty(),
+        onDismiss = { showSaveAlias = false }, onSaved = { toolsRevision++ })
+    if (showSavedSearches) SavedSearchUpdatesDialog(
+        onDismiss = { showSavedSearches = false },
+        onSearch = { translatedSearch = null; viewModel.restoreSavedSearch(it) },
+        onVideo = onOpenVideo,
+    )
+    if (showAutoTranslation) AutoTranslationSettingsDialog { showAutoTranslation = false }
+
+    translationOriginal?.let { original ->
+        SearchTranslationDialog(
+            original = original,
+            onDismiss = { translationOriginal = null },
+            onSearchOriginal = {
+                translationOriginal = null
+                submitSearch(original)
+            },
+            onSearchTag = { tag ->
+                translationOriginal = null
+                viewModel.tagMap.put(0, viewModel.tagMap.get(0).orEmpty() + tag)
+                submitSearch("")
+            },
+            onSearchBoth = { translated ->
+                translationOriginal = null
+                submitSearch(translated, translated = true, combineOriginal = original)
+            },
+            onSearchJapanese = { translated ->
+                translationOriginal = null
+                submitSearch(translated, translated = true)
+            },
+        )
+    }
+
     // 返回键：有焦点时先关键盘
     BackHandler(enabled = isSearchFocused) { focusMgr.clearFocus(); kb?.hide() }
 
@@ -331,21 +427,53 @@ fun SearchScreen(
             .background(MaterialTheme.colorScheme.background)
     ) {
         SearchAppBar(searchQuery, { searchQuery = it }, onSearch = {
-            val q = searchQuery.trim()
-            val shouldSearch = q.isNotBlank() || hasAdvancedFilters()
-            if (shouldSearch) {
-                hasSearched = true; viewModel.query = q.ifBlank { null }
-                focusMgr.clearFocus(); kb?.hide()
-                if (q.isNotBlank()) {
-                    viewModel.insertSearchHistory(
-                        SearchHistoryEntity(query = q)
-                    )
-                }
-                doSearch(resetScroll = true)
-            }
-        }, ::handleBack, onOpenAdvancedSearch, { isSearchFocused = it }, focusReq)
+            submitSearch(searchQuery)
+        }, ::handleBack, onOpenAdvancedSearch, { isSearchFocused = it }, focusReq,
+            onTranslate = {
+                focusMgr.clearFocus()
+                kb?.hide()
+                translationOriginal = searchQuery
+            },
+        )
 
         HorizontalDivider(color = MaterialTheme.colorScheme.outlineVariant)
+        FlowRow(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+            androidx.compose.material3.TextButton(onClick = { showAutoTranslation = true }) {
+                Text(stringResource(R.string.auto_translation_title))
+            }
+            androidx.compose.material3.TextButton(onClick = { showSavedSearches = true }) {
+                Text(stringResource(R.string.discovery_watchlist) + savedSearchState.searches.sumOf { it.unreadCount }.let {
+                    if (it > 0) " ($it)" else ""
+                })
+            }
+            if (hasSearched && searchState !is PageLoadingState.Loading && searchState !is PageLoadingState.Error && !partialFailure) {
+                androidx.compose.material3.TextButton(enabled = viewModel.lastSuccessfulCriteria != null,
+                    onClick = { savingCriteria = viewModel.lastSuccessfulCriteria }) { Text(stringResource(R.string.discovery_save_search)) }
+                androidx.compose.material3.TextButton(enabled = !viewModel.query.isNullOrBlank(),
+                    onClick = { showSaveAlias = true }) { Text(stringResource(R.string.discovery_save_alias)) }
+            }
+        }
+        if (isSearchFocused && searchQuery.isNotBlank()) SearchSuggestionsPanel(suggestions) { suggestion ->
+            if (suggestion.tagKey == null) searchQuery = suggestion.original
+            suggestion.tagKey?.let { key ->
+                val option = viewModel.tags.values.flatten().firstOrNull { it.searchKey == key }
+                if (option != null) {
+                    viewModel.tagMap.put(0, viewModel.tagMap.get(0).orEmpty() + option)
+                    submitSearch("")
+                }
+            } ?: submitSearch(suggestion.query, translated = suggestion.query != searchQuery)
+        }
+        if (viewModel.mergedQueries.isNotEmpty()) Text(stringResource(R.string.search_combined_active, viewModel.mergedQueries.joinToString(" / ")), Modifier.padding(12.dp))
+        if (partialFailure || searchState is PageLoadingState.Error) androidx.compose.material3.TextButton(onClick = { executeSearch() }) {
+            Text(stringResource(R.string.search_retry_routes))
+        }
+        translatedSearch?.let { query ->
+            Text(
+                stringResource(R.string.search_translate_active, query),
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                style = MaterialTheme.typography.bodySmall,
+            )
+        }
         AnimatedVisibility(
             visible = filter.isNotEmpty() && isCriteriaVisible,
             enter = fadeIn() + expandVertically(expandFrom = Alignment.Top),
@@ -404,7 +532,7 @@ fun SearchScreen(
                         onOpenVideo,
                         onLongPressCopy,
                         { viewModel.page++; executeSearch() },
-                        searchState !is PageLoadingState.NoMoreData,
+                        searchState !is PageLoadingState.NoMoreData && searchState !is PageLoadingState.Error && !partialFailure,
                         gridState
                     )
                 }
@@ -420,10 +548,8 @@ fun SearchScreen(
                     SearchHistoryList(
                         histories,
                         { query ->
-                            searchQuery = query; hasSearched = true; viewModel.query =
-                            query; focusMgr.clearFocus(); kb?.hide(); viewModel.insertSearchHistory(
-                            SearchHistoryEntity(query = query)
-                        ); doSearch(resetScroll = true)
+                            searchQuery = query
+                            submitSearch(query)
                         },
                         { h ->
                             viewModel.deleteSearchHistory(h); histories =
@@ -445,7 +571,8 @@ fun SearchAppBar(
     query: String, onQueryChange: (String) -> Unit, onSearch: () -> Unit,
     onBack: () -> Unit, onOpenAdvancedSearch: () -> Unit,
     onFocusChanged: (Boolean) -> Unit, focusRequester: FocusRequester,
-    modifier: Modifier = Modifier
+    modifier: Modifier = Modifier,
+    onTranslate: () -> Unit = {},
 ) {
     val kb = LocalSoftwareKeyboardController.current
     Surface(
@@ -503,6 +630,9 @@ fun SearchAppBar(
                     stringResource(R.string.clear_checkin),
                     tint = MaterialTheme.colorScheme.onSurfaceVariant
                 )
+            }
+            IconButton(onClick = onTranslate, enabled = query.isNotBlank()) {
+                Icon(Icons.Default.Translate, contentDescription = stringResource(R.string.search_translate_title))
             }
             Text(
                 stringResource(R.string.advanced),
@@ -589,6 +719,9 @@ fun SearchResultsGrid(
     onVideoLongClick: (String, String) -> Unit, onLoadMore: () -> Unit,
     canLoadMore: Boolean, gridState: LazyGridState, modifier: Modifier = Modifier
 ) {
+    val visibleCodes by remember(gridState) { derivedStateOf {
+        gridState.layoutInfo.visibleItemsInfo.map { it.key }.toSet()
+    } }
     var isLoadingMore by remember { mutableStateOf(false) }
     LaunchedEffect(gridState, videos.size) {
         snapshotFlow { gridState.layoutInfo.visibleItemsInfo.lastOrNull()?.index }.map { it ?: 0 }
@@ -623,6 +756,7 @@ fun SearchResultsGrid(
             verticalArrangement = Arrangement.spacedBy(SpacingNormal)
         ) {
             items(videos, key = { it.videoCode }) {
+                Column {
                 VideoCardItem(
                     modifier = Modifier,
                     videoItem = it,
@@ -631,6 +765,8 @@ fun SearchResultsGrid(
                     onClickVideosItem =  onVideoClick,
                     onLongClickVideosItem = {_, _ ->}
                 )
+                ContentTranslationButton(it.title, active = it.videoCode in visibleCodes, maxLines = 3)
+                }
             }
             if (canLoadMore && state is PageLoadingState.Loading) {
                 item(span = { GridItemSpan(maxLineSpan) }) {

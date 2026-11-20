@@ -1,6 +1,6 @@
 name: ⭐ 功能请求
 description: 建议一个新功能来改善 Han1meViewer
-labels: ["enhancement", "good idea"]
+labels: ["enhancement"]
 body:
   - type: textarea
     id: feature-description

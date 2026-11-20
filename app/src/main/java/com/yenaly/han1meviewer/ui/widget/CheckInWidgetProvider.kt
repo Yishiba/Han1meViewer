@@ -33,24 +33,27 @@ class CheckInWidgetProvider : AppWidgetProvider() {
     }
 
     override fun onReceive(context: Context, intent: Intent) {
+        if (com.yenaly.han1meviewer.logic.backup.BackupService.get(context).recoveryRequired.value) return
         super.onReceive(context, intent)
         if (intent.action == ACTION_CHECK_IN) {
             val id = intent.getIntExtra(AppWidgetManager.EXTRA_APPWIDGET_ID, -1)
             if (id != -1) scope.launch {
                 withContext(Dispatchers.IO) {
-                    val dao = CheckInRecordDatabase.getDatabase(context).checkInDao()
-                    val t = LocalDate.now().toString()
-                    val curCount = dao.getCountByDate(t)
-                    if (curCount < 20) {
-                        dao.insert(
-                            CheckInRecordEntity(
-                                date = t,
-                                time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")),
-                                type = CheckInType.MASTURBATION.storeName,
-                                sideDishes = "",
-                                feeling = ""
+                    com.yenaly.han1meviewer.logic.backup.BackupService.get(context).withDownloadAccess {
+                        val dao = CheckInRecordDatabase.getDatabase(context).checkInDao()
+                        val t = LocalDate.now().toString()
+                        val curCount = dao.getCountByDate(t)
+                        if (curCount < 20) {
+                            dao.insert(
+                                CheckInRecordEntity(
+                                    date = t,
+                                    time = LocalTime.now().format(DateTimeFormatter.ofPattern("HH:mm")),
+                                    type = CheckInType.MASTURBATION.storeName,
+                                    sideDishes = "",
+                                    feeling = ""
+                                )
                             )
-                        )
+                        }
                     }
                 }
                 refresh(context, AppWidgetManager.getInstance(context), id)

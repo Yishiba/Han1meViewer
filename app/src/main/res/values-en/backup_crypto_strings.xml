@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_crypto_export">Export backup</string>
+    <string name="backup_crypto_unlock">Unlock backup</string>
+    <string name="backup_crypto_encrypted">Password encryption</string>
+    <string name="backup_crypto_plain">Plain JSON</string>
+    <string name="backup_crypto_password_help">Choose a password of 12–256 characters and keep it safe. This file cannot be recovered if you forget it.</string>
+    <string name="backup_crypto_unlock_help">Enter the password used when exporting this file.</string>
+    <string name="backup_crypto_password">Password</string>
+    <string name="backup_crypto_confirmation">Confirm password</string>
+    <string name="backup_crypto_plain_warning">Plain JSON can be read directly and includes your usage records and settings. Store it only in a trusted location.</string>
+    <string name="backup_crypto_wrong_password">Wrong password or damaged encrypted file. Check and try again.</string>
+    <string name="backup_crypto_restart_export">Export was interrupted. Start the export again.</string>
+    <string name="backup_crypto_disable">Disable copy encryption</string>
+    <string name="backup_crypto_disable_help">New folder copies will be plain JSON. Existing encrypted files still require their original password; existing plain files are not converted.</string>
+    <string name="backup_crypto_scope">Encryption covers exported files and optional folder copies. Local history and recovery snapshots stay in private app storage without password encryption. Existing copies are not converted.</string>
+    <string name="backup_crypto_copy_on">Folder copies: password encrypted</string>
+    <string name="backup_crypto_copy_off">Folder copies: plain JSON</string>
+    <string name="backup_crypto_set_password">Set / change copy password</string>
+    <string name="backup_crypto_copy_help">Choose 12–256 characters. The copy password is encrypted with Android Keystore and kept on this device for future automatic copies. Old files keep their original password. Forgotten passwords cannot be recovered.</string>
+</resources>

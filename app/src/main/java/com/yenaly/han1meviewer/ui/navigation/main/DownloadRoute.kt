@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.ui.navigation.main
 
 import android.util.Log
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -9,14 +10,20 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.dao.DownloadDatabase
 import com.yenaly.han1meviewer.logic.entity.download.HanimeDownloadEntity
 import com.yenaly.han1meviewer.logic.entity.download.VideoWithCategories
+import com.yenaly.han1meviewer.logic.library.AndroidLibraryFileAccess
+import com.yenaly.han1meviewer.logic.library.LibraryRecordActions
 import com.yenaly.han1meviewer.ui.component.ConfirmDialog
 import com.yenaly.han1meviewer.ui.screen.home.DownloadScreen
 import com.yenaly.han1meviewer.ui.screen.home.download.DownloadEvent
+import com.yenaly.han1meviewer.ui.screen.home.download.LibraryOrganizerDialog
+import com.yenaly.han1meviewer.ui.screen.home.download.LibraryInspectionDialog
+import com.yenaly.han1meviewer.ui.screen.home.download.toDisplayGroups
 import com.yenaly.han1meviewer.ui.viewmodel.DownloadViewModel
 import com.yenaly.han1meviewer.util.SafFileManager
 import com.yenaly.han1meviewer.util.SafFileManager.checkSafPermissions
@@ -28,6 +35,7 @@ import com.yenaly.yenaly_libs.utils.showLongToast
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
+import kotlinx.coroutines.CancellationException
 
 @Composable
 fun DownloadRouteScreen(
@@ -37,12 +45,36 @@ fun DownloadRouteScreen(
 ) {
     val context = LocalContext.current
     val viewModel: DownloadViewModel = viewModel()
+    val downloadingFlow = remember(viewModel) { viewModel.loadAllDownloadingHanime() }
+    val collectionCatalog by viewModel.smartCollections.collectAsStateWithLifecycle()
+    val inspection by viewModel.inspection.collectAsStateWithLifecycle()
+    val downloaded by viewModel.downloaded.collectAsStateWithLifecycle()
+    val groups by viewModel.downloadedGroups.collectAsStateWithLifecycle()
     val scope = rememberCoroutineScope()
     val dao = remember { DownloadDatabase.instance.hanimeDownloadDao }
+    val recordActions = remember(context) { LibraryRecordActions(DownloadDatabase.instance, AndroidLibraryFileAccess(context)) {
+        SafFileManager.deleteDownloadedFile(context, it)
+    } }
     var showVideoNotExistConfirm by remember { mutableStateOf<VideoWithCategories?>(null) }
     var showDeleteVideoConfirm by remember { mutableStateOf<VideoWithCategories?>(null) }
     var showImportDownloadedConfirm by remember { mutableStateOf(false) }
     var isImportingDownloaded by remember { mutableStateOf(false) }
+    var showOrganizer by remember { mutableStateOf(false) }
+    var showInspection by remember { mutableStateOf(false) }
+    LaunchedEffect(downloaded) { viewModel.invalidateInspection(downloaded) }
+
+    fun deleteSelected(videos: List<VideoWithCategories>) {
+        scope.launch {
+            val succeeded = withContext(Dispatchers.IO) {
+                videos.map { item ->
+                    try { recordActions.deleteFile(item.video) }
+                    catch (cancelled: CancellationException) { throw cancelled }
+                    catch (_: Exception) { false }
+                }.all { it }
+            }
+            if (!succeeded) showLongToast(context.getString(R.string.library_delete_file_error))
+        }
+    }
 
     val handleEvent: (DownloadEvent) -> Unit = { event ->
         when (event) {
@@ -79,9 +111,7 @@ fun DownloadRouteScreen(
 
             is DownloadEvent.OnDeleteDownloadedVideo -> showDeleteVideoConfirm = event.video
 
-            is DownloadEvent.OnMoveVideoGroup -> viewModel.updateVideoGroup(
-                event.video.video.videoCode, event.groupId
-            )
+            is DownloadEvent.OnMoveVideoGroup -> viewModel.updateDownloadHanime(event.video.video.copy(groupId = event.groupId))
 
             is DownloadEvent.OnRenameGroup -> {
                 viewModel.updateGroupName(event.groupId, event.newName)
@@ -102,13 +132,10 @@ fun DownloadRouteScreen(
                 showLongToast(application.getString(R.string.delete_success))
             }
 
-            is DownloadEvent.OnBatchDelete -> event.videos.forEach { video ->
-                viewModel.deleteDownloadHanimeBy(video.video.videoCode, video.video.quality)
-                SafFileManager.deleteDownloadVideoFolder(context, video.video.videoCode)
-            }
+            is DownloadEvent.OnBatchDelete -> deleteSelected(event.videos)
 
             is DownloadEvent.OnBatchMoveGroup -> event.videos.forEach { video ->
-                viewModel.updateVideoGroup(video.video.videoCode, event.groupId)
+                viewModel.updateDownloadHanime(video.video.copy(groupId = event.groupId))
             }
 
             // 以下事件由 Screen 层自行处理，Route 不关心
@@ -123,7 +150,7 @@ fun DownloadRouteScreen(
     }
 
     DownloadScreen(
-        downloadingFlow = viewModel.loadAllDownloadingHanime(),
+        downloadingFlow = downloadingFlow,
         downloadedFlow = viewModel.downloaded,
         downloadedGroupsFlow = viewModel.downloadedGroups,
         collapseDownloadedGroup = Preferences.collapseDownloadedGroup,
@@ -135,6 +162,25 @@ fun DownloadRouteScreen(
             )
         },
         onEvent = handleEvent,
+        collectionCatalog = collectionCatalog,
+        onSaveCollection = viewModel::saveCollection,
+        onDeleteCollection = viewModel::deleteCollection,
+        onOpenOrganizer = { showOrganizer = true },
+        onOpenInspection = { showInspection = true },
+    )
+
+    if (showOrganizer) LibraryOrganizerDialog(
+        catalog = collectionCatalog, groups = groups.toDisplayGroups(),
+        onDismiss = { showOrganizer = false }, onSave = viewModel::saveCollection,
+        onMove = viewModel::moveCollection, onPreview = viewModel::previewOrganization,
+        onApply = viewModel::applyOrganization,
+    )
+    if (showInspection) LibraryInspectionDialog(
+        state = inspection, onStart = viewModel::startInspection, onCancel = viewModel::cancelInspection,
+        onDismiss = { viewModel.cancelInspection(); showInspection = false },
+        onPlay = { showInspection = false; onNavigateToLocalVideo(it.videoCode, it.videoUri) },
+        onDelete = { showInspection = false; showDeleteVideoConfirm = VideoWithCategories(it, emptyList()) },
+        onRemoveMissing = viewModel::removeMissingRecord,
     )
 
     ConfirmDialog(
@@ -195,8 +241,7 @@ fun DownloadRouteScreen(
             confirmText = application.getString(R.string.confirm),
             dismissText = application.getString(R.string.cancel),
             onConfirm = {
-                SafFileManager.deleteDownloadVideoFolder(context, video.video.videoCode)
-                viewModel.deleteDownloadHanimeBy(video.video.videoCode, video.video.quality)
+                deleteSelected(listOf(video))
                 showDeleteVideoConfirm = null
             },
             onDismiss = { showDeleteVideoConfirm = null },

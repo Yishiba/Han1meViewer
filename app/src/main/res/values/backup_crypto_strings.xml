@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="backup_crypto_export">匯出備份</string>
+    <string name="backup_crypto_unlock">解鎖備份</string>
+    <string name="backup_crypto_encrypted">密碼加密</string>
+    <string name="backup_crypto_plain">一般 JSON</string>
+    <string name="backup_crypto_password_help">設定 12–256 個字元的密碼並妥善保存。忘記密碼無法還原此檔案。</string>
+    <string name="backup_crypto_unlock_help">輸入匯出此檔案時設定的密碼。</string>
+    <string name="backup_crypto_password">密碼</string>
+    <string name="backup_crypto_confirmation">再次輸入密碼</string>
+    <string name="backup_crypto_plain_warning">一般 JSON 可被直接讀取，包含使用紀錄及設定。請僅儲存在可信位置。</string>
+    <string name="backup_crypto_wrong_password">密碼錯誤或加密檔案已損壞，請檢查後重試。</string>
+    <string name="backup_crypto_restart_export">匯出流程已中斷，請重新選擇匯出。</string>
+    <string name="backup_crypto_disable">關閉副本加密</string>
+    <string name="backup_crypto_disable_help">關閉後新產生的資料夾副本將是一般 JSON。既有加密檔案仍需要原密碼，既有一般檔案不會轉換。</string>
+    <string name="backup_crypto_scope">加密適用於匯出檔案及選用的資料夾副本。本機歷史及還原保護版本位於應用程式私人目錄，不使用此密碼加密。既有副本不會自動轉換。</string>
+    <string name="backup_crypto_copy_on">資料夾副本：密碼加密</string>
+    <string name="backup_crypto_copy_off">資料夾副本：一般 JSON</string>
+    <string name="backup_crypto_set_password">設定／更換副本密碼</string>
+    <string name="backup_crypto_copy_help">設定 12–256 個字元的密碼。副本密碼將由 Android Keystore 加密儲存在本機，用於今後的自動副本。舊檔案仍使用原密碼；忘記密碼無法還原。</string>
+</resources>

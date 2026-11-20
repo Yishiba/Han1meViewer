@@ -22,6 +22,7 @@ data class DownloadUiState(
     val showCreateGroupDialog: Boolean = false,
     val multiSelectMode: Boolean = false,
     val selectedVideoIds: Set<Int> = emptySet(),
+    val libraryFiltered: Boolean = false,
 )
 
 /**

@@ -6,6 +6,9 @@ import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.derivedStateOf
+import androidx.compose.runtime.getValue
+import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -43,7 +46,11 @@ fun HomePageContent(
     val categories = remember(data.page) {
         buildCategoryList(data.page)
     }
-    LazyColumn(modifier = modifier.fillMaxSize()) {
+    val listState = rememberLazyListState()
+    val visibleSections by remember(listState) { derivedStateOf {
+        listState.layoutInfo.visibleItemsInfo.map { it.key }.toSet()
+    } }
+    LazyColumn(modifier = modifier.fillMaxSize(), state = listState) {
         item(key = "banner") {
             BannerCarousel(
                 banners = banners,
@@ -52,7 +59,8 @@ fun HomePageContent(
                         onEvent(HomeUiEvent.OpenVideo(it))
                     }
                 },
-                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp)
+                modifier = Modifier.padding(horizontal = 12.dp, vertical = 6.dp),
+                autoTranslationActive = "banner" in visibleSections,
             )
         }
         if (announcements.isNotEmpty()) {
@@ -84,7 +92,8 @@ fun HomePageContent(
                     onVideoLongClick = { _, _ ->
                        // onEvent(HomeUiEvent.LongPressVideoCopy(code, title))
                     },
-                    modifier = Modifier.padding(vertical = 4.dp)
+                    modifier = Modifier.padding(vertical = 4.dp),
+                    autoTranslationActive = "category_${category.titleRes}" in visibleSections,
                 )
             }
         }

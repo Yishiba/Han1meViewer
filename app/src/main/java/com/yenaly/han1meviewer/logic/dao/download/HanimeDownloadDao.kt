@@ -30,6 +30,15 @@ abstract class HanimeDownloadDao {
     @Query("SELECT * FROM HanimeDownloadEntity ORDER BY id ASC")
     abstract suspend fun getAll(): List<HanimeDownloadEntity>
 
+    @Query("SELECT * FROM HanimeDownloadEntity WHERE id = :id")
+    abstract suspend fun findById(id: Int): HanimeDownloadEntity?
+
+    @Query("UPDATE HanimeDownloadEntity SET coverUri = :uri WHERE id = :id")
+    abstract suspend fun updateCoverUri(id: Int, uri: String)
+
+    @Query("UPDATE HanimeDownloadEntity SET groupId = :target WHERE id = :id AND groupId = :expectedGroup AND state = ${DownloadState.Mask.FINISHED}")
+    abstract suspend fun moveFinished(id: Int, expectedGroup: Int, target: Int): Int
+
     /**
      * 获取所有正在下载的任务，单次
      */
