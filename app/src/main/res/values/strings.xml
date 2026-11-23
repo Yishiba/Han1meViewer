@@ -1025,4 +1025,15 @@
     <string name="library_check_play">播放核對</string>
     <string name="library_remove_missing">移除失效記錄</string>
     <string name="library_remove_missing_help">只移除此筆下載記錄，不刪除檔案。操作前會再次確認檔案仍然遺失；權限問題不會移除記錄。</string>
+    <string name="download_high_performance">高效能下載（試用）</string>
+    <string name="download_high_performance_summary">預設關閉。大檔案在私人儲存空間且未限速時，分段連線由 2 路增至 4 路；不保證更快，可能增加耗電。暫不收費。</string>
+    <string name="download_performance_heading">最近完成的下載任務</string>
+    <string name="download_performance_standard">一般模式：%1$s</string>
+    <string name="download_performance_enhanced">高效能模式：%1$s</string>
+    <string name="download_performance_note">顯示有效速度，包含寫入與等待；不同檔案和網路不可直接比較。只存本機數值，不存網址或標題。</string>
+    <string name="download_performance_no_sample">尚無記錄</string>
+    <string name="download_performance_sample">%1$.2f MiB/s，%2$d 路連線</string>
+    <string name="network_last_home_trace">最近首頁網路耗時</string>
+    <string name="network_last_home_trace_summary">查看 DNS、連線、TLS、回應階段的本機記錄</string>
+    <string name="network_no_home_trace">本次啟動尚無首頁請求記錄</string>
 </resources>

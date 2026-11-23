@@ -971,4 +971,15 @@ Recommendations are as follows:\n
     <string name="library_check_play">Play to review</string>
     <string name="library_remove_missing">Remove missing record</string>
     <string name="library_remove_missing_help">Only this download record will be removed, not a file. Missing status is checked again; access problems never authorize record removal.</string>
+    <string name="download_high_performance">High performance downloads (preview)</string>
+    <string name="download_high_performance_summary">Off by default. For large files in private storage without a speed limit, increases ranged connections from 2 to 4. May use more power and is not guaranteed to be faster. Free during preview.</string>
+    <string name="download_performance_heading">Last completed download</string>
+    <string name="download_performance_standard">Standard: %1$s</string>
+    <string name="download_performance_enhanced">High performance: %1$s</string>
+    <string name="download_performance_note">Effective speed includes writes and waits. Different files and networks are not directly comparable. Only numbers are stored locally, never URLs or titles.</string>
+    <string name="download_performance_no_sample">No sample yet</string>
+    <string name="download_performance_sample">%1$.2f MiB/s, %2$d connections</string>
+    <string name="network_last_home_trace">Last home network trace</string>
+    <string name="network_last_home_trace_summary">View local DNS, connection, TLS and response timings</string>
+    <string name="network_no_home_trace">No home request in this app session yet</string>
 </resources>

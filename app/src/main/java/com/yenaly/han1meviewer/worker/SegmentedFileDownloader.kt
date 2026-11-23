@@ -23,12 +23,17 @@ internal class SegmentRangeUnsupportedException : IOException("Bounded range uns
 /** Writes disjoint HTTP ranges into an already allocated private file. */
 internal class SegmentedFileDownloader(
     private val client: OkHttpClient,
-    private val fetch: suspend (Request) -> okhttp3.Response = { client.newCall(it).await() }
+    private val fetch: suspend (Request) -> okhttp3.Response = { client.newCall(it).await() },
+    private val connections: Int = 2,
 ) {
     companion object {
         const val MIN_REMAINING_BYTES = 16L * 1024 * 1024
         private const val BUFFER_SIZE = 64 * 1024
         private val connectionSlots = Semaphore(4)
+    }
+
+    init {
+        require(connections in 2..4)
     }
 
     private data class Part(val start: Long, val end: Long) {
@@ -44,8 +49,13 @@ internal class SegmentedFileDownloader(
         onCheckpoint: suspend (prefix: Long, received: Long) -> Unit
     ) = supervisorScope {
         require(start in 0 until total)
-        val firstEnd = start + (total - start) / 2 - 1
-        val parts = listOf(Part(start, firstEnd), Part(firstEnd + 1, total - 1))
+        val remaining = total - start
+        require(remaining >= connections)
+        var nextStart = start
+        val parts = List(connections) { index ->
+            val length = remaining / connections + if (index < remaining % connections) 1 else 0
+            Part(nextStart, nextStart + length - 1).also { nextStart += length }
+        }
         val written = AtomicLongArray(parts.size)
         val checkpointLock = Mutex()
 

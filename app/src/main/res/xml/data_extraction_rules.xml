@@ -12,6 +12,7 @@
         <exclude domain="sharedpref" path="content_translation_cache.xml"/>
         <exclude domain="sharedpref" path="auto_translation_device.xml"/>
         <exclude domain="sharedpref" path="trial_research_device.xml"/>
+        <exclude domain="sharedpref" path="download_performance_samples.xml"/>
         <!-- TODO: Use <include> and <exclude> to control what is backed up.
         <include .../>
         <exclude .../>
@@ -25,6 +26,7 @@
         <exclude domain="sharedpref" path="content_translation_cache.xml"/>
         <exclude domain="sharedpref" path="auto_translation_device.xml"/>
         <exclude domain="sharedpref" path="trial_research_device.xml"/>
+        <exclude domain="sharedpref" path="download_performance_samples.xml"/>
     </device-transfer>
     <!--
     <device-transfer>

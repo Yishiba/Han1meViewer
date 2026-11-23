@@ -36,6 +36,7 @@ import com.yenaly.han1meviewer.util.SafFileManager
 import com.yenaly.han1meviewer.util.SafFileManager.KEY_TREE_URI
 import com.yenaly.han1meviewer.util.showToast
 import com.yenaly.han1meviewer.worker.HanimeDownloadManagerV2
+import com.yenaly.han1meviewer.worker.DownloadPerformanceStats
 
 private const val DOWNLOAD_COUNT_LIMIT = "download_count_limit"
 private const val DOWNLOAD_SPEED_LIMIT = "download_speed_limit"
@@ -121,6 +122,12 @@ fun DownloadSettingsRouteScreen(
             )
             refreshKey++
         },
+        onHighPerformanceDownloadChange = { value ->
+            Preferences.preferenceSp.edit {
+                putBoolean(SettingsPreferenceKeys.HIGH_PERFORMANCE_DOWNLOAD, value)
+            }
+            refreshKey++
+        },
     )
 
     if (!Preferences.isUsePrivateStorage) {
@@ -200,6 +207,9 @@ private fun buildDownloadSettingsUiState(context: Context): DownloadSettingsUiSt
                         SpeedLimitInterceptor.NO_LIMIT_INDEX,
                     )
                 ].toDownloadSpeedPrettyString(context),
+                highPerformanceDownload = Preferences.highPerformanceDownload,
+                standardSample = downloadSampleSummary(context, enhanced = false),
+                enhancedSample = downloadSampleSummary(context, enhanced = true),
             )
         )?.name ?: uri.toString()
     }
@@ -217,5 +227,18 @@ private fun buildDownloadSettingsUiState(context: Context): DownloadSettingsUiSt
         downloadSpeedLimitIndex = speedIndex,
         downloadSpeedLimitSummary = SpeedLimitInterceptor.SPEED_BYTES[speedIndex]
             .toDownloadSpeedPrettyString(context),
+        highPerformanceDownload = Preferences.highPerformanceDownload,
+        standardSample = downloadSampleSummary(context, enhanced = false),
+        enhancedSample = downloadSampleSummary(context, enhanced = true),
+    )
+}
+
+private fun downloadSampleSummary(context: Context, enhanced: Boolean): String {
+    val sample = DownloadPerformanceStats.latest(context, enhanced)
+        ?: return context.getString(R.string.download_performance_no_sample)
+    return context.getString(
+        R.string.download_performance_sample,
+        sample.mebibytesPerSecond,
+        sample.connections,
     )
 }

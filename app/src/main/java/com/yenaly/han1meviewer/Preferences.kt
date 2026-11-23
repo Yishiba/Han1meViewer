@@ -390,4 +390,7 @@ object Preferences {
             )
             return SpeedLimitInterceptor.SPEED_BYTES[index]
         }
+
+    val highPerformanceDownload: Boolean
+        get() = preferenceSp.getBoolean(SettingsPreferenceKeys.HIGH_PERFORMANCE_DOWNLOAD, false)
 }

@@ -25,6 +25,7 @@ import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.Parser
 import com.yenaly.han1meviewer.logic.network.DohConfig
 import com.yenaly.han1meviewer.logic.network.HDns
+import com.yenaly.han1meviewer.logic.network.HomeNetworkDiagnostics
 import com.yenaly.han1meviewer.logic.network.HProxySelector
 import com.yenaly.han1meviewer.logic.network.HanimeNetwork
 import com.yenaly.han1meviewer.logic.network.ServiceCreator
@@ -189,6 +190,7 @@ fun NetworkSettingsRouteScreen() {
         dohTestResults = dohTestResults,
         isDelayTesting = isDelayTesting,
         isDohTesting = isDohTesting,
+        lastHomeTrace = HomeNetworkDiagnostics.latestReport(),
         proxyType = Preferences.proxyType,
         proxyIp = Preferences.proxyIp,
         proxyPort = Preferences.proxyPort,

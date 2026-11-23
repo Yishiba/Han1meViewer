@@ -53,6 +53,7 @@ object SettingsPreferenceKeys {
     const val PROXY_PORT = "proxy_port"
     const val DOWNLOAD_COUNT_LIMIT = "download_count_limit"
     const val DOWNLOAD_SPEED_LIMIT = "download_speed_limit"
+    const val HIGH_PERFORMANCE_DOWNLOAD = "high_performance_download"
     const val USE_PRIVATE_STORAGE = "use_private_storage"
     const val WHEN_COUNTDOWN_REMIND = "when_countdown_remind"
     const val SHOW_COMMENT_WHEN_COUNTDOWN = "show_comment_when_countdown"

@@ -90,6 +90,7 @@ fun NetworkSettingsScreen(
     dohTimeoutSeconds: Int,
     dohTestResults: List<DohTestResultUi>,
     isDohTesting: Boolean,
+    lastHomeTrace: String,
     useCustomMirrorSite: Boolean,
     customMirrorSite: String,
     appendCustomMirrorPath: Boolean,
@@ -113,6 +114,7 @@ fun NetworkSettingsScreen(
     var showDohDialog by rememberSaveable { mutableStateOf(false) }
     var showCustomHostsDialog by rememberSaveable { mutableStateOf(false) }
     var showCustomMirrorSiteDialog by rememberSaveable { mutableStateOf(false) }
+    var showHomeTrace by rememberSaveable { mutableStateOf(false) }
 
     if (showDomainDialog) {
         NetworkChoiceDialog(
@@ -198,6 +200,24 @@ fun NetworkSettingsScreen(
         )
     }
 
+    if (showHomeTrace) {
+        AlertDialog(
+            onDismissRequest = { showHomeTrace = false },
+            title = { Text(stringResource(R.string.network_last_home_trace)) },
+            text = {
+                Text(
+                    lastHomeTrace.ifBlank { stringResource(R.string.network_no_home_trace) },
+                    modifier = Modifier.heightIn(max = 420.dp).verticalScroll(rememberScrollState()),
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { showHomeTrace = false }) {
+                    Text(stringResource(R.string.close))
+                }
+            },
+        )
+    }
+
     LazyColumn(
         modifier = Modifier.fillMaxSize(),
         contentPadding = PaddingValues(vertical = 8.dp),
@@ -261,6 +281,15 @@ fun NetworkSettingsScreen(
         }
 
         item { NetworkGroupTitle(stringResource(R.string.debug)) }
+
+        item {
+            SettingNavigationItem(
+                title = stringResource(R.string.network_last_home_trace),
+                summary = stringResource(R.string.network_last_home_trace_summary),
+                iconRes = R.drawable.baseline_delay_24,
+                onClick = { showHomeTrace = true },
+            )
+        }
 
         item {
             SettingNavigationItem(
@@ -804,6 +833,7 @@ private fun NetworkSettingsScreenPreview() {
             ),
             isDelayTesting = false,
             isDohTesting = false,
+            lastHomeTrace = "",
             useCustomMirrorSite = false,
             customMirrorSite = "",
             appendCustomMirrorPath = true,

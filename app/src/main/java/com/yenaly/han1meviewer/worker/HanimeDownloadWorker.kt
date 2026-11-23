@@ -6,6 +6,7 @@ import android.content.Context
 import android.content.pm.ServiceInfo
 import android.os.ParcelFileDescriptor
 import android.os.Build
+import android.os.SystemClock
 import android.util.Log
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
@@ -358,6 +359,10 @@ class HanimeDownloadWorker(
                 workDataOf(DownloadState.STATE to DownloadState.Failed.mask)
             )
             var shouldRetry = false
+            val enhancedDownload = Preferences.highPerformanceDownload
+            val transferStartLength = downloadedLength
+            val transferStartMs = SystemClock.elapsedRealtime()
+            var completedSegmentConnections = 1
 
             try {
                 if (safUri != null) {
@@ -383,7 +388,10 @@ class HanimeDownloadWorker(
                     Preferences.downloadSpeedLimit == 0L
                 ) {
                     try {
-                        SegmentedFileDownloader(ServiceCreator.downloadClient).download(
+                        SegmentedFileDownloader(
+                            ServiceCreator.downloadClient,
+                            connections = if (enhancedDownload) 4 else 2,
+                        ).download(
                             downloadUrl, privateFile, downloadedLength, entity.length
                         ) { prefix, received ->
                             downloadedLength = prefix
@@ -394,6 +402,7 @@ class HanimeDownloadWorker(
                                 entity.copy(downloadedLength = prefix, state = DownloadState.Downloading)
                             )
                         }
+                        completedSegmentConnections = if (enhancedDownload) 4 else 2
                     } catch (e: SegmentRangeUnsupportedException) {
                         Log.i(TAG, "Bounded ranges unavailable; continuing single connection: $videoCode")
                     }
@@ -535,6 +544,13 @@ class HanimeDownloadWorker(
                         if (state == DownloadState.Finished && !shouldRetry) {
                             DownloadAutoOrganizer(DownloadDatabase.instance, Preferences.preferenceSp)
                                 .complete(entity.id, downloadedLength)
+                            DownloadPerformanceStats.record(
+                                context = context,
+                                enhanced = enhancedDownload,
+                                bytes = downloadedLength - transferStartLength,
+                                durationMillis = SystemClock.elapsedRealtime() - transferStartMs,
+                                connections = completedSegmentConnections,
+                            )
                         } else DatabaseRepo.HanimeDownload.update(
                             entity.copy(
                                 state = if (shouldRetry) DownloadState.Queued else state,

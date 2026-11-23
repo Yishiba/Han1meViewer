@@ -26,6 +26,7 @@ internal object HomeNetworkDiagnostics : EventListener.Factory {
     private var dnsMode = ""
     private var proxyMode = ""
     private var active = false
+    private var lastCompletedReport = ""
 
     fun begin(url: String): Long = synchronized(lock) {
         attemptId++
@@ -52,14 +53,18 @@ internal object HomeNetworkDiagnostics : EventListener.Factory {
     fun finish(id: Long, error: Throwable?): String = synchronized(lock) {
         if (id != attemptId) return@synchronized ""
         if (error != null) appendLocked(id, "Error ${error.javaClass.simpleName}")
+        appendLocked(id, if (error == null) "Home complete" else "Home failed")
         active = false
-        buildString {
+        lastCompletedReport = buildString {
             append("App ").append(BuildConfig.VERSION_NAME).append('\n')
             append("Host ").append(targetHost.ifEmpty { "unknown" }).append('\n')
             append("DNS ").append(dnsMode).append(" | Proxy ").append(proxyMode)
             events.forEach { append('\n').append(it) }
         }
+        lastCompletedReport
     }
+
+    fun latestReport(): String = synchronized(lock) { lastCompletedReport }
 
     fun noteDns(host: String, event: String) = synchronized(lock) {
         if (active && host == targetHost) appendLocked(attemptId, event)

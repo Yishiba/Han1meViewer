@@ -976,4 +976,15 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="library_check_play">再生して確認</string>
     <string name="library_remove_missing">欠落した記録を削除</string>
     <string name="library_remove_missing_help">ファイルを削除せず、この記録だけを削除します。欠落を再確認し、権限の問題では記録を削除しません。</string>
+    <string name="download_high_performance">高速ダウンロード（試用）</string>
+    <string name="download_high_performance_summary">初期設定はオフです。速度制限なしでアプリ内保存の大きなファイルは、分割接続を2本から4本に増やします。高速化は保証されず、電力消費が増える場合があります。試用中は無料です。</string>
+    <string name="download_performance_heading">直近の完了したダウンロード</string>
+    <string name="download_performance_standard">通常モード：%1$s</string>
+    <string name="download_performance_enhanced">高速モード：%1$s</string>
+    <string name="download_performance_note">書き込みと待機を含む実効速度です。異なるファイルや回線は直接比較できません。数値のみ端末内に保存し、URLやタイトルは保存しません。</string>
+    <string name="download_performance_no_sample">記録なし</string>
+    <string name="download_performance_sample">%1$.2f MiB/s、%2$d 接続</string>
+    <string name="network_last_home_trace">直近のホーム通信時間</string>
+    <string name="network_last_home_trace_summary">DNS、接続、TLS、応答の端末内記録を表示</string>
+    <string name="network_no_home_trace">この起動中のホーム通信記録はありません</string>
 </resources>

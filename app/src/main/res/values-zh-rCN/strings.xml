@@ -976,4 +976,15 @@
     <string name="library_check_play">播放核对</string>
     <string name="library_remove_missing">移除失效记录</string>
     <string name="library_remove_missing_help">只移除这一条下载记录，不删除文件。操作前会再次检查文件是否仍然缺失；权限问题不会移除记录。</string>
+    <string name="download_high_performance">高性能下载（试用）</string>
+    <string name="download_high_performance_summary">默认关闭。大文件保存在应用私有目录且未限速时，分段连接由 2 路增至 4 路；不保证更快，可能增加耗电。暂不收费。</string>
+    <string name="download_performance_heading">最近完成的下载任务</string>
+    <string name="download_performance_standard">普通模式：%1$s</string>
+    <string name="download_performance_enhanced">高性能模式：%1$s</string>
+    <string name="download_performance_note">显示有效速度，包含写盘和等待；不同文件、网络不能直接比较。只在本机保存数值，不存网址或标题。</string>
+    <string name="download_performance_no_sample">暂无记录</string>
+    <string name="download_performance_sample">%1$.2f MiB/s，%2$d 路连接</string>
+    <string name="network_last_home_trace">最近首页网络耗时</string>
+    <string name="network_last_home_trace_summary">查看 DNS、连接、TLS、响应阶段的本机记录</string>
+    <string name="network_no_home_trace">本次启动尚无首页请求记录</string>
 </resources>
