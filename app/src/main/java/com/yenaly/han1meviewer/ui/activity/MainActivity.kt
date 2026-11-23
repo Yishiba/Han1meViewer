@@ -124,10 +124,8 @@ class MainActivity : FrameActivity(), PermissionRequester {
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-            installSplashScreen().apply {
-                setKeepOnScreenCondition { !hasAuthenticated }
-            }
+        installSplashScreen().apply {
+            setKeepOnScreenCondition { !hasAuthenticated }
         }
         enableEdgeToEdge()
         super.onCreate(savedInstanceState)
