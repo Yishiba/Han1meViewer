@@ -347,12 +347,19 @@ private fun VideoIntroductionContent(
         ),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        video.artist?.let { artist ->
-            item(key = "artist") {
-                ArtistSection(
-                    artist = artist,
-                    onOpenArtist = { onOpenArtist(artist) },
-                    onToggleSubscribe = { onToggleSubscribe(artist) },
+        if (!fromDownload) {
+            item(key = "actions") {
+                ActionSection(
+                    isFav = video.isFav,
+                    hasOriginalComic = !video.originalComic.isNullOrBlank(),
+                    onQuickCheckIn = { showQuickCheckInDialog = true },
+                    onOpenOriginalComic = onOpenOriginalComic,
+                    onToggleFavorite = onToggleFavorite,
+                    onManageMyList = { showMyListDialog = true },
+                    onDownload = { showDownloadQualityDialog = true },
+                    onShare = onShare,
+                    onCopyShareText = onCopyShareText,
+                    onOpenWebPage = onOpenWebPage,
                 )
             }
         }
@@ -370,6 +377,16 @@ private fun VideoIntroductionContent(
             )
         }
 
+        video.artist?.let { artist ->
+            item(key = "artist") {
+                ArtistSection(
+                    artist = artist,
+                    onOpenArtist = { onOpenArtist(artist) },
+                    onToggleSubscribe = { onToggleSubscribe(artist) },
+                )
+            }
+        }
+
         item(key = "intro") {
             Column {
             ExpandableIntroductionSection(
@@ -379,23 +396,6 @@ private fun VideoIntroductionContent(
             com.yenaly.han1meviewer.ui.screen.search.ContentTranslationButton(
                 org.jsoup.Jsoup.parse(video.introduction.orEmpty()).text(),
                 active = listState.layoutInfo.visibleItemsInfo.any { it.key == "intro" })
-            }
-        }
-
-        if (!fromDownload) {
-            item(key = "actions") {
-                ActionSection(
-                    isFav = video.isFav,
-                    hasOriginalComic = !video.originalComic.isNullOrBlank(),
-                    onQuickCheckIn = { showQuickCheckInDialog = true },
-                    onOpenOriginalComic = onOpenOriginalComic,
-                    onToggleFavorite = onToggleFavorite,
-                    onManageMyList = { showMyListDialog = true },
-                    onDownload = { showDownloadQualityDialog = true },
-                    onShare = onShare,
-                    onCopyShareText = onCopyShareText,
-                    onOpenWebPage = onOpenWebPage,
-                )
             }
         }
 
@@ -1106,6 +1106,11 @@ private fun ActionSection(
         horizontalArrangement = Arrangement.spacedBy(8.dp),
     ) {
         VideoActionButton(
+            iconRes = R.drawable.ic_baseline_download_24,
+            label = stringResource(R.string.download),
+            onClick = onDownload,
+        )
+        VideoActionButton(
             iconRes = R.drawable.ic_baseline_check_circle_24,
             label = stringResource(R.string.quick_checkin),
             onClick = onQuickCheckIn,
@@ -1126,11 +1131,6 @@ private fun ActionSection(
             iconRes = R.drawable.baseline_format_list_bulleted_24,
             label = stringResource(R.string.add_to_playlist),
             onClick = onManageMyList,
-        )
-        VideoActionButton(
-            iconRes = R.drawable.ic_baseline_download_24,
-            label = stringResource(R.string.download),
-            onClick = onDownload,
         )
         VideoActionButton(
             iconRes = R.drawable.ic_baseline_share_24,
