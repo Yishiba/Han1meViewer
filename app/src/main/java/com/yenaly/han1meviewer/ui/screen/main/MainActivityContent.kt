@@ -2,18 +2,12 @@ package com.yenaly.han1meviewer.ui.screen.main
 
 import android.content.Intent
 import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
-import androidx.compose.animation.EnterTransition
-import androidx.compose.animation.core.tween
-import androidx.compose.animation.fadeOut
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.DrawerValue
 import androidx.compose.material3.rememberDrawerState
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -23,9 +17,6 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
-import androidx.core.view.WindowInsetsControllerCompat
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -52,7 +43,6 @@ import com.yenaly.han1meviewer.util.requestPostNotificationPermission
 import com.yenaly.han1meviewer.worker.HUpdateWorker
 import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
 
@@ -81,7 +71,6 @@ fun MainActivityContent(
         var showOnboarding by rememberSaveable {
             mutableStateOf(Preferences.onboardingPending && !Preferences.onboardingCompleted)
         }
-        var minimumLaunchArtVisible by rememberSaveable { mutableStateOf(true) }
         val isDrawerOpen =
             drawerState.currentValue == DrawerValue.Open || drawerState.targetValue == DrawerValue.Open
 
@@ -103,13 +92,6 @@ fun MainActivityContent(
         }
         val headerIsLoading = isLoggedIn && homeState is PageState.Loading
         val selectedDrawerDestination = currentMainDestination.drawerDestination
-
-        LaunchedEffect(minimumLaunchArtVisible) {
-            if (minimumLaunchArtVisible) {
-                delay(700)
-                minimumLaunchArtVisible = false
-            }
-        }
 
         LaunchedEffect(composeNavController) {
             onNavigateControllerReady(composeNavController)
@@ -229,38 +211,7 @@ fun MainActivityContent(
                         showOnboarding = false
                     })
                 }
-                AnimatedVisibility(
-                    visible = (homeState is PageState.Loading || minimumLaunchArtVisible) &&
-                        currentMainDestination == MainDestinationSpec.Home &&
-                        !showAuthGuard && !showUsageNotice && !showOnboarding && pendingUpdate == null,
-                    modifier = Modifier.fillMaxSize(),
-                    enter = EnterTransition.None,
-                    exit = fadeOut(animationSpec = tween(220)),
-                ) {
-                    FullScreenLaunchArt(activity)
-                }
             }
         }
     }
-}
-
-@Composable
-private fun FullScreenLaunchArt(activity: MainActivity) {
-    DisposableEffect(activity) {
-        val bars = WindowInsetsControllerCompat(activity.window, activity.window.decorView)
-        val previousLightStatusBars = bars.isAppearanceLightStatusBars
-        val previousLightNavigationBars = bars.isAppearanceLightNavigationBars
-        bars.isAppearanceLightStatusBars = false
-        bars.isAppearanceLightNavigationBars = false
-        onDispose {
-            bars.isAppearanceLightStatusBars = previousLightStatusBars
-            bars.isAppearanceLightNavigationBars = previousLightNavigationBars
-        }
-    }
-    Image(
-        painter = painterResource(R.drawable.han1me_launch_art),
-        contentDescription = null,
-        contentScale = ContentScale.Crop,
-        modifier = Modifier.fillMaxSize(),
-    )
 }

@@ -103,11 +103,11 @@
         <!-- 背景颜色 -->
         <item name="windowSplashScreenBackground">@color/han1me_icon_background</item>
 
-        <!-- Android 12+ 系统启动画面无法显示全屏插画；隐藏居中图标以平滑过渡到应用内全屏画面 -->
-        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_no_icon</item>
+        <!-- 系统启动画面显示应用图标 -->
+        <item name="windowSplashScreenAnimatedIcon">@mipmap/ic_launcher_han1me_client</item>
 
         <!-- 图标缩放动画持续时间 -->
-        <item name="windowSplashScreenAnimationDuration">0</item>
+        <item name="windowSplashScreenAnimationDuration">500</item>
 
         <!-- 是否保留主题背景直到 Activity 绘制完成 -->
         <item name="postSplashScreenTheme">@style/Theme.Hanime</item>
