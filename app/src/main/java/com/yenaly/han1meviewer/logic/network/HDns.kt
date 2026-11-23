@@ -146,6 +146,7 @@ class HDns : Dns {
                 OkHttpClient.Builder()
                     .connectTimeout(FALLBACK_DOH_TIMEOUT, TimeUnit.SECONDS)
                     .readTimeout(FALLBACK_DOH_TIMEOUT, TimeUnit.SECONDS)
+                    .callTimeout(FALLBACK_DOH_TIMEOUT, TimeUnit.SECONDS)
                     .build()
             )
             .url(FALLBACK_DOH_URL.toHttpUrl())
@@ -191,6 +192,7 @@ class HDns : Dns {
             val client = OkHttpClient.Builder()
                 .connectTimeout(config.timeoutSeconds.toLong(), TimeUnit.SECONDS)
                 .readTimeout(config.timeoutSeconds.toLong(), TimeUnit.SECONDS)
+                .callTimeout(config.timeoutSeconds.toLong(), TimeUnit.SECONDS)
                 .build()
             val bootstrapHosts = config.bootstrapIps.mapNotNull { ip ->
                 runCatching { InetAddress.getByName(ip) }.getOrNull()

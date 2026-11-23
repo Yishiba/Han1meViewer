@@ -140,12 +140,12 @@ fun HomePageScreen(
 
                     if (homeData != null) {
                         AnimatedContent(
-                            targetState = homeData,
+                            targetState = homeData.page,
                             transitionSpec = { fadeIn(tween(300)) togetherWith fadeOut(tween(200)) },
                             label = "HomeContentAnimation"
-                        ) { data ->
+                        ) { page ->
                             HomePageContent(
-                                data = data,
+                                data = HomeData(page = page, announcements = homeData.announcements),
                                 onEvent = onEvent,
                                 onCloseAnnouncement = viewModel::dismissAnnouncements,
                             )

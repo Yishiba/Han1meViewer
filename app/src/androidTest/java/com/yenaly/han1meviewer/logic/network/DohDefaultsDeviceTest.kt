@@ -14,6 +14,7 @@ class DohDefaultsDeviceTest {
         SettingsPreferenceKeys.DOH_PRESET,
         SettingsPreferenceKeys.DOH_CUSTOM_URL,
         SettingsPreferenceKeys.DOH_BOOTSTRAP_IPS,
+        SettingsPreferenceKeys.DOH_TIMEOUT_SECONDS,
         SettingsPreferenceKeys.USE_BUILT_IN_HOSTS,
     )
     private var saved: Map<String, Any?> = emptyMap()
@@ -30,6 +31,7 @@ class DohDefaultsDeviceTest {
             when (value) {
                 is Boolean -> editor.putBoolean(key, value)
                 is String -> editor.putString(key, value)
+                is Int -> editor.putInt(key, value)
             }
         }
         assertTrue(editor.commit())
@@ -40,6 +42,7 @@ class DohDefaultsDeviceTest {
         assertEquals("google", Preferences.dohPreset)
         assertEquals("https://dns.google/dns-query", DohConfig.resolveUrl())
         assertEquals(listOf("8.8.8.8", "8.8.4.4"), DohConfig.bootstrapIps())
+        assertEquals(3, DohConfig.timeoutSeconds())
         assertFalse(Preferences.useBuiltInHosts)
         assertFalse("Defaults must not overwrite stored preferences", prefs.contains(SettingsPreferenceKeys.USE_DOH))
     }
@@ -63,6 +66,11 @@ class DohDefaultsDeviceTest {
             .commit()
         assertEquals("https://doh.pub/dns-query", DohConfig.resolveUrl())
         assertEquals(listOf("1.12.12.12", "120.53.53.53"), DohConfig.bootstrapIps())
+    }
+
+    @Test fun savedTimeoutIsPreserved() {
+        prefs.edit().putInt(SettingsPreferenceKeys.DOH_TIMEOUT_SECONDS, 10).commit()
+        assertEquals(10, DohConfig.timeoutSeconds())
     }
 
     @Test fun customDohAndBootstrapArePreserved() {

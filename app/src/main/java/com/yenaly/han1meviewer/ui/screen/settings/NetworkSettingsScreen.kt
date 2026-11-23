@@ -816,7 +816,7 @@ private fun NetworkSettingsScreenPreview() {
             dohPreset = "cloudflare",
             dohCustomUrl = "",
             dohBootstrapIps = "1.1.1.1, 8.8.8.8",
-            dohTimeoutSeconds = 10,
+            dohTimeoutSeconds = 3,
             onDomainChange = {},
             onSaveCustomMirrorSite = { _, _, _ -> },
             onTestCustomMirrorSite = { _, _ -> },

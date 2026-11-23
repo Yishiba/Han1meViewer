@@ -24,9 +24,9 @@ import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.yenaly_libs.utils.getSpValue
 import com.yenaly.yenaly_libs.utils.putSpValue
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
-import kotlinx.coroutines.async
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -34,6 +34,7 @@ import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.suspendCancellableCoroutine
+import kotlinx.coroutines.withContext
 import kotlinx.coroutines.withTimeoutOrNull
 import kotlin.coroutines.resume
 import kotlin.time.Duration.Companion.milliseconds
@@ -78,17 +79,11 @@ class HomePageViewModel: ViewModel() {
             } else if (!isRefresh && current !is PageState.Success){
                 _homePageFlow.value = PageState.Loading
             }
-            val announcementsDeferred = async(Dispatchers.IO) {
-                withTimeoutOrNull(ANNOUNCEMENTS_TIMEOUT_MILLIS.milliseconds) {
-                    fetchAnnouncementsFromFirebase()
-                }.orEmpty()
-            }
             try {
                 NetworkRepo.getHomePage().collect { networkState ->
                     when (networkState) {
                         is WebsiteState.Error -> {
                             _diagnostics.value = HomeNetworkDiagnostics.finish(traceId, networkState.throwable)
-                            announcementsDeferred.cancel()
                             if (networkState.throwable is LoginStateExpiredException) {
                                 logout()
                                 _sessionExpiredMessage.emit(
@@ -103,13 +98,37 @@ class HomePageViewModel: ViewModel() {
                         }
                         is WebsiteState.Success -> {
                             HomeNetworkDiagnostics.finish(traceId, null)
-                            val currentAnnouncements = announcementsDeferred.await()
                             AppViewModel.csrfToken = networkState.info.csrfToken
                             networkState.info.userId.takeIf { it.isNotEmpty() }?.let { userId ->
                                 Preferences.preferenceSp.edit { putString(SAVED_USER_ID, userId) }
                             }
-                            val homeData = HomeData(page = networkState.info, announcements = currentAnnouncements)
+                            val previousAnnouncements =
+                                (_homePageFlow.value as? PageState.Success)?.info?.announcements.orEmpty()
+                            val homeData = HomeData(page = networkState.info, announcements = previousAnnouncements)
                             _homePageFlow.value = PageState.Success(info = homeData, isRefreshing = false)
+                            launch {
+                                val announcements = try {
+                                    withContext(Dispatchers.IO) {
+                                        withTimeoutOrNull(ANNOUNCEMENTS_TIMEOUT_MILLIS.milliseconds) {
+                                            fetchAnnouncementsFromFirebase()
+                                        }.orEmpty()
+                                    }
+                                } catch (e: CancellationException) {
+                                    throw e
+                                } catch (e: Exception) {
+                                    Log.w("Announcement", "读取失败", e)
+                                    emptyList()
+                                }
+                                val currentState = _homePageFlow.value as? PageState.Success
+                                if (currentState != null && currentState.info.page === networkState.info &&
+                                    shouldShowAnnouncements() &&
+                                    currentState.info.announcements != announcements
+                                ) {
+                                    _homePageFlow.value = currentState.copy(
+                                        info = currentState.info.copy(announcements = announcements)
+                                    )
+                                }
+                            }
                         }
                         is WebsiteState.Loading -> { }
                     }
@@ -122,9 +141,7 @@ class HomePageViewModel: ViewModel() {
     private suspend fun fetchAnnouncementsFromFirebase(): List<Announcement> {
         val announcementDatabase = database ?: return emptyList()
         return suspendCancellableCoroutine { continuation ->
-            val lastDismissTime = getSpValue(ANNOUNCEMENT_DISMISS_TIME_KEY, 0L, "setting_pref")
-            val shouldShowAnno = System.currentTimeMillis() - lastDismissTime > 24 * 60 * 60 * 1000L
-            if (!shouldShowAnno) {
+            if (!shouldShowAnnouncements()) {
                 continuation.resume(emptyList())
                 return@suspendCancellableCoroutine
             }
@@ -157,6 +174,11 @@ class HomePageViewModel: ViewModel() {
                     }
                 }
         }
+    }
+
+    private fun shouldShowAnnouncements(): Boolean {
+        val lastDismissTime = getSpValue(ANNOUNCEMENT_DISMISS_TIME_KEY, 0L, "setting_pref")
+        return System.currentTimeMillis() - lastDismissTime > 24 * 60 * 60 * 1000L
     }
 
     private companion object {

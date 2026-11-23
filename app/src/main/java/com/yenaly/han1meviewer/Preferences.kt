@@ -256,7 +256,7 @@ object Preferences {
         get() = preferenceSp.getString(SettingsPreferenceKeys.DOH_BOOTSTRAP_IPS, EMPTY_STRING).orEmpty()
 
     val dohTimeoutSeconds: Int
-        get() = preferenceSp.getInt(SettingsPreferenceKeys.DOH_TIMEOUT_SECONDS, 10)
+        get() = preferenceSp.getInt(SettingsPreferenceKeys.DOH_TIMEOUT_SECONDS, 3)
 
     // 關鍵H幀 相關
 
