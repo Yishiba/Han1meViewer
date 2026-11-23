@@ -118,6 +118,7 @@ object ServiceCreator {
             .cookieJar(HCookieJar())
             .proxySelector(HProxySelector())
             .dns(dns)
+            .eventListenerFactory(HomeNetworkDiagnostics)
             .build()
     }
 

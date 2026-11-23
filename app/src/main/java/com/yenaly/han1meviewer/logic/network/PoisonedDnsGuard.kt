@@ -20,6 +20,7 @@ internal class PoisonedDnsGuard(
     private val builtInIps: (hostname: String) -> List<InetAddress>,
     private val log: (String) -> Unit = {},
     private val now: () -> Long = System::currentTimeMillis,
+    private val onRoute: (hostname: String, route: String) -> Unit = { _, _ -> },
 ) {
 
     companion object {
@@ -66,7 +67,7 @@ internal class PoisonedDnsGuard(
         }
     }
 
-    private class CachedResult(val addresses: List<InetAddress>, val expireAt: Long)
+    private class CachedResult(val addresses: List<InetAddress>, val expireAt: Long, val route: String)
 
     private val fallbackCache = ConcurrentHashMap<String, CachedResult>()
 
@@ -75,9 +76,15 @@ internal class PoisonedDnsGuard(
      */
     fun resolve(hostname: String, primary: Result<List<InetAddress>>): List<InetAddress> {
         val trusted = primary.getOrNull().orEmpty().filter(::isCloudflare)
-        if (trusted.isNotEmpty()) return trusted
+        if (trusted.isNotEmpty()) {
+            onRoute(hostname, "primary")
+            return trusted
+        }
 
-        fallbackCache[hostname]?.takeIf { it.expireAt > now() }?.let { return it.addresses }
+        fallbackCache[hostname]?.takeIf { it.expireAt > now() }?.let {
+            onRoute(hostname, "cached ${it.route}")
+            return it.addresses
+        }
 
         log(
             "untrusted result for $hostname: " +
@@ -88,8 +95,10 @@ internal class PoisonedDnsGuard(
             .getOrNull().orEmpty()
             .filter(::isCloudflare)
         val result = fromFallback.ifEmpty { builtInIps(hostname) }
+        val route = if (fromFallback.isNotEmpty()) "DNSPod" else "built-in IPs"
+        onRoute(hostname, route)
         log("use ${if (fromFallback.isNotEmpty()) "fallback dns" else "built-in ips"} for $hostname: $result")
-        fallbackCache[hostname] = CachedResult(result, now() + FALLBACK_CACHE_MILLIS)
+        fallbackCache[hostname] = CachedResult(result, now() + FALLBACK_CACHE_MILLIS, route)
         return result
     }
 }

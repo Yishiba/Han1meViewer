@@ -103,6 +103,7 @@ class HDns : Dns {
         }
 
         if (Preferences.useBuiltInHosts && HANIME_HOSTNAME.contains(hostname)) {
+            HomeNetworkDiagnostics.noteDns(hostname, "DNS mode built-in Hosts")
             val customIps = resolveCustomIps()
             if (!customIps.isNullOrEmpty()) {
                 return customIps.map {
@@ -123,13 +124,16 @@ class HDns : Dns {
     private fun lookupRegular(hostname: String): List<InetAddress> {
         val dohUrl = DohConfig.resolveUrl()
         if (!dohUrl.isNullOrBlank()) {
+            HomeNetworkDiagnostics.noteDns(hostname, "DNS try DoH (${Preferences.dohPreset})")
             return runCatching { lookupByDoH(dohUrl, hostname) }
                 .getOrElse {
                     Log.w("DOH", "lookup failed for $hostname: ${it.message}")
+                    HomeNetworkDiagnostics.noteDns(hostname, "DoH failed ${it.javaClass.simpleName}; system DNS")
                     Dns.SYSTEM.lookup(hostname)
                 }
         }
 
+        HomeNetworkDiagnostics.noteDns(hostname, "DNS try system")
         return Dns.SYSTEM.lookup(hostname)
     }
 
@@ -155,6 +159,7 @@ class HDns : Dns {
                 cloudFlareIps.map { InetAddress.getByAddress(host, InetAddress.getByName(it).address) }
             },
             log = { Log.w(TAG, it) },
+            onRoute = { host, route -> HomeNetworkDiagnostics.noteDns(host, "DNS route $route") },
         )
     }
 

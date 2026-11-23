@@ -17,6 +17,7 @@ import com.yenaly.han1meviewer.logic.entity.HKeyframeEntity
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
 import com.yenaly.han1meviewer.logic.exception.LoginStateExpiredException
 import com.yenaly.han1meviewer.logic.model.Announcement
+import com.yenaly.han1meviewer.logic.network.HomeNetworkDiagnostics
 import com.yenaly.han1meviewer.logic.state.PageState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.logout
@@ -45,6 +46,8 @@ class HomePageViewModel: ViewModel() {
 
     private val _homePageFlow = MutableStateFlow<PageState<HomeData>>(PageState.Loading)
     val homePageFlow = _homePageFlow.asStateFlow()
+    private val _diagnostics = MutableStateFlow("")
+    val diagnostics = _diagnostics.asStateFlow()
 
     private val database by lazy {
         FIREBASE_REALTIME_DATABASE.takeIf(String::isNotBlank)?.let(FirebaseDatabase::getInstance)
@@ -65,6 +68,8 @@ class HomePageViewModel: ViewModel() {
     fun getHomePage(isRefresh: Boolean = false){
         homePageJob?.cancel()
         homePageJob = viewModelScope.launch {
+            val traceId = HomeNetworkDiagnostics.begin(Preferences.homeUrl)
+            _diagnostics.value = ""
             val current = _homePageFlow.value
             if (isRefresh && current is PageState.Success) {
                 _homePageFlow.value = current.copy(isRefreshing = true)
@@ -78,33 +83,39 @@ class HomePageViewModel: ViewModel() {
                     fetchAnnouncementsFromFirebase()
                 }.orEmpty()
             }
-            NetworkRepo.getHomePage().collect { networkState ->
-                when (networkState){
-                    is WebsiteState.Error -> {
-                        announcementsDeferred.cancel()
-                        if (networkState.throwable is LoginStateExpiredException) {
-                            logout()
-                            _sessionExpiredMessage.emit(
-                                SessionExpiredMessage(
-                                    message = networkState.throwable.message,
-                                    fallbackResId = R.string.login_state_expired,
+            try {
+                NetworkRepo.getHomePage().collect { networkState ->
+                    when (networkState) {
+                        is WebsiteState.Error -> {
+                            _diagnostics.value = HomeNetworkDiagnostics.finish(traceId, networkState.throwable)
+                            announcementsDeferred.cancel()
+                            if (networkState.throwable is LoginStateExpiredException) {
+                                logout()
+                                _sessionExpiredMessage.emit(
+                                    SessionExpiredMessage(
+                                        message = networkState.throwable.message,
+                                        fallbackResId = R.string.login_state_expired,
+                                    )
                                 )
-                            )
+                            }
+                            val previousData = (_homePageFlow.value as? PageState.Success)?.info
+                            _homePageFlow.value = PageState.Error(networkState.throwable, cachedInfo = previousData)
                         }
-                        val previousData = (_homePageFlow.value as? PageState.Success)?.info
-                        _homePageFlow.value = PageState.Error(networkState.throwable, cachedInfo = previousData)
-                    }
-                    is WebsiteState.Success -> {
-                        val currentAnnouncements = announcementsDeferred.await()
-                        AppViewModel.csrfToken = networkState.info.csrfToken
-                        networkState.info.userId.takeIf { it.isNotEmpty() }?.let { userId ->
-                            Preferences.preferenceSp.edit { putString(SAVED_USER_ID, userId) }
+                        is WebsiteState.Success -> {
+                            HomeNetworkDiagnostics.finish(traceId, null)
+                            val currentAnnouncements = announcementsDeferred.await()
+                            AppViewModel.csrfToken = networkState.info.csrfToken
+                            networkState.info.userId.takeIf { it.isNotEmpty() }?.let { userId ->
+                                Preferences.preferenceSp.edit { putString(SAVED_USER_ID, userId) }
+                            }
+                            val homeData = HomeData(page = networkState.info, announcements = currentAnnouncements)
+                            _homePageFlow.value = PageState.Success(info = homeData, isRefreshing = false)
                         }
-                        val homeData = HomeData(page = networkState.info, announcements = currentAnnouncements)
-                        _homePageFlow.value = PageState.Success(info = homeData, isRefreshing = false)
+                        is WebsiteState.Loading -> { }
                     }
-                    is WebsiteState.Loading -> { }
                 }
+            } finally {
+                HomeNetworkDiagnostics.finish(traceId, null)
             }
         }
     }

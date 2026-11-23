@@ -8,12 +8,23 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.background
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.text.selection.SelectionContainer
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
@@ -23,9 +34,13 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringArrayResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.state.PageState
@@ -56,6 +71,7 @@ fun HomePageScreen(
 ) {
     val context = LocalContext.current
     val pageState by viewModel.homePageFlow.collectAsStateWithLifecycle()
+    val diagnostics by viewModel.diagnostics.collectAsStateWithLifecycle()
     val refreshState = rememberPullToRefreshState()
     var wasRefreshing by remember { mutableStateOf(false) }
     val loadingHint = rememberRandomLoadingHint()
@@ -109,11 +125,16 @@ fun HomePageScreen(
                     isLoading = pageState.isFirstPageLoading,
                     isError = pageState.isFirstPageError,
                     isEmpty = pageState.isFirstPageError || pageState.isFirstPageEmpty,
-                    errorMessage = (pageState as? PageState.Error)?.throwable?.toNetworkErrorMessageRes()?.let {
-                        stringResource(it)
-                    } ?: "",
                     onRetry = { viewModel.getHomePage(isRefresh = false) },
                     loadingMessage = loadingHint,
+                    error = {
+                        HomePageFailure(
+                            message = (pageState as? PageState.Error)?.throwable
+                                ?.toNetworkErrorMessageRes()?.let { stringResource(it) }.orEmpty(),
+                            diagnostics = diagnostics,
+                            onRetry = { viewModel.getHomePage(isRefresh = false) },
+                        )
+                    },
                 ) {
                     val homeData = pageState.dataOrNull
 
@@ -137,6 +158,42 @@ fun HomePageScreen(
                     isRefreshing = isCurrentlyRefreshing,
                     containerColor = MaterialTheme.colorScheme.surfaceContainerHigh
                 )
+            }
+        }
+    }
+}
+
+@Composable
+private fun HomePageFailure(message: String, diagnostics: String, onRetry: () -> Unit) {
+    Column(
+        modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Image(
+            painter = painterResource(R.drawable.h_chan_sad),
+            contentDescription = null,
+            modifier = Modifier.size(80.dp),
+        )
+        Text(
+            text = stringResource(R.string.load_failed_retry),
+            style = MaterialTheme.typography.titleMedium,
+            color = MaterialTheme.colorScheme.error,
+        )
+        Text(text = message, style = MaterialTheme.typography.bodyMedium)
+        Button(onClick = onRetry) { Text(stringResource(R.string.retry)) }
+        if (diagnostics.isNotBlank()) {
+            Surface(modifier = Modifier.fillMaxWidth(), tonalElevation = 2.dp) {
+                Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.home_diagnostic_title), style = MaterialTheme.typography.titleSmall)
+                    SelectionContainer {
+                        Text(
+                            text = diagnostics,
+                            style = MaterialTheme.typography.bodySmall,
+                            fontFamily = FontFamily.Monospace,
+                        )
+                    }
+                }
             }
         }
     }

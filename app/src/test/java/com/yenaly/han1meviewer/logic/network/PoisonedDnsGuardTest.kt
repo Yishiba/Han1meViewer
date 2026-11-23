@@ -80,6 +80,22 @@ class PoisonedDnsGuardTest {
     }
 
     @Test
+    fun reportsFallbackAndCachedRoutesForDiagnostics() {
+        val routes = mutableListOf<String>()
+        val fallback = FakeDns { ip("104.26.9.104") }
+        val guard = PoisonedDnsGuard(
+            fallbackDns = fallback,
+            builtInIps = { builtIn },
+            now = { 0L },
+            onRoute = { _, route -> routes += route },
+        )
+        val poisoned = Result.success(ip("31.13.85.2"))
+        guard.resolve(host, poisoned)
+        guard.resolve(host, poisoned)
+        assertEquals(listOf("DNSPod", "cached DNSPod"), routes)
+    }
+
+    @Test
     fun cloudflareRangeBoundaries() {
         val inside = ip("104.16.0.0", "104.23.255.255", "172.71.255.255", "162.159.0.1", "2606:4700:3035::ac43:bb8d")
         val outside = ip("104.15.255.255", "104.28.0.0", "172.72.0.0", "31.13.85.2", "74.86.12.173", "2606:4701::1")
