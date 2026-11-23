@@ -52,6 +52,7 @@ import com.yenaly.han1meviewer.util.requestPostNotificationPermission
 import com.yenaly.han1meviewer.worker.HUpdateWorker
 import com.yenaly.yenaly_libs.utils.showShortToast
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 import kotlin.time.ExperimentalTime
 
@@ -80,6 +81,7 @@ fun MainActivityContent(
         var showOnboarding by rememberSaveable {
             mutableStateOf(Preferences.onboardingPending && !Preferences.onboardingCompleted)
         }
+        var minimumLaunchArtVisible by rememberSaveable { mutableStateOf(true) }
         val isDrawerOpen =
             drawerState.currentValue == DrawerValue.Open || drawerState.targetValue == DrawerValue.Open
 
@@ -101,6 +103,13 @@ fun MainActivityContent(
         }
         val headerIsLoading = isLoggedIn && homeState is PageState.Loading
         val selectedDrawerDestination = currentMainDestination.drawerDestination
+
+        LaunchedEffect(minimumLaunchArtVisible) {
+            if (minimumLaunchArtVisible) {
+                delay(700)
+                minimumLaunchArtVisible = false
+            }
+        }
 
         LaunchedEffect(composeNavController) {
             onNavigateControllerReady(composeNavController)
@@ -221,7 +230,7 @@ fun MainActivityContent(
                     })
                 }
                 AnimatedVisibility(
-                    visible = homeState is PageState.Loading &&
+                    visible = (homeState is PageState.Loading || minimumLaunchArtVisible) &&
                         currentMainDestination == MainDestinationSpec.Home &&
                         !showAuthGuard && !showUsageNotice && !showOnboarding && pendingUpdate == null,
                     modifier = Modifier.fillMaxSize(),
