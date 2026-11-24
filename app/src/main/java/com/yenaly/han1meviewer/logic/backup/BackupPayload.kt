@@ -6,6 +6,7 @@ import com.yenaly.han1meviewer.logic.entity.SideDishEntity
 import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
 import com.yenaly.han1meviewer.logic.entity.download.*
 import com.yenaly.han1meviewer.logic.state.DownloadState
+import com.yenaly.han1meviewer.logic.discovery.SavedSearchData
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 import kotlinx.serialization.json.jsonObject
@@ -42,6 +43,8 @@ data class BackupPayload(
     val downloadCategoryCrossRefs: List<HanimeCategoryCrossRef>? = null,
     val searchTools: com.yenaly.han1meviewer.logic.translation.SearchToolsData? = null,
     val searchToolsRaw: String? = null,
+    val savedSearches: SavedSearchData? = null,
+    val savedSearchesRaw: String? = null,
 ) {
     fun safeForRestore(): BackupPayload = copy(
         settings = settings?.filterKeys(BackupCodec::restorableKey),
@@ -123,13 +126,17 @@ object BackupCodec {
     }
 
     fun validate(data: BackupPayload) {
-        require(data.version in 1..3) { "Unsupported backup version" }
+        require(data.version in 1..4) { "Unsupported backup version" }
         BackupPreferencePolicy.validate(data.settings)
         data.searchTools?.validate()
         require(data.searchTools == null || data.searchToolsRaw == null)
         data.searchToolsRaw?.let { require(it.length <= 1024 * 1024) }
+        data.savedSearches?.validate()
+        require(data.savedSearches == null || data.savedSearchesRaw == null)
+        data.savedSearchesRaw?.let { require(it.length <= 4 * 1024 * 1024) }
         require(listOf(data.settings, data.hKeyframes, data.checkInRecords, data.sideDishes, data.watchHistories,
-            data.downloadGroups, data.downloads, data.downloadCategories, data.downloadCategoryCrossRefs, data.searchTools, data.searchToolsRaw).any { it != null })
+            data.downloadGroups, data.downloads, data.downloadCategories, data.downloadCategoryCrossRefs,
+            data.searchTools, data.searchToolsRaw, data.savedSearches, data.savedSearchesRaw).any { it != null })
         fun <T> unique(values: List<T>?) { if (values != null) require(values.distinct().size == values.size) { "Duplicate record key" } }
         unique(data.hKeyframes?.map { it.videoCode }); unique(data.checkInRecords?.map { it.id })
         unique(data.sideDishes?.map { it.videoCode }); unique(data.watchHistories?.map { it.id })

@@ -11,12 +11,12 @@ import javax.crypto.spec.PBEKeySpec
 import javax.crypto.spec.SecretKeySpec
 
 @Serializable data class SyncValue(val clock: Long, val device: String, val value: JsonElement? = null)
-@Serializable data class SyncDocument(val version: Int = 2, val values: Map<String, SyncValue> = emptyMap()) {
+@Serializable data class SyncDocument(val version: Int = 3, val values: Map<String, SyncValue> = emptyMap()) {
     fun validate() {
-        require(version in 1..2 && values.size <= 20000)
+        require(version in 1..3 && values.size <= 20000)
         values.forEach { (key, value) ->
             require(key.length in 1..500 && value.clock in 1..Long.MAX_VALUE / 2 && value.device.length in 1..100)
-            require(key.startsWith("setting/") || key.startsWith("watch/") || key.startsWith("rule/") || key.startsWith("remote/") || key.startsWith("search-alias/") || key.startsWith("search-history/"))
+            require(key.startsWith("setting/") || key.startsWith("watch/") || key.startsWith("rule/") || key.startsWith("remote/") || key.startsWith("search-alias/") || key.startsWith("search-history/") || key.startsWith("saved-search/"))
         }
     }
 }

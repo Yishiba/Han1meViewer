@@ -15,6 +15,7 @@ import com.yenaly.han1meviewer.ui.screen.settings.PlayerSettingsScreen
 import com.yenaly.han1meviewer.ui.screen.settings.PlayerSettingsUiState
 import com.yenaly.han1meviewer.ui.view.video.HJzvdStd
 import com.yenaly.han1meviewer.ui.view.video.HMediaKernel
+import com.yenaly.han1meviewer.ui.view.video.PlaybackPerformanceStats
 
 private const val PLAYER_SWITCH_PLAYER_KERNEL = "switch_player_kernel"
 private const val PLAYER_SHOW_BOTTOM_PROGRESS = "show_bottom_progress"
@@ -101,5 +102,8 @@ private fun buildPlayerSettingsUiState(context: Context): PlayerSettingsUiState 
         longPressSpeedTimesLabel = longPressDisplay,
         slideSensitivity = Preferences.slideSensitivity,
         slideSensitivitySummary = toPrettySensitivityString(context, Preferences.slideSensitivity),
+        firstFrameSummary = PlaybackPerformanceStats.latest(context)?.let {
+            context.getString(R.string.player_first_frame_sample, it / 1000.0)
+        } ?: context.getString(R.string.download_performance_no_sample),
     )
 }

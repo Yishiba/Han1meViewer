@@ -856,6 +856,14 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="home_error_server_unavailable">サーバーは一時的に利用できません。しばらくしてから再試行してください。</string>
     <string name="home_error_generic">ページの読み込みに失敗しました。ネットワーク接続を確認してから再試行してください。</string>
     <string name="home_diagnostic_title">ネットワーク診断・画面を撮影</string>
+    <string name="home_cached_notice">%1$s に保存した公開一覧を表示中です。更新中のため内容が古い場合があります。</string>
+    <string name="player_first_frame_heading">前回の再生開始時間</string>
+    <string name="player_first_frame_sample">%1$.2f 秒</string>
+    <string name="player_first_frame_note">ExoPlayer の再生ボタンから最初の映像までを記録します。詳細画面や再生リンクの取得時間は含みません。端末内のみ保存します。</string>
+    <string name="home_failure_dns_hint">名前解決に失敗しました。ネットワーク設定で DNS を変更して再試行してください。</string>
+    <string name="home_failure_connect_hint">アドレスは見つかりましたが、接続または TLS 通信が中断しました。同じ回線のブラウザーでサイトを開けるか確認し、プロキシとドメインの設定を見直してください。</string>
+    <string name="home_failure_http_hint">サイトは応答しましたが、利用できるホーム画面を取得できませんでした。後で再試行するか、ログイン状態を確認してください。</string>
+    <string name="home_failure_unknown_hint">下の診断内容を確認し、ネットワーク設定で接続方法を変更してみてください。</string>
     <string name="backup_export_title">データバックアップをエクスポート</string>
     <string name="backup_export_summary">設定、視聴履歴、ダウンロードグループと動画情報、Hキーフレーム、チェックイン記録をエクスポートして機種変更時に復元できます</string>
     <string name="backup_import_title">データバックアップをインポート</string>
@@ -984,6 +992,7 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="download_performance_note">書き込みと待機を含む実効速度です。異なるファイルや回線は直接比較できません。数値のみ端末内に保存し、URLやタイトルは保存しません。</string>
     <string name="download_performance_no_sample">記録なし</string>
     <string name="download_performance_sample">%1$.2f MiB/s、%2$d 接続</string>
+    <string name="download_performance_recent">直近 %2$d 件の中央値 %1$.2f MiB/s</string>
     <string name="network_last_home_trace">直近のホーム通信時間</string>
     <string name="network_last_home_trace_summary">DNS、接続、TLS、応答の端末内記録を表示</string>
     <string name="network_no_home_trace">この起動中のホーム通信記録はありません</string>

@@ -6,15 +6,18 @@ import androidx.room.withTransaction
 import com.yenaly.han1meviewer.BuildConfig
 import com.yenaly.han1meviewer.Preferences
 import com.yenaly.han1meviewer.logic.dao.*
+import com.yenaly.han1meviewer.logic.discovery.SavedSearchService
+import com.yenaly.han1meviewer.logic.discovery.SavedSearchStore
 
 class AndroidBackupBackend(
-    context: Context,
+    private val context: Context,
     private val preferences: SharedPreferences = Preferences.preferenceSp,
     private val downloads: DownloadDatabase = DownloadDatabase.instance,
     private val history: HistoryDatabase = HistoryDatabase.instance,
     private val miscellany: MiscellanyDatabase = MiscellanyDatabase.instance,
     private val checkIn: CheckInRecordDatabase = CheckInRecordDatabase.getDatabase(context),
     private val searchTools: com.yenaly.han1meviewer.logic.translation.SearchToolsStore = com.yenaly.han1meviewer.logic.translation.SearchToolsStore(context),
+    private val savedSearches: SavedSearchStore = SavedSearchStore(context),
 ) : BackupBackend {
     override suspend fun capture(): BackupPayload {
         val settings = preferences.all.filterKeys(BackupCodec::restorableKey).mapNotNull { (key, value) ->
@@ -30,8 +33,11 @@ class AndroidBackupBackend(
             typed?.let { key to it }
         }.toMap()
         val search = searchTools.snapshot()
-        var snapshot = BackupPayload(version = 3, appVersionCode = BuildConfig.VERSION_CODE,
-            appVersionName = BuildConfig.VERSION_NAME, exportedAt = System.currentTimeMillis(), settings = settings, searchTools = search.first, searchToolsRaw = search.second)
+        val discovery = savedSearches.snapshot()
+        var snapshot = BackupPayload(version = 4, appVersionCode = BuildConfig.VERSION_CODE,
+            appVersionName = BuildConfig.VERSION_NAME, exportedAt = System.currentTimeMillis(),
+            settings = settings, searchTools = search.first, searchToolsRaw = search.second,
+            savedSearches = discovery.first, savedSearchesRaw = discovery.second)
         miscellany.withTransaction { snapshot = snapshot.copy(hKeyframes = miscellany.hKeyframeDao.getAll()) }
         checkIn.withTransaction { snapshot = snapshot.copy(checkInRecords = checkIn.checkInDao().getAllRecords(),
             sideDishes = checkIn.sideDishDao().getAll()) }
@@ -101,5 +107,8 @@ class AndroidBackupBackend(
         }
         if (data.searchToolsRaw != null) searchTools.replaceRaw(data.searchToolsRaw)
         else data.searchTools?.let(searchTools::replace)
+        if (data.savedSearchesRaw != null) savedSearches.replaceRaw(data.savedSearchesRaw)
+        else data.savedSearches?.let(savedSearches::write)
+        if (data.savedSearches != null) SavedSearchService.refreshAfterRestore()
     }
 }

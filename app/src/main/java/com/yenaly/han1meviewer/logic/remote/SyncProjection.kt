@@ -18,6 +18,7 @@ object SyncProjection {
     private val json get() = SyncCrypto.json
     fun capture(snapshot: BackupPayload, progress: Map<String, RemoteProgress>): Map<String, JsonElement> = buildMap {
         require(snapshot.searchToolsRaw == null) { "Repair the local search catalog before synchronizing" }
+        require(snapshot.savedSearchesRaw == null) { "Repair saved searches before synchronizing" }
         snapshot.settings.orEmpty().filterKeys { it in settings }.forEach { (k, v) -> put("setting/$k", json.encodeToJsonElement<PreferenceValue>(v)) }
         snapshot.watchHistories.orEmpty().groupBy { it.videoCode }.forEach { (code, values) ->
             put("watch/$code", json.encodeToJsonElement(values.maxBy { it.watchDate }.copy(id = 0)))
@@ -37,6 +38,7 @@ object SyncProjection {
                 })
             }
         putAll(SearchSyncProjection.capture(snapshot.searchTools))
+        putAll(SavedSearchSyncProjection.capture(snapshot.savedSearches))
         progress.forEach { (url, value) -> put("remote/${BackupCodec.digest(url.toByteArray())}", json.encodeToJsonElement(value)) }
     }
     fun materialize(current: BackupPayload, live: Map<String, JsonElement>): SyncMaterialized {
@@ -74,6 +76,7 @@ object SyncProjection {
                     progress[item.url] = item
                 }
                 key.startsWith("search-alias/") || key.startsWith("search-history/") -> Unit
+                key.startsWith("saved-search/") -> Unit
                 else -> error("Unknown sync field")
             }
         }
@@ -103,8 +106,9 @@ object SyncProjection {
         // Assign stable new positive IDs before validation; existing database IDs never cross devices.
         var nextId = (current.watchHistories.orEmpty().maxOfOrNull { it.id } ?: 0).toLong()
         val histories = watches.map { if (it.id > 0) it else it.copy(id = (++nextId).also { id -> require(id < Int.MAX_VALUE) }.toInt()) }
-        val result = current.copy(version = 3, settings = prefs, watchHistories = histories, downloadGroups = groups, exportedAt = 0,
-            searchTools = SearchSyncProjection.materialize(live), searchToolsRaw = null)
+        val result = current.copy(version = 4, settings = prefs, watchHistories = histories, downloadGroups = groups, exportedAt = 0,
+            searchTools = SearchSyncProjection.materialize(live), searchToolsRaw = null,
+            savedSearches = SavedSearchSyncProjection.materialize(live), savedSearchesRaw = null)
         BackupCodec.validate(result)
         return SyncMaterialized(result, progress)
     }

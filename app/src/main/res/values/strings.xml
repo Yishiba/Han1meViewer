@@ -905,6 +905,14 @@
     <string name="home_error_server_unavailable">伺服器暫時不可用，請稍後再試。</string>
     <string name="home_error_generic">頁面載入失敗，請檢查網路連線後重試。</string>
     <string name="home_diagnostic_title">網路診斷 · 請截圖</string>
+    <string name="home_cached_notice">顯示 %1$s 儲存的公開目錄，正在更新；內容可能已過期。</string>
+    <string name="player_first_frame_heading">最近一次播放首畫面</string>
+    <string name="player_first_frame_sample">%1$.2f 秒</string>
+    <string name="player_first_frame_note">僅記錄 ExoPlayer 從點擊播放到首畫面的時間，不包含打開詳情頁或取得播放連結。資料只保存在本機。</string>
+    <string name="home_failure_dns_hint">網域解析失敗。請在網路設定中切換 DNS，然後重試。</string>
+    <string name="home_failure_connect_hint">已找到伺服器位址，但連線或安全握手中斷。請先確認同一網路下瀏覽器能否開啟網站，再檢查代理與網域設定。</string>
+    <string name="home_failure_http_hint">網站已回應，但未傳回可用首頁。請稍後重試或檢查登入狀態。</string>
+    <string name="home_failure_unknown_hint">請查看下方診斷記錄，並嘗試在網路設定中切換連線方式。</string>
     <string name="backup_export_title">匯出資料備份</string>
     <string name="backup_export_summary">匯出設定、觀看歷史、下載分組與影片資訊、H 關鍵幀與打卡記錄，方便換機還原</string>
     <string name="backup_import_title">匯入資料備份</string>
@@ -1033,6 +1041,7 @@
     <string name="download_performance_note">顯示有效速度，包含寫入與等待；不同檔案和網路不可直接比較。只存本機數值，不存網址或標題。</string>
     <string name="download_performance_no_sample">尚無記錄</string>
     <string name="download_performance_sample">%1$.2f MiB/s，%2$d 路連線</string>
+    <string name="download_performance_recent">最近 %2$d 筆中位數 %1$.2f MiB/s</string>
     <string name="network_last_home_trace">最近首頁網路耗時</string>
     <string name="network_last_home_trace_summary">查看 DNS、連線、TLS、回應階段的本機記錄</string>
     <string name="network_no_home_trace">本次啟動尚無首頁請求記錄</string>

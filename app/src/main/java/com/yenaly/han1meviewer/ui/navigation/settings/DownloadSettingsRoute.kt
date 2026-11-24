@@ -234,11 +234,13 @@ private fun buildDownloadSettingsUiState(context: Context): DownloadSettingsUiSt
 }
 
 private fun downloadSampleSummary(context: Context, enhanced: Boolean): String {
-    val sample = DownloadPerformanceStats.latest(context, enhanced)
-        ?: return context.getString(R.string.download_performance_no_sample)
+    val samples = DownloadPerformanceStats.recent(context, enhanced)
+    if (samples.isEmpty()) return context.getString(R.string.download_performance_no_sample)
+    val sorted = samples.map { it.mebibytesPerSecond }.sorted()
+    val median = (sorted[(sorted.size - 1) / 2] + sorted[sorted.size / 2]) / 2
     return context.getString(
-        R.string.download_performance_sample,
-        sample.mebibytesPerSecond,
-        sample.connections,
+        R.string.download_performance_recent,
+        median,
+        samples.size,
     )
 }

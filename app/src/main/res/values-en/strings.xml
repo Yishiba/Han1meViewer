@@ -851,6 +851,14 @@ Recommendations are as follows:\n
     <string name="home_error_server_unavailable">The server is temporarily unavailable. Please try again later.</string>
     <string name="home_error_generic">Failed to load the page. Please check your network connection and try again.</string>
     <string name="home_diagnostic_title">Network diagnostics · Screenshot this</string>
+    <string name="home_cached_notice">Showing public listings saved %1$s. Refreshing; content may be outdated.</string>
+    <string name="player_first_frame_heading">Latest playback first frame</string>
+    <string name="player_first_frame_sample">%1$.2f s</string>
+    <string name="player_first_frame_note">ExoPlayer only: play-button tap to first frame. Excludes opening details and fetching the playback link. Stored on this device only.</string>
+    <string name="home_failure_dns_hint">Name lookup failed. Try another DNS option in Network Settings, then retry.</string>
+    <string name="home_failure_connect_hint">An address was found, but the connection or TLS handshake failed. Check whether the site opens in a browser on this network, then review proxy and domain settings.</string>
+    <string name="home_failure_http_hint">The site responded but no usable home page was returned. Retry later or check your sign-in state.</string>
+    <string name="home_failure_unknown_hint">Review the trace below, then try a different connection setting in Network Settings.</string>
     <string name="backup_export_title">Export Data Backup</string>
     <string name="backup_export_summary">Export settings, watch history, download groups and video info, H keyframes, and check-in records for device migration</string>
     <string name="backup_import_title">Import Data Backup</string>
@@ -979,6 +987,7 @@ Recommendations are as follows:\n
     <string name="download_performance_note">Effective speed includes writes and waits. Different files and networks are not directly comparable. Only numbers are stored locally, never URLs or titles.</string>
     <string name="download_performance_no_sample">No sample yet</string>
     <string name="download_performance_sample">%1$.2f MiB/s, %2$d connections</string>
+    <string name="download_performance_recent">Median %1$.2f MiB/s across %2$d recent tasks</string>
     <string name="network_last_home_trace">Last home network trace</string>
     <string name="network_last_home_trace_summary">View local DNS, connection, TLS and response timings</string>
     <string name="network_no_home_trace">No home request in this app session yet</string>

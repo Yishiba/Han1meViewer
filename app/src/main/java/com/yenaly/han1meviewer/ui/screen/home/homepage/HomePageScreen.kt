@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import com.yenaly.han1meviewer.R
 import com.yenaly.han1meviewer.logic.state.PageState
+import com.yenaly.han1meviewer.logic.network.HomeNetworkDiagnostics
 import com.yenaly.han1meviewer.logic.state.dataOrNull
 import com.yenaly.han1meviewer.ui.component.PageContent
 import com.yenaly.han1meviewer.ui.component.PullRefreshOverlay
@@ -53,6 +54,8 @@ import com.yenaly.han1meviewer.ui.component.isFirstPageLoading
 import com.yenaly.han1meviewer.ui.screen.home.homepage.component.HomePageTopBar
 import com.yenaly.han1meviewer.ui.screen.rememberRandomLoadingHint
 import com.yenaly.han1meviewer.util.toNetworkErrorMessageRes
+import java.text.DateFormat
+import java.util.Date
 
 /**
  * 首页容器屏幕，负责连接 ViewModel 状态与导航回调。
@@ -72,6 +75,7 @@ fun HomePageScreen(
     val context = LocalContext.current
     val pageState by viewModel.homePageFlow.collectAsStateWithLifecycle()
     val diagnostics by viewModel.diagnostics.collectAsStateWithLifecycle()
+    val cachedAt by viewModel.cachedAt.collectAsStateWithLifecycle()
     val refreshState = rememberPullToRefreshState()
     var wasRefreshing by remember { mutableStateOf(false) }
     val loadingHint = rememberRandomLoadingHint()
@@ -110,6 +114,17 @@ fun HomePageScreen(
                 onSearchClick = { onEvent(HomeUiEvent.OpenSearchPage()) },
                 onNavigateToPreview = { onEvent(HomeUiEvent.NavigateToPreview) }
             )
+            if (cachedAt != null && pageState.dataOrNull != null) {
+                Surface(color = MaterialTheme.colorScheme.surfaceContainerHigh) {
+                    Text(
+                        text = stringResource(R.string.home_cached_notice,
+                            DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+                                .format(Date(cachedAt!!))),
+                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                        style = MaterialTheme.typography.bodySmall,
+                    )
+                }
+            }
             Box(
                 modifier = Modifier
                     .fillMaxSize()
@@ -132,7 +147,9 @@ fun HomePageScreen(
                             message = (pageState as? PageState.Error)?.throwable
                                 ?.toNetworkErrorMessageRes()?.let { stringResource(it) }.orEmpty(),
                             diagnostics = diagnostics,
+                            failureStage = HomeNetworkDiagnostics.failureStage(),
                             onRetry = { viewModel.getHomePage(isRefresh = false) },
+                            onNetworkSettings = { onEvent(HomeUiEvent.OpenNetworkSettings) },
                         )
                     },
                 ) {
@@ -164,7 +181,13 @@ fun HomePageScreen(
 }
 
 @Composable
-private fun HomePageFailure(message: String, diagnostics: String, onRetry: () -> Unit) {
+private fun HomePageFailure(
+    message: String,
+    diagnostics: String,
+    failureStage: HomeNetworkDiagnostics.FailureStage,
+    onRetry: () -> Unit,
+    onNetworkSettings: () -> Unit,
+) {
     Column(
         modifier = Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(20.dp),
         horizontalAlignment = Alignment.CenterHorizontally,
@@ -182,6 +205,16 @@ private fun HomePageFailure(message: String, diagnostics: String, onRetry: () ->
         )
         Text(text = message, style = MaterialTheme.typography.bodyMedium)
         Button(onClick = onRetry) { Text(stringResource(R.string.retry)) }
+        if (diagnostics.isNotBlank()) {
+            val suggestion = when (failureStage) {
+                HomeNetworkDiagnostics.FailureStage.DNS -> R.string.home_failure_dns_hint
+                HomeNetworkDiagnostics.FailureStage.CONNECT, HomeNetworkDiagnostics.FailureStage.TLS -> R.string.home_failure_connect_hint
+                HomeNetworkDiagnostics.FailureStage.HTTP -> R.string.home_failure_http_hint
+                HomeNetworkDiagnostics.FailureStage.UNKNOWN -> R.string.home_failure_unknown_hint
+            }
+            Text(text = stringResource(suggestion), style = MaterialTheme.typography.bodySmall)
+            Button(onClick = onNetworkSettings) { Text(stringResource(R.string.network_settings)) }
+        }
         if (diagnostics.isNotBlank()) {
             Surface(modifier = Modifier.fillMaxWidth(), tonalElevation = 2.dp) {
                 Column(Modifier.padding(12.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {

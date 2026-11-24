@@ -33,6 +33,7 @@ fun HomeRouteScreen(
     isDrawerOpen: Boolean,
     onOpenDrawer: () -> Unit,
     onNavigateToPreview: () -> Unit,
+    onNavigateToNetworkSettings: () -> Unit,
     onNavigateToSearch: (String?) -> Unit,
     onNavigateToSearchAdvanced: (Map<String, String>) -> Unit,
     onNavigateToVideo: (String) -> Unit,
@@ -58,6 +59,7 @@ fun HomeRouteScreen(
                 when (event) {
                     is HomeUiEvent.OpenDrawer -> onOpenDrawer()
                     is HomeUiEvent.NavigateToPreview -> onNavigateToPreview()
+                    is HomeUiEvent.OpenNetworkSettings -> onNavigateToNetworkSettings()
                     is HomeUiEvent.OpenSearchPage -> onNavigateToSearch(event.query)
                     is HomeUiEvent.NavigateToSearchAdvanced -> onNavigateToSearchAdvanced(event.params)
                     is HomeUiEvent.OpenVideo -> onNavigateToVideo(event.videoCode)

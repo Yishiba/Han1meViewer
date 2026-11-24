@@ -18,11 +18,13 @@ import com.yenaly.han1meviewer.logic.entity.WatchHistoryEntity
 import com.yenaly.han1meviewer.logic.exception.LoginStateExpiredException
 import com.yenaly.han1meviewer.logic.model.Announcement
 import com.yenaly.han1meviewer.logic.network.HomeNetworkDiagnostics
+import com.yenaly.han1meviewer.logic.network.PublicHomeCache
 import com.yenaly.han1meviewer.logic.state.PageState
 import com.yenaly.han1meviewer.logic.state.WebsiteState
 import com.yenaly.han1meviewer.logout
 import com.yenaly.han1meviewer.ui.viewmodel.AppViewModel
 import com.yenaly.yenaly_libs.utils.getSpValue
+import com.yenaly.yenaly_libs.utils.applicationContext
 import com.yenaly.yenaly_libs.utils.putSpValue
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -49,6 +51,9 @@ class HomePageViewModel: ViewModel() {
     val homePageFlow = _homePageFlow.asStateFlow()
     private val _diagnostics = MutableStateFlow("")
     val diagnostics = _diagnostics.asStateFlow()
+    private val _cachedAt = MutableStateFlow<Long?>(null)
+    val cachedAt = _cachedAt.asStateFlow()
+    private val publicHomeCache by lazy { PublicHomeCache(applicationContext) }
 
     private val database by lazy {
         FIREBASE_REALTIME_DATABASE.takeIf(String::isNotBlank)?.let(FirebaseDatabase::getInstance)
@@ -58,6 +63,7 @@ class HomePageViewModel: ViewModel() {
     val sessionExpiredMessage = _sessionExpiredMessage
 
     private var homePageJob: Job? = null
+    private var displayedSiteUrl: String? = null
 
     init {
         viewModelScope.launch {
@@ -69,16 +75,27 @@ class HomePageViewModel: ViewModel() {
     fun getHomePage(isRefresh: Boolean = false){
         homePageJob?.cancel()
         homePageJob = viewModelScope.launch {
-            val traceId = HomeNetworkDiagnostics.begin(Preferences.homeUrl)
+            val requestUrl = Preferences.homeUrl
             _diagnostics.value = ""
-            val current = _homePageFlow.value
+            val siteChanged = displayedSiteUrl != null && displayedSiteUrl != requestUrl
+            val current = _homePageFlow.value.takeIf { !siteChanged }
+                ?: PageState.Loading
+            if (siteChanged) {
+                _cachedAt.value = null
+            }
             if (isRefresh && current is PageState.Success) {
                 _homePageFlow.value = current.copy(isRefreshing = true)
             } else if (isRefresh && current is PageState.Error && current.cachedInfo != null) {
                 _homePageFlow.value = PageState.Success(info = current.cachedInfo, isRefreshing = true)
-            } else if (!isRefresh && current !is PageState.Success){
+            } else if (siteChanged || (!isRefresh && current !is PageState.Success)) {
                 _homePageFlow.value = PageState.Loading
+                withContext(Dispatchers.IO) { publicHomeCache.read(requestUrl) }?.let { snapshot ->
+                    _cachedAt.value = snapshot.savedAt
+                    displayedSiteUrl = requestUrl
+                    _homePageFlow.value = PageState.Success(HomeData(snapshot.page), isRefreshing = true)
+                }
             }
+            val traceId = HomeNetworkDiagnostics.begin(requestUrl)
             try {
                 NetworkRepo.getHomePage().collect { networkState ->
                     when (networkState) {
@@ -98,6 +115,8 @@ class HomePageViewModel: ViewModel() {
                         }
                         is WebsiteState.Success -> {
                             HomeNetworkDiagnostics.finish(traceId, null)
+                            _cachedAt.value = null
+                            displayedSiteUrl = requestUrl
                             AppViewModel.csrfToken = networkState.info.csrfToken
                             networkState.info.userId.takeIf { it.isNotEmpty() }?.let { userId ->
                                 Preferences.preferenceSp.edit { putString(SAVED_USER_ID, userId) }
@@ -106,6 +125,10 @@ class HomePageViewModel: ViewModel() {
                                 (_homePageFlow.value as? PageState.Success)?.info?.announcements.orEmpty()
                             val homeData = HomeData(page = networkState.info, announcements = previousAnnouncements)
                             _homePageFlow.value = PageState.Success(info = homeData, isRefreshing = false)
+                            launch(Dispatchers.IO) {
+                                runCatching { publicHomeCache.write(requestUrl, networkState.info) }
+                                    .onFailure { Log.w("PublicHomeCache", "Cache write failed", it) }
+                            }
                             launch {
                                 val announcements = try {
                                     withContext(Dispatchers.IO) {

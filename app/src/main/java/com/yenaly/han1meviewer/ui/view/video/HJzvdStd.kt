@@ -78,6 +78,7 @@ class HJzvdStd @JvmOverloads constructor(
     context: Context,
     attrs: AttributeSet? = null,
 ) : JzvdStd(context, attrs), OnLongClickListener {
+    private var firstFrameMeasurable = true
     interface FullscreenListener {
         fun onFullscreenChanged(isFullscreen: Boolean)
     }
@@ -452,6 +453,7 @@ class HJzvdStd @JvmOverloads constructor(
         findViewById<View>(R.id.layout_bottom)?.isVisible = visible
     }
     override fun setUp(jzDataSource: JZDataSource?, screen: Int, clazz: Class<*>) {
+        firstFrameMeasurable = clazz == ExoMediaKernel::class.java
         super.setUp(jzDataSource, screen, clazz)
         val prefs = PreferenceManager.getDefaultSharedPreferences(context)
         val preferredQuality = prefs.getString("default_video_quality", null)
@@ -703,6 +705,7 @@ class HJzvdStd @JvmOverloads constructor(
     }
 
     override fun onClick(v: View) {
+        if (v.id == R.id.start && state != STATE_PAUSE && firstFrameMeasurable) PlaybackPerformanceStats.begin()
         super.onClick(v)
         when (v.id) {
             R.id.tv_speed -> clickSpeed()

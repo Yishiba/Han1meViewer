@@ -107,6 +107,7 @@ fun MainNavHost(
                 isDrawerOpen = isDrawerOpen,
                 onOpenDrawer = onOpenDrawer,
                 onNavigateToPreview = { navController.navigateSafely(PreviewRoute) },
+                onNavigateToNetworkSettings = { navController.navigateSafely(NetworkSettingsRoute) },
                 onNavigateToSearch = { query -> navController.navigateSafely(SearchRoute(query = query)) },
                 onNavigateToSearchAdvanced = { params ->
                     navController.navigateSafely(

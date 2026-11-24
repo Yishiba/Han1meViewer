@@ -2,6 +2,7 @@ package com.yenaly.han1meviewer.logic.discovery
 
 import android.content.Context
 import com.yenaly.han1meviewer.Preferences
+import com.yenaly.han1meviewer.logic.backup.BackupService
 import com.yenaly.han1meviewer.logic.Parser
 import com.yenaly.han1meviewer.logic.network.ServiceCreator
 import com.yenaly.han1meviewer.logic.network.interceptor.CloudflareInterceptor
@@ -17,16 +18,28 @@ import retrofit2.Retrofit
 import java.util.concurrent.TimeUnit
 
 class SavedSearchStore(context: Context) {
+    companion object { private val lock = Any() }
     private val prefs = context.getSharedPreferences("saved_search_discovery", Context.MODE_PRIVATE)
     private val json = Json { ignoreUnknownKeys = true }
-    fun read(): SavedSearchData {
-        val raw = prefs.getString("data", null) ?: return SavedSearchData()
+    fun read(): SavedSearchData = synchronized(lock) {
+        val raw = prefs.getString("data", null) ?: return@synchronized SavedSearchData()
         require(raw.length <= 4 * 1024 * 1024)
-        return json.decodeFromString<SavedSearchData>(raw).also { it.validate() }
+        json.decodeFromString<SavedSearchData>(raw).also { it.validate() }
     }
-    fun write(data: SavedSearchData) {
+    fun snapshot(): Pair<SavedSearchData?, String?> = synchronized(lock) {
+        try { read() to null } catch (_: Exception) {
+            val raw = requireNotNull(prefs.getString("data", null))
+            require(raw.length <= 4 * 1024 * 1024)
+            null to raw
+        }
+    }
+    fun write(data: SavedSearchData) = synchronized(lock) {
         data.validate()
         val raw = json.encodeToString(SavedSearchData.serializer(), data)
+        require(raw.length <= 4 * 1024 * 1024)
+        check(prefs.edit().putString("data", raw).commit())
+    }
+    fun replaceRaw(raw: String) = synchronized(lock) {
         require(raw.length <= 4 * 1024 * 1024)
         check(prefs.edit().putString("data", raw).commit())
     }
@@ -36,8 +49,14 @@ object SavedSearchService {
     @Volatile private var repository: SavedSearchRepository? = null
     fun get(context: Context): SavedSearchRepository = repository ?: synchronized(this) {
         repository ?: SavedSearchStore(context.applicationContext).let { store ->
-            SavedSearchRepository(store::read, store::write, { fetch(it) }).also { repository = it }
+            SavedSearchRepository(store::read, store::write, { fetch(it) },
+                access = { action -> BackupService.get(context.applicationContext).withSearchToolsAccess(action) })
+                .also { repository = it }
         }
+    }
+
+    suspend fun refreshAfterRestore() {
+        repository?.refreshAfterRestore()
     }
 
     internal suspend fun fetch(

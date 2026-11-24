@@ -212,6 +212,7 @@ class ExoMediaKernel(jzvd: Jzvd) : JZMediaInterface(jzvd), Player.Listener, HMed
 
     override fun onRenderedFirstFrame() {
         Log.i(TAG, "onRenderedFirstFrame")
+        PlaybackPerformanceStats.firstFrame(jzvd.context)
     }
 
     override fun pause() {

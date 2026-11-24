@@ -15,5 +15,6 @@
         <exclude domain="sharedpref" path="auto_translation_device.xml"/>
         <exclude domain="sharedpref" path="trial_research_device.xml"/>
         <exclude domain="sharedpref" path="download_performance_samples.xml"/>
+        <exclude domain="sharedpref" path="playback_performance_sample.xml"/>
    <include domain="database" path="." />
 </full-backup-content>

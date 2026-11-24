@@ -13,6 +13,7 @@ class SavedSearchRepository(
     private val save: (SavedSearchData) -> Unit,
     private val fetch: suspend (SearchCriteria) -> List<WatchVideo>,
     private val clock: () -> Long = System::currentTimeMillis,
+    private val access: suspend (suspend () -> Unit) -> Unit = { it() },
 ) {
     private val changes = Mutex()
     private val checks = Mutex()
@@ -30,12 +31,17 @@ class SavedSearchRepository(
         throw error
     }
 
-    suspend fun refresh() = changes.withLock { mutableState.value = read() }
+    suspend fun refresh() = access { changes.withLock { mutableState.value = read() } }
 
-    private suspend fun mutate(action: (SavedSearchData) -> SavedSearchData) = changes.withLock {
-        val updated = action(read()).also { it.validate() }
-        save(updated)
-        mutableState.value = updated
+    /** Called from the exclusive backup restore path, where taking a reader gate would deadlock. */
+    suspend fun refreshAfterRestore() = changes.withLock { mutableState.value = read() }
+
+    private suspend fun mutate(action: (SavedSearchData) -> SavedSearchData) = access {
+        changes.withLock {
+            val updated = action(read()).also { it.validate() }
+            save(updated)
+            mutableState.value = updated
+        }
     }
 
     suspend fun add(name: String, criteria: SearchCriteria) = mutate { data ->
@@ -80,14 +86,14 @@ class SavedSearchRepository(
                 try {
                     val results = fetch(snapshot.criteria)
                     mutate { data -> data.copy(searches = data.searches.map {
-                        if (it.id == snapshot.id && it.enabled && it.generation == snapshot.generation)
+                        if (it == snapshot && it.enabled)
                             it.record(results, clock()) else it
                     }) }
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (_: Exception) {
                     mutate { data -> data.copy(searches = data.searches.map {
-                        if (it.id == snapshot.id && it.enabled && it.generation == snapshot.generation)
+                        if (it == snapshot && it.enabled)
                             it.copy(lastAttempt = clock(), failed = true) else it
                     }) }
                 }

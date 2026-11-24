@@ -3,6 +3,10 @@ package com.yenaly.han1meviewer.ui.screen.settings
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Text
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -32,6 +36,7 @@ data class PlayerSettingsUiState(
     val longPressSpeedTimesLabel: String,
     val slideSensitivity: Int,
     val slideSensitivitySummary: String,
+    val firstFrameSummary: String,
 )
 
 private enum class PlayerChoiceDialog {
@@ -153,6 +158,13 @@ fun PlayerSettingsScreen(
                 onValueChange = onSlideSensitivityChange,
             )
         }
+        item {
+            Column(modifier = Modifier.padding(horizontal = 24.dp, vertical = 12.dp)) {
+                Text(stringResource(R.string.player_first_frame_heading), style = MaterialTheme.typography.titleSmall)
+                Text(state.firstFrameSummary)
+                Text(stringResource(R.string.player_first_frame_note), style = MaterialTheme.typography.bodySmall)
+            }
+        }
     }
 }
 
@@ -172,6 +184,7 @@ private fun PlayerSettingsScreenPreview() {
                 longPressSpeedTimes = "2.5",
                 longPressSpeedTimesLabel = "2.5倍",
                 slideSensitivity = 5,
+                firstFrameSummary = "1.2 s",
                 slideSensitivitySummary = stringResource(
                     R.string.current_slide_sensitivity,
                     stringResource(R.string.moderate)
