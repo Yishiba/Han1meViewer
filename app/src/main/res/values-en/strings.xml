@@ -852,6 +852,7 @@ Recommendations are as follows:\n
     <string name="home_error_generic">Failed to load the page. Please check your network connection and try again.</string>
     <string name="home_diagnostic_title">Network diagnostics · Screenshot this</string>
     <string name="home_cached_notice">Showing public listings saved %1$s. Refreshing; content may be outdated.</string>
+    <string name="home_cached_failed">Showing public listings saved %1$s. Refresh failed; content may be outdated.</string>
     <string name="player_first_frame_heading">Latest playback first frame</string>
     <string name="player_first_frame_sample">%1$.2f s</string>
     <string name="player_first_frame_note">ExoPlayer only: play-button tap to first frame. Excludes opening details and fetching the playback link. Stored on this device only.</string>

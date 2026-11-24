@@ -25,6 +25,7 @@ import androidx.compose.material3.ExperimentalMaterial3ExpressiveApi
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
 import androidx.compose.material3.pulltorefresh.pullToRefresh
 import androidx.compose.material3.pulltorefresh.rememberPullToRefreshState
 import androidx.compose.runtime.Composable
@@ -114,15 +115,25 @@ fun HomePageScreen(
                 onSearchClick = { onEvent(HomeUiEvent.OpenSearchPage()) },
                 onNavigateToPreview = { onEvent(HomeUiEvent.NavigateToPreview) }
             )
-            if (cachedAt != null && pageState.dataOrNull != null) {
+            val savedAt = cachedAt
+            if (savedAt != null && pageState.dataOrNull != null) {
                 Surface(color = MaterialTheme.colorScheme.surfaceContainerHigh) {
-                    Text(
-                        text = stringResource(R.string.home_cached_notice,
-                            DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
-                                .format(Date(cachedAt!!))),
-                        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
-                        style = MaterialTheme.typography.bodySmall,
-                    )
+                    Column(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp)) {
+                        Text(
+                            text = stringResource(
+                                if (pageState is PageState.Error) R.string.home_cached_failed
+                                else R.string.home_cached_notice,
+                                DateFormat.getDateTimeInstance(DateFormat.SHORT, DateFormat.SHORT)
+                                    .format(Date(savedAt)),
+                            ),
+                            style = MaterialTheme.typography.bodySmall,
+                        )
+                        if (pageState is PageState.Error) {
+                            TextButton(onClick = { viewModel.getHomePage(isRefresh = true) }) {
+                                Text(stringResource(R.string.retry))
+                            }
+                        }
+                    }
                 }
             }
             Box(

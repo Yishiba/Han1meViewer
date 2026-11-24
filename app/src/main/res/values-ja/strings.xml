@@ -857,6 +857,7 @@ hanime1.me以外のドメインは、特定の時間帯にhanime1.meにリダイ
     <string name="home_error_generic">ページの読み込みに失敗しました。ネットワーク接続を確認してから再試行してください。</string>
     <string name="home_diagnostic_title">ネットワーク診断・画面を撮影</string>
     <string name="home_cached_notice">%1$s に保存した公開一覧を表示中です。更新中のため内容が古い場合があります。</string>
+    <string name="home_cached_failed">%1$s に保存した公開一覧を表示中です。更新に失敗したため内容が古い場合があります。</string>
     <string name="player_first_frame_heading">前回の再生開始時間</string>
     <string name="player_first_frame_sample">%1$.2f 秒</string>
     <string name="player_first_frame_note">ExoPlayer の再生ボタンから最初の映像までを記録します。詳細画面や再生リンクの取得時間は含みません。端末内のみ保存します。</string>
