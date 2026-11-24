@@ -24,9 +24,9 @@ import java.util.concurrent.atomic.AtomicBoolean
 class SegmentedFileDownloaderTest {
     @get:Rule val temp = TemporaryFolder()
     private val client = OkHttpClient()
-    private val downloader = SegmentedFileDownloader(client) { request ->
+    private val downloader = SegmentedFileDownloader(client, fetch = { request ->
         withContext(Dispatchers.IO) { client.newCall(request).execute() }
-    }
+    })
 
     private fun withServer(bytes: ByteArray, ignoreRanges: Boolean = false,
                            truncateOnce: AtomicBoolean? = null,

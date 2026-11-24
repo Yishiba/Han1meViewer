@@ -63,7 +63,7 @@ class SearchSyncTest {
             SyncValue(1, "old", SyncCrypto.json.encodeToJsonElement<PreferenceValue>(PreferenceValue.StringValue("blue")))))
         val data = SearchToolsData(aliases = listOf(TranslationEntry("new", "alias")))
         val merged = SyncMergeEngine.merge(SyncProjection.capture(payload(data), emptyMap()), SyncBaseline(), legacy, "new", true)
-        assertEquals(2, merged.document.version)
+        assertEquals(3, merged.document.version)
         val restored = SyncProjection.materialize(payload(data), SyncMergeEngine.live(merged.document)).backup
         assertEquals(data, restored.searchTools)
         val excess = (1..201).associate { index ->

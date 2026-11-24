@@ -15,6 +15,10 @@ class SavedSearchRepository(
     private val clock: () -> Long = System::currentTimeMillis,
     private val access: suspend (suspend () -> Unit) -> Unit = { it() },
 ) {
+    private fun WatchSearch.matchesCheckSnapshot(snapshot: WatchSearch): Boolean =
+        enabled && copy(name = snapshot.name, updates = updates.map { it.copy(read = false) }) ==
+            snapshot.copy(updates = snapshot.updates.map { it.copy(read = false) })
+
     private val changes = Mutex()
     private val checks = Mutex()
     private val mutableState = MutableStateFlow(SavedSearchData())
@@ -86,14 +90,14 @@ class SavedSearchRepository(
                 try {
                     val results = fetch(snapshot.criteria)
                     mutate { data -> data.copy(searches = data.searches.map {
-                        if (it == snapshot && it.enabled)
+                        if (it.matchesCheckSnapshot(snapshot))
                             it.record(results, clock()) else it
                     }) }
                 } catch (cancelled: CancellationException) {
                     throw cancelled
                 } catch (_: Exception) {
                     mutate { data -> data.copy(searches = data.searches.map {
-                        if (it == snapshot && it.enabled)
+                        if (it.matchesCheckSnapshot(snapshot))
                             it.copy(lastAttempt = clock(), failed = true) else it
                     }) }
                 }
